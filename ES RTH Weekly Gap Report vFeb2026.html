@@ -1,0 +1,791 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ES RTH Weekly Gap Analysis</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #FAFAF8;
+  --surface: #FFFFFF;
+  --surface-alt: #F5F4F0;
+  --border: #E8E6E1;
+  --border-strong: #D4D1C9;
+  --text-primary: #1A1A18;
+  --text-secondary: #6B6964;
+  --text-muted: #9C9890;
+  --accent: #2563EB;
+  --accent-light: #EFF6FF;
+  --green: #16A34A;
+  --green-light: #F0FDF4;
+  --green-bg: #DCFCE7;
+  --red: #DC2626;
+  --red-light: #FEF2F2;
+  --red-bg: #FEE2E2;
+  --amber: #D97706;
+  --amber-light: #FFFBEB;
+  --amber-bg: #FEF3C7;
+  --purple: #7C3AED;
+  --purple-light: #F5F3FF;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  font-family: 'DM Sans', -apple-system, sans-serif;
+  background: var(--bg);
+  color: var(--text-primary);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+
+.report {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 48px 32px;
+}
+
+.header {
+  margin-bottom: 48px;
+  padding-bottom: 32px;
+  border-bottom: 2px solid var(--border);
+}
+
+.header-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--accent);
+  background: var(--accent-light);
+  padding: 4px 12px;
+  border-radius: 4px;
+  margin-bottom: 16px;
+}
+
+.header h1 {
+  font-size: 32px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  margin-bottom: 8px;
+}
+
+.header .subtitle {
+  font-size: 16px;
+  color: var(--text-secondary);
+}
+
+.header .meta {
+  display: flex;
+  gap: 24px;
+  margin-top: 16px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.meta-dot {
+  width: 5px; height: 5px;
+  border-radius: 50%;
+  background: var(--text-muted);
+  opacity: 0.5;
+  align-self: center;
+}
+
+.section {
+  margin-bottom: 48px;
+}
+
+.section-title {
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  margin-bottom: 8px;
+}
+
+.section-desc {
+  font-size: 14px;
+  color: var(--text-secondary);
+  margin-bottom: 24px;
+}
+
+.kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+  margin-bottom: 32px;
+}
+
+.kpi-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 20px;
+  transition: box-shadow 0.2s;
+}
+
+.kpi-card:hover { box-shadow: 0 2px 12px rgba(0,0,0,0.06); }
+
+.kpi-label {
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-muted);
+  margin-bottom: 8px;
+}
+
+.kpi-value {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 28px;
+  font-weight: 700;
+  line-height: 1.1;
+}
+
+.kpi-sub {
+  font-size: 13px;
+  color: var(--text-secondary);
+  margin-top: 4px;
+}
+
+.kpi-card.accent { border-left: 3px solid var(--accent); }
+.kpi-card.green { border-left: 3px solid var(--green); }
+.kpi-card.red { border-left: 3px solid var(--red); }
+.kpi-card.amber { border-left: 3px solid var(--amber); }
+.kpi-card.purple { border-left: 3px solid var(--purple); }
+
+.table-wrap {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  overflow: hidden;
+  margin-bottom: 24px;
+}
+
+.table-header {
+  padding: 16px 20px;
+  background: var(--surface-alt);
+  border-bottom: 1px solid var(--border);
+  font-size: 14px;
+  font-weight: 600;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+thead th {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-muted);
+  text-align: left;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border);
+  background: var(--surface-alt);
+}
+
+thead th.right { text-align: right; }
+thead th.center { text-align: center; }
+
+tbody td {
+  font-size: 14px;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border);
+}
+
+tbody td.mono {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 13px;
+}
+
+tbody td.right { text-align: right; }
+tbody td.center { text-align: center; }
+
+tbody tr:last-child td { border-bottom: none; }
+tbody tr:hover { background: rgba(0,0,0,0.015); }
+
+.pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.pill.green { background: var(--green-bg); color: var(--green); }
+.pill.red { background: var(--red-bg); color: var(--red); }
+.pill.amber { background: var(--amber-bg); color: var(--amber); }
+.pill.blue { background: var(--accent-light); color: var(--accent); }
+
+.split-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+}
+
+.gradient-bar-container {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 24px;
+  margin-bottom: 24px;
+}
+
+.gradient-bar-title {
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 16px;
+}
+
+.gradient-bar {
+  display: flex;
+  height: 48px;
+  border-radius: 8px;
+  overflow: hidden;
+  margin-bottom: 12px;
+}
+
+.gradient-segment {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  font-weight: 600;
+  color: white;
+}
+
+.gradient-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.legend-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 3px;
+}
+
+.note-box {
+  background: var(--amber-light);
+  border: 1px solid #FDE68A;
+  border-radius: 8px;
+  padding: 16px 20px;
+  font-size: 13px;
+  color: #92400E;
+  line-height: 1.6;
+  margin-top: 16px;
+}
+
+.note-box strong { font-weight: 700; }
+
+/* Day mini-bar for bucket table */
+.day-bar-wrap {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.day-tag {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 6px;
+  border-radius: 3px;
+  white-space: nowrap;
+}
+
+.day-tag.mon { background: #DBEAFE; color: #1D4ED8; }
+.day-tag.tue { background: #E0E7FF; color: #4338CA; }
+.day-tag.wed { background: #EDE9FE; color: #6D28D9; }
+.day-tag.thu { background: #F3E8FF; color: #7C3AED; }
+.day-tag.fri { background: #FAE8FF; color: #A21CAF; }
+
+/* Bucket day breakdown sub-row */
+.day-breakdown {
+  display: flex;
+  gap: 3px;
+  height: 6px;
+  border-radius: 3px;
+  overflow: hidden;
+  margin-top: 4px;
+  max-width: 160px;
+}
+
+.day-seg {
+  height: 100%;
+  border-radius: 1px;
+}
+
+.day-seg.mon { background: #3B82F6; }
+.day-seg.tue { background: #6366F1; }
+.day-seg.wed { background: #8B5CF6; }
+.day-seg.thu { background: #A855F7; }
+.day-seg.fri { background: #D946EF; }
+
+.footer {
+  margin-top: 48px;
+  padding-top: 24px;
+  border-top: 1px solid var(--border);
+  font-size: 12px;
+  color: var(--text-muted);
+  display: flex;
+  justify-content: space-between;
+}
+
+@media (max-width: 768px) {
+  .report { padding: 24px 16px; }
+  .kpi-grid { grid-template-columns: 1fr 1fr; }
+  .split-grid { grid-template-columns: 1fr; }
+  .header .meta { flex-wrap: wrap; gap: 12px; }
+  .kpi-value { font-size: 22px; }
+}
+</style>
+</head>
+<body>
+<div class="report">
+
+  <!-- HEADER -->
+  <div class="header">
+    <div class="header-tag">◆ Quantitative Research</div>
+    <h1>ES RTH Weekly Gap Analysis</h1>
+    <div class="subtitle">Reconstructed weekly bars from daily RTH data — gap frequency, closure rates, and timing</div>
+    <div class="meta">
+      <span>E-Mini S&P 500 Futures</span>
+      <div class="meta-dot"></div>
+      <span>Dec 2009 — Feb 2026</span>
+      <div class="meta-dot"></div>
+      <span>4,060 Daily Bars → 843 Weekly Bars</span>
+      <div class="meta-dot"></div>
+      <span>Weekly ABR: 8-Bar Lookback</span>
+    </div>
+  </div>
+
+  <!-- DATA UNIVERSE -->
+  <div class="section">
+    <div class="section-title">Data Universe</div>
+    <div class="section-desc">Daily RTH OHLC data reconstructed into weekly bars. Week open = first trading day open, week close = last trading day close. Weekly gap = current week open − prior week close. Weekly ABR calculated using an 8-bar lookback.</div>
+
+    <div class="kpi-grid">
+      <div class="kpi-card accent">
+        <div class="kpi-label">Daily Bars</div>
+        <div class="kpi-value">4,060</div>
+        <div class="kpi-sub">Dec 17, 2009 — Feb 6, 2026</div>
+      </div>
+      <div class="kpi-card accent">
+        <div class="kpi-label">Weekly Bars</div>
+        <div class="kpi-value">843</div>
+        <div class="kpi-sub">Reconstructed from daily RTH</div>
+      </div>
+      <div class="kpi-card green">
+        <div class="kpi-label">Weeks With Gap</div>
+        <div class="kpi-value">834</div>
+        <div class="kpi-sub">99.1% of weeks — only 8 flat opens</div>
+      </div>
+      <div class="kpi-card purple">
+        <div class="kpi-label">5-Day Weeks</div>
+        <div class="kpi-value">690</div>
+        <div class="kpi-sub">82% full weeks · 152 holiday-shortened</div>
+      </div>
+    </div>
+
+    <div class="note-box">
+      <strong>Methodology:</strong> A weekly gap exists whenever this week's first RTH open ≠ last week's final RTH close. 82 weeks started on Tuesday (holiday Monday). "First-day closure" means the gap closed on the week's first trading day regardless of weekday. Weekly ABR uses an 8-bar lookback throughout.
+    </div>
+  </div>
+
+  <!-- GAP OVERVIEW -->
+  <div class="section">
+    <div class="section-title">Gap Overview</div>
+    <div class="section-desc">Direction split, average sizes, and overall closure rate across all 834 weekly gaps.</div>
+
+    <div class="kpi-grid">
+      <div class="kpi-card green">
+        <div class="kpi-label">Gaps Up</div>
+        <div class="kpi-value">455</div>
+        <div class="kpi-sub">54.6% · avg 13.49 pts</div>
+      </div>
+      <div class="kpi-card red">
+        <div class="kpi-label">Gaps Down</div>
+        <div class="kpi-value">379</div>
+        <div class="kpi-sub">45.4% · avg 16.40 pts</div>
+      </div>
+      <div class="kpi-card accent">
+        <div class="kpi-label">Avg Gap Size</div>
+        <div class="kpi-value">14.81</div>
+        <div class="kpi-sub">points across all gaps</div>
+      </div>
+      <div class="kpi-card amber">
+        <div class="kpi-label">Overall Closure Rate</div>
+        <div class="kpi-value">79.9%</div>
+        <div class="kpi-sub">666 of 834 gaps closed within the week</div>
+      </div>
+    </div>
+
+    <div class="split-grid">
+      <div class="table-wrap">
+        <div class="table-header">Gap Up Breakdown (n=455)</div>
+        <table>
+          <tbody>
+            <tr><td>Closed within week</td><td class="mono right">347</td><td class="mono right"><span class="pill green">76.3%</span></td></tr>
+            <tr><td>Closed first day</td><td class="mono right">241</td><td class="mono right">53.0%</td></tr>
+            <tr><td>Not closed</td><td class="mono right">108</td><td class="mono right"><span class="pill red">23.7%</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="table-wrap">
+        <div class="table-header">Gap Down Breakdown (n=379)</div>
+        <table>
+          <tbody>
+            <tr><td>Closed within week</td><td class="mono right">319</td><td class="mono right"><span class="pill green">84.2%</span></td></tr>
+            <tr><td>Closed first day</td><td class="mono right">213</td><td class="mono right">56.2%</td></tr>
+            <tr><td>Not closed</td><td class="mono right">60</td><td class="mono right"><span class="pill red">15.8%</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- CLOSURE TIMING -->
+  <div class="section">
+    <div class="section-title">Closure Timing — When Do Gaps Fill?</div>
+    <div class="section-desc">Of the 666 gaps that closed, which day of the week did price first reach the prior week's close?</div>
+
+    <div class="gradient-bar-container">
+      <div class="gradient-bar-title">Gap Closure Distribution Across the Week</div>
+      <div class="gradient-bar">
+        <div class="gradient-segment" style="flex: 62.2; background: #2563EB;">62.2%</div>
+        <div class="gradient-segment" style="flex: 19.8; background: #4F46E5;">19.8%</div>
+        <div class="gradient-segment" style="flex: 10.2; background: #7C3AED;">10.2%</div>
+        <div class="gradient-segment" style="flex: 4.8; background: #9333EA;">4.8%</div>
+        <div class="gradient-segment" style="flex: 3.0; background: #C026D3; color: rgba(255,255,255,0.8);">3%</div>
+      </div>
+      <div class="gradient-legend">
+        <div class="legend-item"><div class="legend-dot" style="background: #2563EB;"></div>Monday (414)</div>
+        <div class="legend-item"><div class="legend-dot" style="background: #4F46E5;"></div>Tuesday (132)</div>
+        <div class="legend-item"><div class="legend-dot" style="background: #7C3AED;"></div>Wednesday (68)</div>
+        <div class="legend-item"><div class="legend-dot" style="background: #9333EA;"></div>Thursday (32)</div>
+        <div class="legend-item"><div class="legend-dot" style="background: #C026D3;"></div>Friday (20)</div>
+      </div>
+    </div>
+
+    <div class="table-wrap">
+      <div class="table-header">Closure Day Detail</div>
+      <table>
+        <thead>
+          <tr>
+            <th>Day</th>
+            <th class="right">Gaps Closed</th>
+            <th class="right">% of All Gaps</th>
+            <th class="right">% of Closed Gaps</th>
+            <th class="right">Cumulative</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Monday</strong></td>
+            <td class="mono right">414</td>
+            <td class="mono right">49.6%</td>
+            <td class="mono right">62.2%</td>
+            <td class="mono right"><span class="pill green">62.2%</span></td>
+          </tr>
+          <tr>
+            <td>Tuesday</td>
+            <td class="mono right">132</td>
+            <td class="mono right">15.8%</td>
+            <td class="mono right">19.8%</td>
+            <td class="mono right">82.0%</td>
+          </tr>
+          <tr>
+            <td>Wednesday</td>
+            <td class="mono right">68</td>
+            <td class="mono right">8.2%</td>
+            <td class="mono right">10.2%</td>
+            <td class="mono right">92.2%</td>
+          </tr>
+          <tr>
+            <td>Thursday</td>
+            <td class="mono right">32</td>
+            <td class="mono right">3.8%</td>
+            <td class="mono right">4.8%</td>
+            <td class="mono right">97.0%</td>
+          </tr>
+          <tr>
+            <td>Friday</td>
+            <td class="mono right">20</td>
+            <td class="mono right">2.4%</td>
+            <td class="mono right">3.0%</td>
+            <td class="mono right">100.0%</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="kpi-grid" style="grid-template-columns: repeat(3, 1fr);">
+      <div class="kpi-card green">
+        <div class="kpi-label">Closed First Day</div>
+        <div class="kpi-value">454</div>
+        <div class="kpi-sub">54.4% of all gaps · includes Tue starts on holiday weeks</div>
+      </div>
+      <div class="kpi-card amber">
+        <div class="kpi-label">Closed Later in Week</div>
+        <div class="kpi-value">212</div>
+        <div class="kpi-sub">25.4% of all gaps</div>
+      </div>
+      <div class="kpi-card red">
+        <div class="kpi-label">Never Closed</div>
+        <div class="kpi-value">168</div>
+        <div class="kpi-sub">20.1% of all gaps</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- GAP SIZE vs CLOSURE -->
+  <div class="section">
+    <div class="section-title">Gap Size vs. Closure Rate — % of Weekly ABR (8-Bar)</div>
+    <div class="section-desc">Closure rate and most likely closure day by gap size expressed as a percentage of the 8-bar weekly average bar range. Smaller gaps close on Monday; larger gaps need time — or never fill at all.</div>
+
+    <div class="table-wrap">
+      <div class="table-header">Closure Rate &amp; Timing by Gap Size Bucket</div>
+      <table>
+        <thead>
+          <tr>
+            <th>Gap Size<br><span style="font-weight:400;text-transform:none;letter-spacing:0;">% Weekly ABR</span></th>
+            <th class="right">n</th>
+            <th class="right">Closed</th>
+            <th class="right">Closure Rate</th>
+            <th class="right">Avg Gap<br><span style="font-weight:400;text-transform:none;letter-spacing:0;">(pts)</span></th>
+            <th class="center">Most Likely<br><span style="font-weight:400;text-transform:none;letter-spacing:0;">Close Day</span></th>
+            <th class="center">Mon %<br><span style="font-weight:400;text-transform:none;letter-spacing:0;">of closed</span></th>
+            <th>Day Spread</th>
+          </tr>
+        </thead>
+        <tbody>
+          <!-- 0-5% -->
+          <tr>
+            <td class="mono">0–5%</td>
+            <td class="mono right">172</td>
+            <td class="mono right">164</td>
+            <td class="mono right"><span class="pill green">95.3%</span></td>
+            <td class="mono right">2.22</td>
+            <td class="center"><span class="day-tag mon">Mon 88%</span></td>
+            <td class="mono center">88%</td>
+            <td>
+              <div class="day-breakdown">
+                <div class="day-seg mon" style="flex:87.8"></div>
+                <div class="day-seg tue" style="flex:8.5"></div>
+                <div class="day-seg wed" style="flex:3.0"></div>
+                <div class="day-seg thu" style="flex:0.6"></div>
+              </div>
+            </td>
+          </tr>
+          <!-- 5-10% -->
+          <tr>
+            <td class="mono">5–10%</td>
+            <td class="mono right">167</td>
+            <td class="mono right">158</td>
+            <td class="mono right"><span class="pill green">94.6%</span></td>
+            <td class="mono right">6.23</td>
+            <td class="center"><span class="day-tag mon">Mon 75%</span></td>
+            <td class="mono center">75%</td>
+            <td>
+              <div class="day-breakdown">
+                <div class="day-seg mon" style="flex:75.3"></div>
+                <div class="day-seg tue" style="flex:15.2"></div>
+                <div class="day-seg wed" style="flex:5.1"></div>
+                <div class="day-seg thu" style="flex:1.9"></div>
+                <div class="day-seg fri" style="flex:2.5"></div>
+              </div>
+            </td>
+          </tr>
+          <!-- 10-15% -->
+          <tr>
+            <td class="mono">10–15%</td>
+            <td class="mono right">145</td>
+            <td class="mono right">119</td>
+            <td class="mono right"><span class="pill amber">82.1%</span></td>
+            <td class="mono right">9.74</td>
+            <td class="center"><span class="day-tag mon">Mon 55%</span></td>
+            <td class="mono center">55%</td>
+            <td>
+              <div class="day-breakdown">
+                <div class="day-seg mon" style="flex:54.6"></div>
+                <div class="day-seg tue" style="flex:27.7"></div>
+                <div class="day-seg wed" style="flex:9.2"></div>
+                <div class="day-seg thu" style="flex:5.0"></div>
+                <div class="day-seg fri" style="flex:3.4"></div>
+              </div>
+            </td>
+          </tr>
+          <!-- 15-20% -->
+          <tr>
+            <td class="mono">15–20%</td>
+            <td class="mono right">105</td>
+            <td class="mono right">80</td>
+            <td class="mono right"><span class="pill amber">76.2%</span></td>
+            <td class="mono right">15.06</td>
+            <td class="center"><span class="day-tag mon">Mon 51%</span></td>
+            <td class="mono center">51%</td>
+            <td>
+              <div class="day-breakdown">
+                <div class="day-seg mon" style="flex:51.2"></div>
+                <div class="day-seg tue" style="flex:23.8"></div>
+                <div class="day-seg wed" style="flex:16.2"></div>
+                <div class="day-seg thu" style="flex:6.2"></div>
+                <div class="day-seg fri" style="flex:2.5"></div>
+              </div>
+            </td>
+          </tr>
+          <!-- 20-30% -->
+          <tr>
+            <td class="mono">20–30%</td>
+            <td class="mono right">120</td>
+            <td class="mono right">80</td>
+            <td class="mono right"><span class="pill amber">66.7%</span></td>
+            <td class="mono right">20.37</td>
+            <td class="center"><span class="day-tag mon">Mon 39%</span></td>
+            <td class="mono center">39%</td>
+            <td>
+              <div class="day-breakdown">
+                <div class="day-seg mon" style="flex:38.8"></div>
+                <div class="day-seg tue" style="flex:28.7"></div>
+                <div class="day-seg wed" style="flex:23.8"></div>
+                <div class="day-seg thu" style="flex:5.0"></div>
+                <div class="day-seg fri" style="flex:3.8"></div>
+              </div>
+            </td>
+          </tr>
+          <!-- 30-50% -->
+          <tr>
+            <td class="mono">30–50%</td>
+            <td class="mono right">89</td>
+            <td class="mono right">49</td>
+            <td class="mono right"><span class="pill red">55.1%</span></td>
+            <td class="mono right">31.16</td>
+            <td class="center"><span class="day-tag tue">Tue 29%</span></td>
+            <td class="mono center">27%</td>
+            <td>
+              <div class="day-breakdown">
+                <div class="day-seg mon" style="flex:26.5"></div>
+                <div class="day-seg tue" style="flex:28.6"></div>
+                <div class="day-seg wed" style="flex:20.4"></div>
+                <div class="day-seg thu" style="flex:16.3"></div>
+                <div class="day-seg fri" style="flex:8.2"></div>
+              </div>
+            </td>
+          </tr>
+          <!-- 50-100% -->
+          <tr>
+            <td class="mono">50–100%</td>
+            <td class="mono right">30</td>
+            <td class="mono right">13</td>
+            <td class="mono right"><span class="pill red">43.3%</span></td>
+            <td class="mono right">56.86</td>
+            <td class="center"><span class="day-tag tue">Tue 38%</span></td>
+            <td class="mono center">8%</td>
+            <td>
+              <div class="day-breakdown">
+                <div class="day-seg mon" style="flex:7.7"></div>
+                <div class="day-seg tue" style="flex:38.5"></div>
+                <div class="day-seg wed" style="flex:15.4"></div>
+                <div class="day-seg thu" style="flex:23.1"></div>
+                <div class="day-seg fri" style="flex:15.4"></div>
+              </div>
+            </td>
+          </tr>
+          <!-- 100%+ -->
+          <tr>
+            <td class="mono">100%+</td>
+            <td class="mono right">6</td>
+            <td class="mono right">3</td>
+            <td class="mono right"><span class="pill red">50.0%</span></td>
+            <td class="mono right">141.00</td>
+            <td class="center"><span class="day-tag thu">Thu 67%</span></td>
+            <td class="mono center">0%</td>
+            <td>
+              <div class="day-breakdown">
+                <div class="day-seg thu" style="flex:66.7"></div>
+                <div class="day-seg fri" style="flex:33.3"></div>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="gradient-bar-container">
+      <div class="gradient-bar-title" style="margin-bottom:8px;">Day Spread Legend</div>
+      <div class="gradient-legend">
+        <div class="legend-item"><div class="legend-dot" style="background: #3B82F6;"></div>Monday</div>
+        <div class="legend-item"><div class="legend-dot" style="background: #6366F1;"></div>Tuesday</div>
+        <div class="legend-item"><div class="legend-dot" style="background: #8B5CF6;"></div>Wednesday</div>
+        <div class="legend-item"><div class="legend-dot" style="background: #A855F7;"></div>Thursday</div>
+        <div class="legend-item"><div class="legend-dot" style="background: #D946EF;"></div>Friday</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CLOSED vs UNFILLED -->
+  <div class="section">
+    <div class="section-title">Closed vs. Unfilled — Size Comparison</div>
+    <div class="section-desc">Gaps that close are on average half the size of those that don't — measured in both points and % of weekly ABR (8-bar).</div>
+
+    <div class="split-grid">
+      <div class="kpi-card green" style="padding: 24px;">
+        <div class="kpi-label">Gaps That Closed (n=666)</div>
+        <div style="margin-top: 12px;">
+          <div style="display:flex;justify-content:space-between;margin-bottom:8px;">
+            <span style="font-size:13px;color:var(--text-secondary);">Avg gap size</span>
+            <span class="mono" style="font-weight:600;">11.91 pts</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;">
+            <span style="font-size:13px;color:var(--text-secondary);">Avg % weekly ABR</span>
+            <span class="mono" style="font-weight:600;">14.4%</span>
+          </div>
+        </div>
+      </div>
+      <div class="kpi-card red" style="padding: 24px;">
+        <div class="kpi-label">Gaps That Did NOT Close (n=168)</div>
+        <div style="margin-top: 12px;">
+          <div style="display:flex;justify-content:space-between;margin-bottom:8px;">
+            <span style="font-size:13px;color:var(--text-secondary);">Avg gap size</span>
+            <span class="mono" style="font-weight:600;">26.30 pts</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;">
+            <span style="font-size:13px;color:var(--text-secondary);">Avg % weekly ABR</span>
+            <span class="mono" style="font-weight:600;">30.0%</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <div class="footer">
+    <span>ES RTH Weekly Gap Study · Base Case · Weekly ABR 8-Bar Lookback</span>
+    <span>Source: CME E-Mini S&P 500 · RTH Only · Reconstructed Weekly</span>
+  </div>
+
+</div>
+</body>
+</html>
