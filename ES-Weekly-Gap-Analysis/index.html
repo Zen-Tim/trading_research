@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ES RTH Weekly Gap Analysis</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #FAFAF8;
+  --surface: #FFFFFF;
+  --surface-alt: #F5F4F0;
+  --border: #E8E6E1;
+  --border-strong: #D4D1C9;
+  --text-primary: #1A1A18;
+  --text-secondary: #6B6964;
+  --text-muted: #9C9890;
+  --accent: #2563EB;
+  --accent-light: #EFF6FF;
+  --green: #16A34A;
+  --green-light: #F0FDF4;
+  --green-bg: #DCFCE7;
+  --red: #DC2626;
+  --red-light: #FEF2F2;
+  --red-bg: #FEE2E2;
+  --amber: #D97706;
+  --amber-light: #FFFBEB;
+  --amber-bg: #FEF3C7;
+  --purple: #7C3AED;
+  --purple-light: #F5F3FF;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  font-family: 'DM Sans', -apple-system, sans-serif;
+  background: var(--bg);
+  color: var(--text-primary);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+
+.report {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 48px 32px;
+}
+
+.header {
+  margin-bottom: 48px;
+  padding-bottom: 32px;
+  border-bottom: 2px solid var(--border);
+}
+
+.header-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--accent);
+  background: var(--accent-light);
+  padding: 4px 12px;
+  border-radius: 4px;
+  margin-bottom: 16px;
+}
+
+.header h1 {
+  font-size: 32px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  margin-bottom: 8px;
+}
+
+.header .subtitle {
+  font-size: 16px;
+  color: var(--text-secondary);
+}
+
+.header .meta {
+  display: flex;
+  gap: 24px;
+  margin-top: 16px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.meta-dot {
+  width: 5px; height: 5px;
+  border-radius: 50%;
+  background: var(--text-muted);
+  opacity: 0.5;
+  align-self: center;
+}
+
+.section {
+  margin-bottom: 48px;
+}
+
+.section-title {
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  margin-bottom: 8px;
+}
+
+.section-desc {
+  font-size: 14px;
+  color: var(--text-secondary);
+  margin-bottom: 24px;
+}
+
+.kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+  margin-bottom: 32px;
+}
+
+.kpi-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 20px;
+  transition: box-shadow 0.2s;
+}
+
+.kpi-card:hover { box-shadow: 0 2px 12px rgba(0,0,0,0.06); }
+
+.kpi-label {
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-muted);
+  margin-bottom: 8px;
+}
+
+.kpi-value {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 28px;
+  font-weight: 700;
+  line-height: 1.1;
+}
+
+.kpi-sub {
+  font-size: 13px;
+  color: var(--text-secondary);
+  margin-top: 4px;
+}
+
+.kpi-card.accent { border-left: 3px solid var(--accent); }
+.kpi-card.green { border-left: 3px solid var(--green); }
+.kpi-card.red { border-left: 3px solid var(--red); }
+.kpi-card.amber { border-left: 3px solid var(--amber); }
+.kpi-card.purple { border-left: 3px solid var(--purple); }
+
+.table-wrap {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  overflow: hidden;
+  margin-bottom: 24px;
+}
+
+.table-header {
+  padding: 16px 20px;
+  background: var(--surface-alt);
+  border-bottom: 1px solid var(--border);
+  font-size: 14px;
+  font-weight: 600;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+thead th {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-muted);
+  text-align: left;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border);
+  background: var(--surface-alt);
+}
+
+thead th.right { text-align: right; }
+thead th.center { text-align: center; }
+
+tbody td {
+  font-size: 14px;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border);
+}
+
+tbody td.mono {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 13px;
+}
+
+tbody td.right { text-align: right; }
+tbody td.center { text-align: center; }
+
+tbody tr:last-child td { border-bottom: none; }
+tbody tr:hover { background: rgba(0,0,0,0.015); }
+
+.pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.pill.green { background: var(--green-bg); color: var(--green); }
+.pill.red { background: var(--red-bg); color: var(--red); }
+.pill.amber { background: var(--amber-bg); color: var(--amber); }
+.pill.blue { background: var(--accent-light); color: var(--accent); }
+
+.split-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+}
+
+.gradient-bar-container {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 24px;
+  margin-bottom: 24px;
+}
+
+.gradient-bar-title {
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 16px;
+}
+
+.gradient-bar {
+  display: flex;
+  height: 48px;
+  border-radius: 8px;
+  overflow: hidden;
+  margin-bottom: 12px;
+}
+
+.gradient-segment {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  font-weight: 600;
+  color: white;
+}
+
+.gradient-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.legend-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 3px;
+}
+
+.note-box {
+  background: var(--amber-light);
+  border: 1px solid #FDE68A;
+  border-radius: 8px;
+  padding: 16px 20px;
+  font-size: 13px;
+  color: #92400E;
+  line-height: 1.6;
+  margin-top: 16px;
+}
+
+.note-box strong { font-weight: 700; }
+
+.day-tag {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 6px;
+  border-radius: 3px;
+  white-space: nowrap;
+}
+
+.day-tag.mon { background: #DBEAFE; color: #1D4ED8; }
+.day-tag.tue { background: #E0E7FF; color: #4338CA; }
+.day-tag.wed { background: #EDE9FE; color: #6D28D9; }
+.day-tag.thu { background: #F3E8FF; color: #7C3AED; }
+.day-tag.fri { background: #FAE8FF; color: #A21CAF; }
+
+.day-breakdown {
+  display: flex;
+  gap: 3px;
+  height: 6px;
+  border-radius: 3px;
+  overflow: hidden;
+  margin-top: 4px;
+  max-width: 160px;
+}
+
+.day-seg { height: 100%; border-radius: 1px; }
+.day-seg.mon { background: #3B82F6; }
+.day-seg.tue { background: #6366F1; }
+.day-seg.wed { background: #8B5CF6; }
+.day-seg.thu { background: #A855F7; }
+.day-seg.fri { background: #D946EF; }
+
+.footer {
+  margin-top: 48px;
+  padding-top: 24px;
+  border-top: 1px solid var(--border);
+  font-size: 12px;
+  color: var(--text-muted);
+  display: flex;
+  justify-content: space-between;
+}
+
+@media (max-width: 768px) {
+  .report { padding: 24px 16px; }
+  .kpi-grid { grid-template-columns: 1fr 1fr; }
+  .split-grid { grid-template-columns: 1fr; }
+  .kpi-value { font-size: 22px; }
+}
+</style>
+</head>
+<body>
+<div class="report">
+
+  <div class="header">
+    <div class="header-tag">◆ Quantitative Research</div>
+    <h1>ES RTH Weekly Gap Analysis</h1>
+    <div class="subtitle">Reconstructed weekly bars from daily RTH data — gap frequency, closure rates, and timing</div>
+    <div class="meta">
+      <span>E-Mini S&P 500 Futures</span>
+      <div class="meta-dot"></div>
+      <span>Dec 2009 — Feb 2026</span>
+      <div class="meta-dot"></div>
+      <span>4,060 Daily Bars → 843 Weekly Bars</span>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Data Universe</div>
+    <div class="section-desc">Daily RTH OHLC data reconstructed into weekly bars. Weekly gap = current week open − prior week close.</div>
+
+    <div class="kpi-grid">
+      <div class="kpi-card accent">
+        <div class="kpi-label">Daily Bars</div>
+        <div class="kpi-value">4,060</div>
+        <div class="kpi-sub">Dec 17, 2009 — Feb 6, 2026</div>
+      </div>
+      <div class="kpi-card green">
+        <div class="kpi-label">Weeks With Gap</div>
+        <div class="kpi-value">834</div>
+        <div class="kpi-sub">99.1% of weeks</div>
+      </div>
+      <div class="kpi-card amber">
+        <div class="kpi-label">Overall Closure Rate</div>
+        <div class="kpi-value">79.9%</div>
+        <div class="kpi-sub">666 of 834 gaps closed</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Gap Size vs. Closure Rate</div>
+    <div class="table-wrap">
+      <div class="table-header">Closure Rate by Gap Size Bucket (% Weekly ABR)</div>
+      <table>
+        <thead>
+          <tr>
+            <th>Gap Size %</th>
+            <th class="right">n</th>
+            <th class="right">Closed</th>
+            <th class="right">Closure Rate</th>
+            <th class="center">Most Likely Day</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="mono">0–5%</td>
+            <td class="mono right">172</td>
+            <td class="mono right">164</td>
+            <td class="mono right"><span class="pill green">95.3%</span></td>
+            <td class="center"><span class="day-tag mon">Mon 88%</span></td>
+          </tr>
+          <tr>
+            <td class="mono">5–10%</td>
+            <td class="mono right">167</td>
+            <td class="mono right">158</td>
+            <td class="mono right"><span class="pill green">94.6%</span></td>
+            <td class="center"><span class="day-tag mon">Mon 75%</span></td>
+          </tr>
+          <tr>
+            <td class="mono">10–15%</td>
+            <td class="mono right">145</td>
+            <td class="mono right">119</td>
+            <td class="mono right"><span class="pill amber">82.1%</span></td>
+            <td class="center"><span class="day-tag mon">Mon 55%</span></td>
+          </tr>
+          <tr>
+            <td class="mono">15–20%</td>
+            <td class="mono right">105</td>
+            <td class="mono right">80</td>
+            <td class="mono right"><span class="pill amber">76.2%</span></td>
+            <td class="center"><span class="day-tag mon">Mon 51%</span></td>
+          </tr>
+          <tr>
+            <td class="mono">20–30%</td>
+            <td class="mono right">120</td>
+            <td class="mono right">80</td>
+            <td class="mono right"><span class="pill amber">66.7%</span></td>
+            <td class="center"><span class="day-tag mon">Mon 39%</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="footer">
+    <span>ES RTH Weekly Gap Study · Base Case</span>
+    <span>Source: CME E-Mini S&P 500 · RTH Only</span>
+  </div>
+
+</div>
+</body>
+</html>
