@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ES RTH Opening Gap Close Analysis</title>
+<title>CME Mini ES Gap Closure Analysis</title>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
@@ -164,20 +164,20 @@ body {
 
   <div class="header">
     <div class="header-tag">◆ Quantitative Research</div>
-    <h1>ES RTH Opening Gap Close Analysis</h1>
-    <div class="subtitle">Gap closure probability by gap size — same-day fill rates</div>
+    <h1>CME Mini ES Gap Closure Analysis</h1>
+    <div class="subtitle">Gap closure probability by gap size — intraday fill rates across 13+ years</div>
     <div class="meta">
-      <span>ES Futures</span>
+      <span>E-mini S&P 500 Futures</span>
       <div class="meta-dot"></div>
-      <span>1,359 Trading Days</span>
+      <span>3,059 Gap Days</span>
       <div class="meta-dot"></div>
-      <span>Gap Size as % of ADR</span>
+      <span>Gap Size as % of ABR</span>
     </div>
   </div>
 
   <div class="chart-container">
-    <h3 class="chart-title">ES Mini Futures - Gap Closure Probability by Gap Size</h3>
-    <p class="chart-subtitle">How Gap Size Impacts the Likelihood of Gap Filling on Same Day [n = 1,359]</p>
+    <h3 class="chart-title">E-mini S&P 500 - Gap Closure Probability by Gap Size</h3>
+    <p class="chart-subtitle">How Gap Size Impacts the Likelihood of Intraday Gap Filling [n = 3,059]</p>
     <div class="chart-wrapper">
       <canvas id="gapChart"></canvas>
     </div>
@@ -190,54 +190,68 @@ body {
     <table style="width: 100%; border-collapse: collapse;">
       <thead>
         <tr>
-          <th style="font-family: 'JetBrains Mono', monospace; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-muted); text-align: left; padding: 12px 16px; border-bottom: 1px solid var(--border); background: var(--surface-alt);">Gap Size (% of ADR)</th>
-          <th style="font-family: 'JetBrains Mono', monospace; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-muted); text-align: right; padding: 12px 16px; border-bottom: 1px solid var(--border); background: var(--surface-alt);">Sample Size (n)</th>
+          <th style="font-family: 'JetBrains Mono', monospace; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-muted); text-align: left; padding: 12px 16px; border-bottom: 1px solid var(--border); background: var(--surface-alt);">Gap Size (% of ABR)</th>
+          <th style="font-family: 'JetBrains Mono', monospace; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-muted); text-align: right; padding: 12px 16px; border-bottom: 1px solid var(--border); background: var(--surface-alt);">Total Gaps</th>
+          <th style="font-family: 'JetBrains Mono', monospace; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-muted); text-align: right; padding: 12px 16px; border-bottom: 1px solid var(--border); background: var(--surface-alt);">Gaps Closed</th>
+          <th style="font-family: 'JetBrains Mono', monospace; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-muted); text-align: right; padding: 12px 16px; border-bottom: 1px solid var(--border); background: var(--surface-alt);">Close %</th>
         </tr>
       </thead>
       <tbody>
         <tr style="border-bottom: 1px solid var(--border);">
           <td style="padding: 12px 16px; font-size: 14px;">0-10%</td>
-          <td style="padding: 12px 16px; font-family: 'JetBrains Mono', monospace; font-size: 13px; text-align: right;">260</td>
+          <td style="padding: 12px 16px; font-family: 'JetBrains Mono', monospace; font-size: 13px; text-align: right;">522</td>
+          <td style="padding: 12px 16px; font-family: 'JetBrains Mono', monospace; font-size: 13px; text-align: right;">492</td>
+          <td style="padding: 12px 16px; font-family: 'JetBrains Mono', monospace; font-size: 13px; font-weight: 600; text-align: right; color: var(--green);">94.3%</td>
         </tr>
         <tr style="border-bottom: 1px solid var(--border);">
           <td style="padding: 12px 16px; font-size: 14px;">10-20%</td>
-          <td style="padding: 12px 16px; font-family: 'JetBrains Mono', monospace; font-size: 13px; text-align: right;">258</td>
+          <td style="padding: 12px 16px; font-family: 'JetBrains Mono', monospace; font-size: 13px; text-align: right;">569</td>
+          <td style="padding: 12px 16px; font-family: 'JetBrains Mono', monospace; font-size: 13px; text-align: right;">457</td>
+          <td style="padding: 12px 16px; font-family: 'JetBrains Mono', monospace; font-size: 13px; font-weight: 600; text-align: right; color: var(--green);">80.3%</td>
         </tr>
         <tr style="border-bottom: 1px solid var(--border);">
           <td style="padding: 12px 16px; font-size: 14px;">20-30%</td>
-          <td style="padding: 12px 16px; font-family: 'JetBrains Mono', monospace; font-size: 13px; text-align: right;">205</td>
+          <td style="padding: 12px 16px; font-family: 'JetBrains Mono', monospace; font-size: 13px; text-align: right;">467</td>
+          <td style="padding: 12px 16px; font-family: 'JetBrains Mono', monospace; font-size: 13px; text-align: right;">329</td>
+          <td style="padding: 12px 16px; font-family: 'JetBrains Mono', monospace; font-size: 13px; font-weight: 600; text-align: right; color: var(--green);">70.4%</td>
         </tr>
         <tr style="border-bottom: 1px solid var(--border);">
           <td style="padding: 12px 16px; font-size: 14px;">30-40%</td>
-          <td style="padding: 12px 16px; font-family: 'JetBrains Mono', monospace; font-size: 13px; text-align: right;">150</td>
+          <td style="padding: 12px 16px; font-family: 'JetBrains Mono', monospace; font-size: 13px; text-align: right;">389</td>
+          <td style="padding: 12px 16px; font-family: 'JetBrains Mono', monospace; font-size: 13px; text-align: right;">223</td>
+          <td style="padding: 12px 16px; font-family: 'JetBrains Mono', monospace; font-size: 13px; font-weight: 600; text-align: right; color: var(--amber);">57.3%</td>
         </tr>
         <tr style="border-bottom: 1px solid var(--border);">
           <td style="padding: 12px 16px; font-size: 14px;">40-50%</td>
-          <td style="padding: 12px 16px; font-family: 'JetBrains Mono', monospace; font-size: 13px; text-align: right;">126</td>
+          <td style="padding: 12px 16px; font-family: 'JetBrains Mono', monospace; font-size: 13px; text-align: right;">283</td>
+          <td style="padding: 12px 16px; font-family: 'JetBrains Mono', monospace; font-size: 13px; text-align: right;">128</td>
+          <td style="padding: 12px 16px; font-family: 'JetBrains Mono', monospace; font-size: 13px; font-weight: 600; text-align: right; color: var(--amber);">45.2%</td>
         </tr>
         <tr style="border-bottom: 1px solid var(--border);">
-          <td style="padding: 12px 16px; font-size: 14px;">50-75%</td>
-          <td style="padding: 12px 16px; font-family: 'JetBrains Mono', monospace; font-size: 13px; text-align: right;">212</td>
+          <td style="padding: 12px 16px; font-size: 14px;">50-100%</td>
+          <td style="padding: 12px 16px; font-family: 'JetBrains Mono', monospace; font-size: 13px; text-align: right;">690</td>
+          <td style="padding: 12px 16px; font-family: 'JetBrains Mono', monospace; font-size: 13px; text-align: right;">228</td>
+          <td style="padding: 12px 16px; font-family: 'JetBrains Mono', monospace; font-size: 13px; font-weight: 600; text-align: right; color: var(--red);">33.0%</td>
         </tr>
         <tr style="border-bottom: 1px solid var(--border);">
-          <td style="padding: 12px 16px; font-size: 14px;">75-100%</td>
-          <td style="padding: 12px 16px; font-family: 'JetBrains Mono', monospace; font-size: 13px; text-align: right;">89</td>
-        </tr>
-        <tr style="border-bottom: 1px solid var(--border);">
-          <td style="padding: 12px 16px; font-size: 14px;">100-150%</td>
-          <td style="padding: 12px 16px; font-family: 'JetBrains Mono', monospace; font-size: 13px; text-align: right;">41</td>
+          <td style="padding: 12px 16px; font-size: 14px;">100-200%</td>
+          <td style="padding: 12px 16px; font-family: 'JetBrains Mono', monospace; font-size: 13px; text-align: right;">127</td>
+          <td style="padding: 12px 16px; font-family: 'JetBrains Mono', monospace; font-size: 13px; text-align: right;">8</td>
+          <td style="padding: 12px 16px; font-family: 'JetBrains Mono', monospace; font-size: 13px; font-weight: 600; text-align: right; color: var(--red);">6.3%</td>
         </tr>
         <tr>
-          <td style="padding: 12px 16px; font-size: 14px;">150%+</td>
-          <td style="padding: 12px 16px; font-family: 'JetBrains Mono', monospace; font-size: 13px; text-align: right;">18</td>
+          <td style="padding: 12px 16px; font-size: 14px;">200%+</td>
+          <td style="padding: 12px 16px; font-family: 'JetBrains Mono', monospace; font-size: 13px; text-align: right;">12</td>
+          <td style="padding: 12px 16px; font-family: 'JetBrains Mono', monospace; font-size: 13px; text-align: right;">0</td>
+          <td style="padding: 12px 16px; font-family: 'JetBrains Mono', monospace; font-size: 13px; font-weight: 600; text-align: right; color: var(--red);">0.0%</td>
         </tr>
       </tbody>
     </table>
   </div>
 
   <div class="footer">
-    <span>ES RTH Opening Gap Close Study · Same-Day Fill Analysis</span>
-    <span>Source: ES Futures · 1,359 Days · Gap Size as % of ADR</span>
+    <span>CME Mini ES Gap Closure Study · Intraday Fill Analysis</span>
+    <span>Source: E-mini S&P 500 Futures · 3,086 Days (2013-2026) · Gap Size as % of ABR</span>
   </div>
 
 </div>
@@ -246,14 +260,14 @@ body {
 Chart.register(ChartDataLabels);
 
 const gapData = {
-  labels: ['0-10%', '10-20%', '20-30%', '30-40%', '40-50%', '50-75%', '75-100%', '100-150%', '150%+'],
+  labels: ['0-10%', '10-20%', '20-30%', '30-40%', '40-50%', '50-100%', '100-200%', '200%+'],
   datasets: [
     {
       label: 'Gap Closure Probability',
-      data: [92.3, 81.0, 70.7, 58.0, 44.4, 40.6, 24.7, 7.3, 0.0],
+      data: [94.3, 80.3, 70.4, 57.3, 45.2, 33.0, 6.3, 0.0],
       backgroundColor: function(context) {
         const value = context.parsed.y;
-        if (value >= 80) return '#16A34A';
+        if (value >= 70) return '#16A34A';
         if (value >= 40) return '#D97706';
         return '#DC2626';
       },
@@ -262,7 +276,7 @@ const gapData = {
     },
     {
       label: 'Closure Rate Trend',
-      data: [92.3, 81.0, 70.7, 58.0, 44.4, 40.6, 24.7, 7.3, 0.0],
+      data: [94.3, 80.3, 70.4, 57.3, 45.2, 33.0, 6.3, 0.0],
       type: 'line',
       borderColor: '#2563EB',
       borderWidth: 3,
