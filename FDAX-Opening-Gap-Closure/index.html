@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EUREX FDAX Gap Closure Analysis</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
+<style>
+:root {
+  --bg: #FAFAF8;
+  --surface: #FFFFFF;
+  --surface-alt: #F5F4F0;
+  --border: #E8E6E1;
+  --border-strong: #D4D1C9;
+  --text-primary: #1A1A18;
+  --text-secondary: #6B6964;
+  --text-muted: #9C9890;
+  --accent: #2563EB;
+  --accent-light: #EFF6FF;
+  --green: #16A34A;
+  --green-bg: #DCFCE7;
+  --red: #DC2626;
+  --red-bg: #FEE2E2;
+  --amber: #D97706;
+  --amber-light: #FFFBEB;
+  --amber-bg: #FEF3C7;
+  --purple: #7C3AED;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'DM Sans', -apple-system, sans-serif;
+  background: var(--bg);
+  color: var(--text-primary);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+
+.report {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 48px 32px;
+}
+
+.header {
+  margin-bottom: 48px;
+  padding-bottom: 32px;
+  border-bottom: 2px solid var(--border);
+}
+
+.header-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--accent);
+  background: var(--accent-light);
+  padding: 4px 12px;
+  border-radius: 4px;
+  margin-bottom: 16px;
+}
+
+.header h1 {
+  font-size: 32px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  margin-bottom: 8px;
+}
+
+.header .subtitle {
+  font-size: 16px;
+  color: var(--text-secondary);
+}
+
+.header .meta {
+  display: flex;
+  gap: 24px;
+  margin-top: 16px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  color: var(--text-muted);
+  flex-wrap: wrap;
+}
+
+.meta-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--text-muted);
+  opacity: 0.5;
+  align-self: center;
+}
+
+.chart-container {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 32px;
+  margin-bottom: 32px;
+  transition: box-shadow 0.2s;
+}
+
+.chart-container:hover {
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+}
+
+.chart-title {
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  margin-bottom: 6px;
+  color: var(--text-primary);
+  text-align: center;
+}
+
+.chart-subtitle {
+  font-size: 14px;
+  color: var(--text-secondary);
+  margin-bottom: 32px;
+  line-height: 1.5;
+  text-align: center;
+}
+
+.chart-wrapper {
+  position: relative;
+  height: 500px;
+}
+
+.footer {
+  margin-top: 48px;
+  padding-top: 24px;
+  border-top: 1px solid var(--border);
+  font-size: 12px;
+  color: var(--text-muted);
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+@media (max-width: 768px) {
+  .report {
+    padding: 24px 16px;
+  }
+  .chart-wrapper {
+    height: 400px;
+  }
+}
+</style>
+</head>
+<body>
+<div class="report">
+
+  <div class="header">
+    <div class="header-tag">◆ Quantitative Research</div>
+    <h1>EUREX FDAX Gap Closure Analysis</h1>
+    <div class="subtitle">Gap closure probability by gap size — intraday fill rates across 14+ years</div>
+    <div class="meta">
+      <span>DAX Futures (FDAX)</span>
+      <div class="meta-dot"></div>
+      <span>3,325 Gap Days</span>
+      <div class="meta-dot"></div>
+      <span>Gap Size as % of ABR</span>
+    </div>
+  </div>
+
+  <div class="chart-container">
+    <h3 class="chart-title">FDAX — Gap Closure Probability by Gap Size</h3>
+    <p class="chart-subtitle">How Gap Size Impacts the Likelihood of Intraday Gap Filling [n = 3,325]</p>
+    <div class="chart-wrapper">
+      <canvas id="gapChart"></canvas>
+    </div>
+  </div>
+
+  <div style="background: var(--surface); border: 1px solid var(--border); border-radius: 10px; overflow: hidden; margin-bottom: 32px;">
+    <div style="padding: 16px 20px; background: var(--surface-alt); border-bottom: 1px solid var(--border); font-size: 14px; font-weight: 600;">
+      Sample Size Distribution
+    </div>
+    <table style="width: 100%; border-collapse: collapse;">
+      <thead>
+        <tr>
+          <th style="font-family: 'JetBrains Mono', monospace; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-muted); text-align: left; padding: 12px 16px; border-bottom: 1px solid var(--border); background: var(--surface-alt);">Gap Size (% of ABR)</th>
+          <th style="font-family: 'JetBrains Mono', monospace; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-muted); text-align: right; padding: 12px 16px; border-bottom: 1px solid var(--border); background: var(--surface-alt);">Total Gaps</th>
+          <th style="font-family: 'JetBrains Mono', monospace; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-muted); text-align: right; padding: 12px 16px; border-bottom: 1px solid var(--border); background: var(--surface-alt);">Gaps Closed</th>
+          <th style="font-family: 'JetBrains Mono', monospace; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-muted); text-align: right; padding: 12px 16px; border-bottom: 1px solid var(--border); background: var(--surface-alt);">Close %</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr style="border-bottom: 1px solid var(--border);">
+          <td style="padding: 12px 16px; font-size: 14px;">0-10%</td>
+          <td style="padding: 12px 16px; font-family: 'JetBrains Mono', monospace; font-size: 13px; text-align: right;">693</td>
+          <td style="padding: 12px 16px; font-family: 'JetBrains Mono', monospace; font-size: 13px; text-align: right;">646</td>
+          <td style="padding: 12px 16px; font-family: 'JetBrains Mono', monospace; font-size: 13px; font-weight: 600; text-align: right; color: var(--green);">93.2%</td>
+        </tr>
+        <tr style="border-bottom: 1px solid var(--border);">
+          <td style="padding: 12px 16px; font-size: 14px;">10-20%</td>
+          <td style="padding: 12px 16px; font-family: 'JetBrains Mono', monospace; font-size: 13px; text-align: right;">593</td>
+          <td style="padding: 12px 16px; font-family: 'JetBrains Mono', monospace; font-size: 13px; text-align: right;">473</td>
+          <td style="padding: 12px 16px; font-family: 'JetBrains Mono', monospace; font-size: 13px; font-weight: 600; text-align: right; color: var(--green);">79.8%</td>
+        </tr>
+        <tr style="border-bottom: 1px solid var(--border);">
+          <td style="padding: 12px 16px; font-size: 14px;">20-30%</td>
+          <td style="padding: 12px 16px; font-family: 'JetBrains Mono', monospace; font-size: 13px; text-align: right;">530</td>
+          <td style="padding: 12px 16px; font-family: 'JetBrains Mono', monospace; font-size: 13px; text-align: right;">355</td>
+          <td style="padding: 12px 16px; font-family: 'JetBrains Mono', monospace; font-size: 13px; font-weight: 600; text-align: right; color: var(--green);">67.0%</td>
+        </tr>
+        <tr style="border-bottom: 1px solid var(--border);">
+          <td style="padding: 12px 16px; font-size: 14px;">30-40%</td>
+          <td style="padding: 12px 16px; font-family: 'JetBrains Mono', monospace; font-size: 13px; text-align: right;">426</td>
+          <td style="padding: 12px 16px; font-family: 'JetBrains Mono', monospace; font-size: 13px; text-align: right;">240</td>
+          <td style="padding: 12px 16px; font-family: 'JetBrains Mono', monospace; font-size: 13px; font-weight: 600; text-align: right; color: var(--amber);">56.3%</td>
+        </tr>
+        <tr style="border-bottom: 1px solid var(--border);">
+          <td style="padding: 12px 16px; font-size: 14px;">40-50%</td>
+          <td style="padding: 12px 16px; font-family: 'JetBrains Mono', monospace; font-size: 13px; text-align: right;">313</td>
+          <td style="padding: 12px 16px; font-family: 'JetBrains Mono', monospace; font-size: 13px; text-align: right;">139</td>
+          <td style="padding: 12px 16px; font-family: 'JetBrains Mono', monospace; font-size: 13px; font-weight: 600; text-align: right; color: var(--amber);">44.4%</td>
+        </tr>
+        <tr style="border-bottom: 1px solid var(--border);">
+          <td style="padding: 12px 16px; font-size: 14px;">50-100%</td>
+          <td style="padding: 12px 16px; font-family: 'JetBrains Mono', monospace; font-size: 13px; text-align: right;">635</td>
+          <td style="padding: 12px 16px; font-family: 'JetBrains Mono', monospace; font-size: 13px; text-align: right;">179</td>
+          <td style="padding: 12px 16px; font-family: 'JetBrains Mono', monospace; font-size: 13px; font-weight: 600; text-align: right; color: var(--red);">28.2%</td>
+        </tr>
+        <tr style="border-bottom: 1px solid var(--border);">
+          <td style="padding: 12px 16px; font-size: 14px;">100-200%</td>
+          <td style="padding: 12px 16px; font-family: 'JetBrains Mono', monospace; font-size: 13px; text-align: right;">122</td>
+          <td style="padding: 12px 16px; font-family: 'JetBrains Mono', monospace; font-size: 13px; text-align: right;">9</td>
+          <td style="padding: 12px 16px; font-family: 'JetBrains Mono', monospace; font-size: 13px; font-weight: 600; text-align: right; color: var(--red);">7.4%</td>
+        </tr>
+        <tr>
+          <td style="padding: 12px 16px; font-size: 14px;">200%+</td>
+          <td style="padding: 12px 16px; font-family: 'JetBrains Mono', monospace; font-size: 13px; text-align: right;">13</td>
+          <td style="padding: 12px 16px; font-family: 'JetBrains Mono', monospace; font-size: 13px; text-align: right;">1</td>
+          <td style="padding: 12px 16px; font-family: 'JetBrains Mono', monospace; font-size: 13px; font-weight: 600; text-align: right; color: var(--red);">7.7%</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="footer">
+    <span>EUREX FDAX Gap Closure Study · Intraday Fill Analysis</span>
+    <span>Source: DAX Futures (FDAX) · 3,325 Days (2012–2026) · Gap Size as % of ABR</span>
+  </div>
+
+</div>
+
+<script>
+Chart.register(ChartDataLabels);
+
+const sampleSizes = [693, 593, 530, 426, 313, 635, 122, 13];
+const closureRates = [93.2, 79.8, 67.0, 56.3, 44.4, 28.2, 7.4, 7.7];
+
+const gapData = {
+  labels: ['0-10%', '10-20%', '20-30%', '30-40%', '40-50%', '50-100%', '100-200%', '200%+'],
+  datasets: [
+    {
+      label: 'Gap Closure Probability',
+      data: closureRates,
+      backgroundColor: function(context) {
+        const value = context.parsed.y;
+        if (value >= 65) return '#16A34A';
+        if (value >= 40) return '#D97706';
+        return '#DC2626';
+      },
+      borderColor: '#1A1A18',
+      borderWidth: 1.5
+    },
+    {
+      label: 'Closure Rate Trend',
+      data: closureRates,
+      type: 'line',
+      borderColor: '#2563EB',
+      borderWidth: 3,
+      pointBackgroundColor: '#2563EB',
+      pointBorderColor: '#FFFFFF',
+      pointBorderWidth: 2,
+      pointRadius: 5,
+      pointHoverRadius: 7,
+      fill: false,
+      tension: 0.3
+    }
+  ]
+};
+
+new Chart(document.getElementById('gapChart'), {
+  type: 'bar',
+  data: gapData,
+  options: {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: {
+        display: true,
+        position: 'top',
+        align: 'end',
+        labels: {
+          font: {
+            family: 'DM Sans',
+            size: 11
+          },
+          color: '#6B6964',
+          usePointStyle: true,
+          pointStyle: 'circle',
+          filter: function(item) {
+            return item.text === 'Closure Rate Trend';
+          }
+        }
+      },
+      tooltip: {
+        enabled: false
+      },
+      datalabels: {
+        display: function(context) {
+          return context.datasetIndex === 0;
+        },
+        anchor: 'end',
+        align: 'top',
+        offset: 4,
+        formatter: function(value, context) {
+          const n = sampleSizes[context.dataIndex];
+          return value + '%\n(n=' + n + ')';
+        },
+        font: {
+          family: 'JetBrains Mono',
+          size: 11,
+          weight: 700
+        },
+        color: '#1A1A18',
+        textAlign: 'center'
+      }
+    },
+    scales: {
+      y: {
+        beginAtZero: true,
+        min: 0,
+        max: 110,
+        grid: {
+          color: '#E8E6E1',
+          drawBorder: false
+        },
+        ticks: {
+          color: '#6B6964',
+          font: {
+            family: 'DM Sans',
+            size: 11
+          },
+          callback: function(value) {
+            return value + '%';
+          }
+        }
+      },
+      x: {
+        grid: {
+          display: false
+        },
+        ticks: {
+          color: '#6B6964',
+          font: {
+            family: 'DM Sans',
+            size: 11,
+            weight: 500
+          }
+        }
+      }
+    },
+    animation: {
+      onComplete: function() {
+        const ctx = this.ctx;
+        const yScale = this.scales.y;
+        const y50 = yScale.getPixelForValue(50);
+        ctx.save();
+        ctx.font = '500 11px "DM Sans"';
+        ctx.fillStyle = '#9C9890';
+        ctx.textAlign = 'right';
+        ctx.fillText('50% (Coin Flip)', this.chartArea.right - 10, y50 - 8);
+        ctx.restore();
+      }
+    }
+  },
+  plugins: [{
+    id: 'fiftyPercentLine',
+    beforeDraw: function(chart) {
+      const ctx = chart.ctx;
+      const yScale = chart.scales.y;
+      const y50 = yScale.getPixelForValue(50);
+      
+      ctx.save();
+      ctx.strokeStyle = '#D4D1C9';
+      ctx.lineWidth = 1;
+      ctx.setLineDash([5, 5]);
+      ctx.beginPath();
+      ctx.moveTo(chart.chartArea.left, y50);
+      ctx.lineTo(chart.chartArea.right, y50);
+      ctx.stroke();
+      ctx.restore();
+    }
+  }]
+});
+</script>
+
+</body>
+</html>
