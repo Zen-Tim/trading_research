@@ -230,6 +230,92 @@ body {
   gap: 12px;
 }
 
+.section {
+  margin-bottom: 48px;
+}
+
+.section-title {
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  margin-bottom: 8px;
+}
+
+.section-desc {
+  font-size: 14px;
+  color: var(--text-secondary);
+  margin-bottom: 24px;
+}
+
+.table-wrap {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  overflow: hidden;
+  margin-bottom: 24px;
+}
+
+.table-header {
+  padding: 16px 20px;
+  background: var(--surface-alt);
+  border-bottom: 1px solid var(--border);
+  font-size: 14px;
+  font-weight: 600;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+thead th {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-muted);
+  text-align: left;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border);
+  background: var(--surface-alt);
+}
+
+thead th.right {
+  text-align: right;
+}
+
+thead th.center {
+  text-align: center;
+}
+
+tbody td {
+  font-size: 14px;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border);
+}
+
+tbody td.mono {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 13px;
+}
+
+tbody td.right {
+  text-align: right;
+}
+
+tbody td.center {
+  text-align: center;
+}
+
+tbody tr:last-child td {
+  border-bottom: none;
+}
+
+tbody tr:hover {
+  background: rgba(0, 0, 0, 0.015);
+}
+
 @media (max-width: 1024px) {
   .charts-grid {
     grid-template-columns: 1fr;
@@ -311,6 +397,63 @@ body {
       <div class="chart-wrapper">
         <canvas id="chart4"></canvas>
       </div>
+    </div>
+  </div>
+
+  <div class="section" style="margin-top: 64px;">
+    <div class="section-title">Globex Range Breakout Analysis</div>
+    <div class="section-desc">Probability of Breaking Globex High/Low During RTH Session [n = 1,361 Trading Days]</div>
+    
+    <div class="chart-container" style="max-width: 900px; margin: 0 auto 32px;">
+      <div class="chart-wrapper" style="height: 450px;">
+        <canvas id="breakoutChart"></canvas>
+      </div>
+    </div>
+
+    <div class="table-wrap">
+      <div class="table-header">Breakout Distribution</div>
+      <table>
+        <thead>
+          <tr>
+            <th>Outcome</th>
+            <th class="right">Days</th>
+            <th class="right">Probability</th>
+            <th>Trading Context</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr style="background: rgba(22, 163, 74, 0.08);">
+            <td><strong>Globex High Broken Only</strong></td>
+            <td class="mono right">541</td>
+            <td class="mono right">39.8%</td>
+            <td>RTH broke above GX high, stayed above GX low</td>
+          </tr>
+          <tr style="background: rgba(220, 38, 38, 0.08);">
+            <td><strong>Globex Low Broken Only</strong></td>
+            <td class="mono right">439</td>
+            <td class="mono right">32.3%</td>
+            <td>RTH broke below GX low, stayed below GX high</td>
+          </tr>
+          <tr style="background: rgba(217, 119, 6, 0.08);">
+            <td><strong>Both High & Low Broken</strong></td>
+            <td class="mono right">321</td>
+            <td class="mono right">23.6%</td>
+            <td>RTH broke both levels</td>
+          </tr>
+          <tr style="background: rgba(107, 105, 100, 0.08);">
+            <td><strong>Neither Broken (Range Day)</strong></td>
+            <td class="mono right">60</td>
+            <td class="mono right">4.4%</td>
+            <td>RTH stayed within Globex range</td>
+          </tr>
+          <tr style="border-top: 2px solid var(--border-strong);">
+            <td><strong>TOTAL</strong></td>
+            <td class="mono right"><strong>1,361</strong></td>
+            <td class="mono right"><strong>100.0%</strong></td>
+            <td></td>
+          </tr>
+        </tbody>
+      </table>
     </div>
   </div>
 
@@ -674,6 +817,155 @@ new Chart(document.getElementById('chart4'), {
         ...commonOptions.scales.y,
         min: -12,
         max: 85
+      }
+    }
+  }
+});
+
+// Breakout Chart - Simple bar chart for overall distribution
+const breakoutData = {
+  labels: [
+    'Globex High Only\n(High Broken)',
+    'Globex Low Only\n(Low Broken)',
+    'BOTH\n(Both Broken)',
+    'NEITHER\n(Range Day)'
+  ],
+  datasets: [
+    {
+      label: 'Probability',
+      data: [39.8, 32.3, 23.6, 4.4],
+      backgroundColor: ['#16A34A', '#DC2626', '#D97706', '#9C9890'],
+      borderColor: '#1A1A18',
+      borderWidth: 1.5
+    }
+  ]
+};
+
+new Chart(document.getElementById('breakoutChart'), {
+  type: 'bar',
+  data: breakoutData,
+  options: {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: {
+        display: false
+      },
+      tooltip: {
+        enabled: false
+      },
+      datalabels: {
+        anchor: function(context) {
+          // For the small bar, put label on top. For big bars, put it on top too
+          return 'end';
+        },
+        align: function(context) {
+          return 'top';
+        },
+        offset: 4,
+        formatter: function(value, context) {
+          const days = [541, 439, 321, 60];
+          const index = context.dataIndex;
+          if (index < 3) {
+            // For the first 3 bars, show both percentage and days
+            return value + '%';
+          } else {
+            // For the last bar (NEITHER), just show percentage
+            return value + '%';
+          }
+        },
+        font: {
+          family: 'JetBrains Mono',
+          size: 14,
+          weight: 700
+        },
+        color: '#1A1A18'
+      }
+    },
+    scales: {
+      y: {
+        beginAtZero: true,
+        max: 45,
+        grid: {
+          color: '#E8E6E1',
+          drawBorder: false
+        },
+        ticks: {
+          color: '#6B6964',
+          font: {
+            family: 'DM Sans',
+            size: 11
+          },
+          callback: function(value) {
+            return value + '%';
+          }
+        }
+      },
+      x: {
+        grid: {
+          display: false
+        },
+        ticks: {
+          color: '#6B6964',
+          font: {
+            family: 'DM Sans',
+            size: 12,
+            weight: 500
+          }
+        }
+      }
+    },
+    animation: {
+      onComplete: function() {
+        const ctx = this.ctx;
+        const chartArea = this.chartArea;
+        const meta = this.getDatasetMeta(0);
+        
+        // Manually draw the day labels in the center of the first 3 bars
+        const days = [541, 439, 321];
+        ctx.save();
+        ctx.font = '600 13px "JetBrains Mono"';
+        ctx.fillStyle = '#FFFFFF';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        
+        days.forEach((dayCount, i) => {
+          if (i < 3) {
+            const bar = meta.data[i];
+            const x = bar.x;
+            const y = bar.y + (chartArea.bottom - bar.y) / 2;
+            
+            // Draw background rounded rectangle
+            const text = dayCount + ' days';
+            const textWidth = ctx.measureText(text).width;
+            const padding = 12;
+            const rectWidth = textWidth + padding * 2;
+            const rectHeight = 26;
+            const radius = 6;
+            
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.6)';
+            ctx.beginPath();
+            const rx = x - rectWidth / 2;
+            const ry = y - rectHeight / 2;
+            ctx.moveTo(rx + radius, ry);
+            ctx.lineTo(rx + rectWidth - radius, ry);
+            ctx.quadraticCurveTo(rx + rectWidth, ry, rx + rectWidth, ry + radius);
+            ctx.lineTo(rx + rectWidth, ry + rectHeight - radius);
+            ctx.quadraticCurveTo(rx + rectWidth, ry + rectHeight, rx + rectWidth - radius, ry + rectHeight);
+            ctx.lineTo(rx + radius, ry + rectHeight);
+            ctx.quadraticCurveTo(rx, ry + rectHeight, rx, ry + rectHeight - radius);
+            ctx.lineTo(rx, ry + radius);
+            ctx.quadraticCurveTo(rx, ry, rx + radius, ry);
+            ctx.closePath();
+            ctx.fill();
+            
+            // Draw text
+            ctx.fillStyle = '#FFFFFF';
+            ctx.fillText(text, x, y);
+          }
+        });
+        
+        ctx.restore();
       }
     }
   }
