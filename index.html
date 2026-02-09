@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Zen Trading Tech | Research</title>
+<title>Zen Trading Tech | Research Hub</title>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
 <style>
   :root {
@@ -15,24 +15,36 @@
     --accent: #2563EB;
   }
   body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text-main); margin: 0; padding: 0; display: flex; justify-content: center; }
-  .wrapper { width: 100%; max-width: 800px; padding: 80px 32px; }
+  .wrapper { width: 100%; max-width: 1100px; padding: 60px 32px; }
   
-  /* Business Header */
-  .biz-header { margin-bottom: 64px; }
-  .biz-name { font-family: 'JetBrains Mono', monospace; font-size: 14px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.1em; color: var(--accent); margin-bottom: 8px; display: block; }
-  h1 { font-size: 36px; font-weight: 700; letter-spacing: -0.02em; margin: 0; }
-  
-  /* Report List */
-  .report-list { display: grid; gap: 20px; }
-  .report-card { 
-    background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 24px;
-    text-decoration: none; display: flex; align-items: center; justify-content: space-between;
-    transition: all 0.2s ease;
+  .biz-header { margin-bottom: 48px; text-align: center; }
+  .biz-name { font-family: 'JetBrains Mono', monospace; font-size: 14px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.15em; color: var(--accent); margin-bottom: 8px; display: block; }
+  h1 { font-size: 42px; font-weight: 700; letter-spacing: -0.02em; margin: 0; }
+
+  /* Grid Setup */
+  .hub-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; }
+  .column-header { 
+    font-family: 'JetBrains Mono', monospace; font-size: 12px; font-weight: 700; 
+    text-transform: uppercase; color: var(--text-sub); border-bottom: 2px solid var(--border);
+    padding-bottom: 12px; margin-bottom: 24px; letter-spacing: 0.1em;
   }
-  .report-card:hover { transform: translateY(-3px); box-shadow: 0 12px 24px rgba(0,0,0,0.04); border-color: var(--accent); }
-  .report-title { font-size: 18px; font-weight: 600; color: var(--text-main); }
-  .report-date { font-size: 13px; color: var(--text-sub); margin-top: 4px; display: block; }
-  .arrow { color: var(--accent); font-weight: 700; font-size: 20px; }
+
+  /* Report Cards */
+  .report-list { display: grid; gap: 16px; }
+  .report-card { 
+    background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 20px;
+    text-decoration: none; display: flex; align-items: center; justify-content: space-between;
+    transition: all 0.2s ease; height: 70px;
+  }
+  .report-card:hover { transform: translateY(-2px); box-shadow: 0 8px 16px rgba(0,0,0,0.04); border-color: var(--accent); }
+  .report-title { font-size: 15px; font-weight: 600; color: var(--text-main); }
+  .report-date { font-size: 11px; color: var(--text-sub); margin-top: 2px; display: block; }
+  .arrow { color: var(--accent); font-weight: 700; font-size: 18px; }
+
+  /* Empty State Spacer */
+  .spacer { height: 112px; border: 1px dashed var(--border); border-radius: 12px; opacity: 0.3; display: flex; align-items: center; justify-content: center; font-size: 12px; color: var(--text-sub); }
+
+  @media (max-width: 800px) { .hub-grid { grid-template-columns: 1fr; } }
 </style>
 </head>
 <body>
@@ -42,58 +54,50 @@
       <h1>Research Reports</h1>
     </div>
 
-    <div class="report-list">
-      <a href="./ES-Weekly-Gap-Analysis/" class="report-card">
-        <div>
-          <span class="report-title">ES RTH Weekly Gap Analysis</span>
-          <span class="report-date">Updated February 2026</span>
-        </div>
-        <div class="arrow">→</div>
-      </a>
+    <div class="hub-grid">
+      
+      <div class="report-list">
+        <div class="column-header">E-Mini S&P 500 (ES)</div>
+        
+        <a href="./ES-Weekly-Gap-Analysis/" class="report-card">
+          <div><span class="report-title">Weekly Gap Analysis</span><span class="report-date">Feb 2026</span></div>
+          <div class="arrow">→</div>
+        </a>
 
-      <a href="./FDAX-Weekly-Gap-Analysis/" class="report-card">
-        <div>
-          <span class="report-title">FDAX Weekly Gap Analysis</span>
-          <span class="report-date">Updated February 2026</span>
-        </div>
-        <div class="arrow">→</div>
-      </a>
+        <a href="./ES-HOD-LOD-Analysis/" class="report-card">
+          <div><span class="report-title">High/Low of Day Analysis</span><span class="report-date">Feb 2026</span></div>
+          <div class="arrow">→</div>
+        </a>
 
-      <a href="./FDAX-HOD-LOD-Analysis/" class="report-card">
-        <div>
-          <span class="report-title">FDAX High/Low of Day Analysis</span>
-          <span class="report-date">Updated February 2026</span>
-        </div>
-        <div class="arrow">→</div>
-      </a>
+        <a href="./ES-Pre-Market-Breakout/" class="report-card">
+          <div><span class="report-title">Pre-Market Range Breakout</span><span class="report-date">Feb 2026</span></div>
+          <div class="arrow">→</div>
+        </a>
 
-      <a href="./ES-HOD-LOD-Analysis/" class="report-card">
-        <div>
-          <span class="report-title">ES High/Low of Day Analysis</span>
-          <span class="report-date">Updated February 2026</span>
-        </div>
-        <div class="arrow">→</div>
-      </a>
-
-      <a href="./ES-Pre-Market-Breakout/" class="report-card">
-        <div>
-          <span class="report-title">ES Pre-Market Range Breakout Analysis</span>
-          <span class="report-date">Updated February 2026</span>
-        </div>
-        <div class="arrow">→</div>
-      </a>
-
-      <a href="./ES-Opening-Gap-Closure/" class="report-card">
-        <div>
-          <span class="report-title">ES Opening Gap Closure Analysis</span>
-          <span class="report-date">Updated February 2026</span>
-        </div>
-        <div class="arrow">→</div>
-      </a>
-
-      <div style="opacity: 0.4; padding: 24px; border: 1px dashed var(--border); border-radius: 12px;">
-        <span class="report-title" style="font-size: 14px;">Next Report Arriving Soon...</span>
+        <a href="./ES-Opening-Gap-Closure/" class="report-card">
+          <div><span class="report-title">Opening Gap Closure Analysis</span><span class="report-date">Feb 2026</span></div>
+          <div class="arrow">→</div>
+        </a>
       </div>
+
+      <div class="report-list">
+        <div class="column-header">FDAX (DAX)</div>
+
+        <a href="./FDAX-Weekly-Gap-Analysis/" class="report-card">
+          <div><span class="report-title">Weekly Gap Analysis</span><span class="report-date">Feb 2026</span></div>
+          <div class="arrow">→</div>
+        </a>
+
+        <a href="./FDAX-HOD-LOD-Analysis/" class="report-card">
+          <div><span class="report-title">High/Low of Day Analysis</span><span class="report-date">Feb 2026</span></div>
+          <div class="arrow">→</div>
+        </a>
+
+        <div class="spacer">FDAX Pre-Market Analysis Pending...</div>
+
+        <div class="spacer">FDAX Gap Closure Analysis Pending...</div>
+      </div>
+
     </div>
   </div>
 </body>
