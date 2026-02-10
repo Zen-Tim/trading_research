@@ -1,0 +1,669 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CME_MINI Daily Bar Analysis (2010-2026)</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #FAFAF8;
+            --surface: #FFFFFF;
+            --surface-alt: #F5F4F0;
+            --border: #E8E6E1;
+            --border-strong: #D4D1C9;
+            --text-primary: #1A1A18;
+            --text-secondary: #6B6964;
+            --text-muted: #9C9890;
+            --accent: #2563EB;
+            --accent-light: #EFF6FF;
+            --green: #16A34A;
+            --green-light: #F0FDF4;
+            --green-bg: #DCFCE7;
+            --red: #DC2626;
+            --red-light: #FEF2F2;
+            --red-bg: #FEE2E2;
+            --amber: #D97706;
+            --amber-light: #FFFBEB;
+            --amber-bg: #FEF3C7;
+            --purple: #7C3AED;
+            --purple-light: #F5F3FF;
+            --purple-bg: #EDE9FE;
+            --slate: #64748B;
+            --slate-bg: #F1F5F9;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'DM Sans', -apple-system, sans-serif;
+            background: var(--bg);
+            color: var(--text-primary);
+            line-height: 1.6;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        .mono {
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 48px 32px;
+        }
+
+        .header-tag {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: var(--accent);
+            background: var(--accent-light);
+            padding: 6px 12px;
+            border-radius: 4px;
+            display: inline-block;
+            margin-bottom: 16px;
+        }
+
+        h1 {
+            font-size: 32px;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+            margin-bottom: 8px;
+        }
+
+        .subtitle {
+            font-size: 16px;
+            color: var(--text-secondary);
+            margin-bottom: 16px;
+        }
+
+        .meta-row {
+            display: flex;
+            gap: 16px;
+            flex-wrap: wrap;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-bottom: 48px;
+        }
+
+        .meta-item:not(:last-child)::after {
+            content: '•';
+            margin-left: 16px;
+            opacity: 0.5;
+        }
+
+        .section {
+            margin-bottom: 48px;
+        }
+
+        .section-title {
+            font-size: 20px;
+            font-weight: 700;
+            letter-spacing: -0.01em;
+            margin-bottom: 8px;
+        }
+
+        .section-description {
+            font-size: 14px;
+            color: var(--text-secondary);
+            margin-bottom: 24px;
+        }
+
+        .kpi-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .kpi-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 20px;
+            border-left: 3px solid var(--accent);
+            transition: box-shadow 0.2s;
+        }
+
+        .kpi-card:hover {
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        }
+
+        .kpi-card.green { border-left-color: var(--green); }
+        .kpi-card.red { border-left-color: var(--red); }
+        .kpi-card.amber { border-left-color: var(--amber); }
+        .kpi-card.purple { border-left-color: var(--purple); }
+        .kpi-card.slate { border-left-color: var(--slate); }
+
+        .kpi-label {
+            font-family: 'DM Sans', sans-serif;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            color: var(--text-muted);
+            margin-bottom: 8px;
+        }
+
+        .kpi-value {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 28px;
+            font-weight: 700;
+            line-height: 1.1;
+            margin-bottom: 4px;
+        }
+
+        .kpi-subdetail {
+            font-size: 13px;
+            color: var(--text-secondary);
+        }
+
+        .gradient-bar {
+            display: flex;
+            height: 48px;
+            border-radius: 8px;
+            overflow: hidden;
+            margin-bottom: 16px;
+        }
+
+        .gradient-segment {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 13px;
+            font-weight: 600;
+            color: white;
+            transition: opacity 0.2s;
+        }
+
+        .gradient-segment:hover {
+            opacity: 0.9;
+        }
+
+        .gradient-legend {
+            display: flex;
+            gap: 24px;
+            flex-wrap: wrap;
+            font-size: 13px;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .legend-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+        }
+
+        .table-wrap {
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            overflow: hidden;
+            margin-bottom: 24px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th {
+            background: var(--surface-alt);
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            color: var(--text-muted);
+            padding: 12px 20px;
+            text-align: left;
+        }
+
+        th.right, td.right {
+            text-align: right;
+        }
+
+        td {
+            padding: 14px 20px;
+            border-bottom: 1px solid var(--border);
+            font-size: 14px;
+        }
+
+        td.mono {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 13px;
+        }
+
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        tr:hover {
+            background: rgba(0, 0, 0, 0.015);
+        }
+
+        .pill {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 12px;
+            font-weight: 600;
+            padding: 4px 10px;
+            border-radius: 4px;
+            display: inline-block;
+        }
+
+        .pill.green {
+            background: var(--green-bg);
+            color: var(--green);
+        }
+
+        .pill.red {
+            background: var(--red-bg);
+            color: var(--red);
+        }
+
+        .pill.amber {
+            background: var(--amber-bg);
+            color: var(--amber);
+        }
+
+        .pill.blue {
+            background: var(--accent-light);
+            color: var(--accent);
+        }
+
+        .pill.purple {
+            background: var(--purple-bg);
+            color: var(--purple);
+        }
+
+        .pill.slate {
+            background: var(--slate-bg);
+            color: var(--slate);
+        }
+
+        .note-box {
+            background: var(--amber-light);
+            border: 1px solid var(--amber);
+            border-radius: 8px;
+            padding: 16px 20px;
+            margin-bottom: 24px;
+            font-size: 14px;
+        }
+
+        .note-box.blue {
+            background: var(--accent-light);
+            border-color: var(--accent);
+        }
+
+        footer {
+            border-top: 1px solid var(--border);
+            padding-top: 24px;
+            margin-top: 48px;
+            display: flex;
+            justify-content: space-between;
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 32px 20px;
+            }
+            
+            .kpi-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .meta-row {
+                flex-direction: column;
+                gap: 8px;
+            }
+            
+            .meta-item:not(:last-child)::after {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header-tag">◆ Price Action Distribution Study</div>
+        <h1>CME_MINI Daily Bar Analysis (2010-2026)</h1>
+        <p class="subtitle">Statistical breakdown of bar patterns, gap behavior, and range relationships</p>
+        <div class="meta-row">
+            <span class="meta-item">CME_MINI</span>
+            <span class="meta-item">2010-03-26 → 2026-02-09</span>
+            <span class="meta-item mono">N = 3,994 days</span>
+            <span class="meta-item">Daily Timeframe</span>
+        </div>
+
+        <div class="section">
+            <h2 class="section-title">Data Universe</h2>
+            <p class="section-description">Complete dataset covering 16+ years of daily futures trading.</p>
+            
+            <div class="kpi-grid">
+                <div class="kpi-card accent">
+                    <div class="kpi-label">Total Trading Days</div>
+                    <div class="kpi-value mono">3,994</div>
+                    <div class="kpi-subdetail">Mar 2010 - Feb 2026</div>
+                </div>
+                <div class="kpi-card green">
+                    <div class="kpi-label">Gap Up Days</div>
+                    <div class="kpi-value mono">2,177</div>
+                    <div class="kpi-subdetail">54.5% of all days</div>
+                </div>
+                <div class="kpi-card red">
+                    <div class="kpi-label">Gap Down Days</div>
+                    <div class="kpi-value mono">1,776</div>
+                    <div class="kpi-subdetail">44.5% of all days</div>
+                </div>
+                <div class="kpi-card slate">
+                    <div class="kpi-label">No Gap Days</div>
+                    <div class="kpi-value mono">41</div>
+                    <div class="kpi-subdetail">1.0% of all days</div>
+                </div>
+            </div>
+
+            <div class="note-box">
+                <strong>Methodology:</strong> Bar classifications based on prior bar relationships. Gap Open: open vs prior close. Open Type: open vs prior H/L range. Close Type: close vs prior H/L range. Bar Type: categorical patterns (NOL, Outside, Inside, Breakout).
+            </div>
+        </div>
+
+        <div class="section">
+            <h2 class="section-title">Gap Open Distribution</h2>
+            <p class="section-description">How the market opens relative to the previous day's close.</p>
+            
+            <div class="gradient-bar">
+                <div class="gradient-segment" style="width: 44.5%; background: var(--red);">Gap Down 44.5%</div>
+                <div class="gradient-segment" style="width: 1.0%; background: var(--slate); min-width: 24px;">1.0%</div>
+                <div class="gradient-segment" style="width: 54.5%; background: var(--green);">Gap Up 54.5%</div>
+            </div>
+            <div class="gradient-legend">
+                <div class="legend-item">
+                    <div class="legend-dot" style="background: var(--red);"></div>
+                    <span>Gap Down (-1)</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-dot" style="background: var(--slate);"></div>
+                    <span>No Gap (0)</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-dot" style="background: var(--green);"></div>
+                    <span>Gap Up (+1)</span>
+                </div>
+            </div>
+
+            <div class="table-wrap" style="margin-top: 24px;">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Type</th>
+                            <th>Description</th>
+                            <th class="right">Count</th>
+                            <th class="right">Percentage</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td class="mono">-1</td>
+                            <td>Gap Down (Open < Close[1])</td>
+                            <td class="mono right">1,776</td>
+                            <td class="right"><span class="pill red">44.5%</span></td>
+                        </tr>
+                        <tr>
+                            <td class="mono">0</td>
+                            <td>No Gap (Open = Close[1])</td>
+                            <td class="mono right">41</td>
+                            <td class="right"><span class="pill slate">1.0%</span></td>
+                        </tr>
+                        <tr>
+                            <td class="mono">+1</td>
+                            <td>Gap Up (Open > Close[1])</td>
+                            <td class="mono right">2,177</td>
+                            <td class="right"><span class="pill green">54.5%</span></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2 class="section-title">Open Location</h2>
+            <p class="section-description">Where the open occurs relative to the prior bar's high-low range.</p>
+            
+            <div class="gradient-bar">
+                <div class="gradient-segment" style="width: 14.9%; background: var(--red);">Below 14.9%</div>
+                <div class="gradient-segment" style="width: 60.1%; background: var(--accent);">Inside 60.1%</div>
+                <div class="gradient-segment" style="width: 25.0%; background: var(--green);">Above 25.0%</div>
+            </div>
+            <div class="gradient-legend">
+                <div class="legend-item">
+                    <div class="legend-dot" style="background: var(--red);"></div>
+                    <span>Below Low[1] (-1)</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-dot" style="background: var(--accent);"></div>
+                    <span>Inside Range (0)</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-dot" style="background: var(--green);"></div>
+                    <span>Above High[1] (+1)</span>
+                </div>
+            </div>
+
+            <div class="table-wrap" style="margin-top: 24px;">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Type</th>
+                            <th>Description</th>
+                            <th class="right">Count</th>
+                            <th class="right">Percentage</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td class="mono">-1</td>
+                            <td>Open Below Low[1]</td>
+                            <td class="mono right">597</td>
+                            <td class="right"><span class="pill red">14.9%</span></td>
+                        </tr>
+                        <tr>
+                            <td class="mono">0</td>
+                            <td>Open Inside Range</td>
+                            <td class="mono right">2,399</td>
+                            <td class="right"><span class="pill blue">60.1%</span></td>
+                        </tr>
+                        <tr>
+                            <td class="mono">+1</td>
+                            <td>Open Above High[1]</td>
+                            <td class="mono right">998</td>
+                            <td class="right"><span class="pill green">25.0%</span></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2 class="section-title">Close Location</h2>
+            <p class="section-description">Where the close occurs relative to the prior bar's high-low range.</p>
+            
+            <div class="gradient-bar">
+                <div class="gradient-segment" style="width: 22.3%; background: var(--red);">Below 22.3%</div>
+                <div class="gradient-segment" style="width: 43.7%; background: var(--accent);">Inside 43.7%</div>
+                <div class="gradient-segment" style="width: 34.1%; background: var(--green);">Above 34.1%</div>
+            </div>
+            <div class="gradient-legend">
+                <div class="legend-item">
+                    <div class="legend-dot" style="background: var(--red);"></div>
+                    <span>Below Range (-1)</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-dot" style="background: var(--accent);"></div>
+                    <span>Inside Range (0)</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-dot" style="background: var(--green);"></div>
+                    <span>Above Range (+1)</span>
+                </div>
+            </div>
+
+            <div class="table-wrap" style="margin-top: 24px;">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Type</th>
+                            <th>Description</th>
+                            <th class="right">Count</th>
+                            <th class="right">Percentage</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td class="mono">-1</td>
+                            <td>Close Below Range</td>
+                            <td class="mono right">890</td>
+                            <td class="right"><span class="pill red">22.3%</span></td>
+                        </tr>
+                        <tr>
+                            <td class="mono">0</td>
+                            <td>Close Inside Range</td>
+                            <td class="mono right">1,744</td>
+                            <td class="right"><span class="pill blue">43.7%</span></td>
+                        </tr>
+                        <tr>
+                            <td class="mono">+1</td>
+                            <td>Close Above Range</td>
+                            <td class="mono right">1,360</td>
+                            <td class="right"><span class="pill green">34.1%</span></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2 class="section-title">Bar Type Distribution</h2>
+            <p class="section-description">Categorical classification of daily bar patterns based on range relationships.</p>
+            
+            <div class="gradient-bar">
+                <div class="gradient-segment" style="width: 8.8%; background: var(--green);">8.8%</div>
+                <div class="gradient-segment" style="width: 4.9%; background: var(--red);">4.9%</div>
+                <div class="gradient-segment" style="width: 10.1%; background: var(--purple);">10.1%</div>
+                <div class="gradient-segment" style="width: 10.5%; background: #EAB308;">10.5%</div>
+                <div class="gradient-segment" style="width: 36.9%; background: #1abc9c;">36.9%</div>
+                <div class="gradient-segment" style="width: 28.7%; background: #e67e22;">28.7%</div>
+            </div>
+            <div class="gradient-legend">
+                <div class="legend-item">
+                    <div class="legend-dot" style="background: var(--green);"></div>
+                    <span>BL NOL</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-dot" style="background: var(--red);"></div>
+                    <span>BR NOL</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-dot" style="background: var(--purple);"></div>
+                    <span>Outside</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-dot" style="background: #EAB308;"></div>
+                    <span>Inside</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-dot" style="background: #1abc9c;"></div>
+                    <span>BLBO</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-dot" style="background: #e67e22;"></div>
+                    <span>BRBO</span>
+                </div>
+            </div>
+
+            <div class="table-wrap" style="margin-top: 24px;">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Type</th>
+                            <th>Pattern Name</th>
+                            <th>Definition</th>
+                            <th class="right">Count</th>
+                            <th class="right">Percentage</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td class="mono">1</td>
+                            <td>BL NOL</td>
+                            <td>Bull No Overlap (Low > High[1])</td>
+                            <td class="mono right">352</td>
+                            <td class="right"><span class="pill green">8.8%</span></td>
+                        </tr>
+                        <tr>
+                            <td class="mono">2</td>
+                            <td>BR NOL</td>
+                            <td>Bear No Overlap (High < Low[1])</td>
+                            <td class="mono right">197</td>
+                            <td class="right"><span class="pill red">4.9%</span></td>
+                        </tr>
+                        <tr>
+                            <td class="mono">3</td>
+                            <td>Outside</td>
+                            <td>High > High[1] AND Low < Low[1]</td>
+                            <td class="mono right">404</td>
+                            <td class="right"><span class="pill purple">10.1%</span></td>
+                        </tr>
+                        <tr>
+                            <td class="mono">4</td>
+                            <td>Inside</td>
+                            <td>High < High[1] AND Low > Low[1]</td>
+                            <td class="mono right">419</td>
+                            <td class="right"><span class="pill amber">10.5%</span></td>
+                        </tr>
+                        <tr>
+                            <td class="mono">5</td>
+                            <td>BLBO</td>
+                            <td>Bull Breakout (High > High[1])</td>
+                            <td class="mono right">1,474</td>
+                            <td class="right"><span class="pill" style="background: #d1fae5; color: #1abc9c;">36.9%</span></td>
+                        </tr>
+                        <tr>
+                            <td class="mono">6</td>
+                            <td>BRBO</td>
+                            <td>Bear Breakout (Low < Low[1])</td>
+                            <td class="mono right">1,148</td>
+                            <td class="right"><span class="pill" style="background: #fed7aa; color: #e67e22;">28.7%</span></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="note-box blue">
+                <strong>Key Finding:</strong> Breakout patterns (BLBO + BRBO) dominate at 65.6% of all days, suggesting the instrument frequently extends beyond prior day ranges. Pure no-overlap patterns (BL NOL + BR NOL) are relatively rare at 13.7%.
+            </div>
+        </div>
+
+        <footer>
+            <div>CME_MINI Daily Bar Pattern Analysis • Statistical Distribution Study</div>
+            <div>Source: Historical OHLC Data</div>
+        </footer>
+    </div>
+</body>
+</html>
