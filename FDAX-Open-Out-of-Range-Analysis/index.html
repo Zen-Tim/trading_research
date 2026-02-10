@@ -1,0 +1,583 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DAX Daily — Out-of-Range Opens: Bar Type Analysis</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+:root {
+  --bg: #FAFAF8; --surface: #FFFFFF; --surface-alt: #F5F4F0;
+  --border: #E8E6E1; --border-strong: #D4D1C9;
+  --text-primary: #1A1A18; --text-secondary: #6B6964; --text-muted: #9C9890;
+  --accent: #2563EB; --accent-light: #EFF6FF;
+  --green: #16A34A; --green-bg: #DCFCE7;
+  --red: #DC2626; --red-bg: #FEE2E2;
+  --amber: #D97706; --amber-light: #FFFBEB; --amber-bg: #FEF3C7;
+  --purple: #7C3AED; --purple-light: #F5F3FF; --purple-bg: #EDE9FE;
+  --teal: #0D9488; --teal-bg: #CCFBF1;
+  --orange: #EA580C; --orange-bg: #FFEDD5;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body { font-family:'DM Sans',-apple-system,sans-serif; background:var(--bg); color:var(--text-primary); line-height:1.6; -webkit-font-smoothing:antialiased; }
+.report { max-width:1200px; margin:0 auto; padding:48px 32px; }
+.header { margin-bottom:48px; padding-bottom:32px; border-bottom:2px solid var(--border); }
+.header-tag { display:inline-flex; align-items:center; gap:6px; font-family:'JetBrains Mono',monospace; font-size:11px; font-weight:600; letter-spacing:0.08em; text-transform:uppercase; color:var(--accent); background:var(--accent-light); padding:4px 12px; border-radius:4px; margin-bottom:16px; }
+.header h1 { font-size:32px; font-weight:700; letter-spacing:-0.02em; margin-bottom:8px; }
+.header .subtitle { font-size:16px; color:var(--text-secondary); }
+.header .meta { display:flex; gap:24px; margin-top:16px; font-family:'JetBrains Mono',monospace; font-size:12px; color:var(--text-muted); flex-wrap:wrap; }
+.meta-dot { width:5px; height:5px; border-radius:50%; background:var(--text-muted); opacity:0.5; align-self:center; }
+.section { margin-bottom:48px; }
+.section-title { font-size:20px; font-weight:700; letter-spacing:-0.01em; margin-bottom:8px; }
+.section-desc { font-size:14px; color:var(--text-secondary); margin-bottom:24px; line-height:1.6; }
+.kpi-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:16px; margin-bottom:32px; }
+.kpi-card { background:var(--surface); border:1px solid var(--border); border-radius:10px; padding:20px; transition:box-shadow 0.2s; }
+.kpi-card:hover { box-shadow:0 2px 12px rgba(0,0,0,0.06); }
+.kpi-label { font-size:12px; font-weight:600; text-transform:uppercase; letter-spacing:0.06em; color:var(--text-muted); margin-bottom:8px; }
+.kpi-value { font-family:'JetBrains Mono',monospace; font-size:28px; font-weight:700; line-height:1.1; }
+.kpi-sub { font-size:13px; color:var(--text-secondary); margin-top:4px; }
+.kpi-card.accent { border-left:3px solid var(--accent); }
+.kpi-card.green { border-left:3px solid var(--green); }
+.kpi-card.red { border-left:3px solid var(--red); }
+.kpi-card.amber { border-left:3px solid var(--amber); }
+.kpi-card.purple { border-left:3px solid var(--purple); }
+.kpi-card.teal { border-left:3px solid var(--teal); }
+.kpi-card.orange { border-left:3px solid var(--orange); }
+.table-wrap { background:var(--surface); border:1px solid var(--border); border-radius:10px; overflow:hidden; margin-bottom:24px; }
+.table-header { padding:16px 20px; background:var(--surface-alt); border-bottom:1px solid var(--border); font-size:14px; font-weight:600; }
+table { width:100%; border-collapse:collapse; }
+thead th { font-family:'JetBrains Mono',monospace; font-size:11px; font-weight:600; text-transform:uppercase; letter-spacing:0.06em; color:var(--text-muted); text-align:left; padding:12px 16px; border-bottom:1px solid var(--border); background:var(--surface-alt); }
+thead th.right { text-align:right; }
+thead th.center { text-align:center; }
+tbody td { font-size:14px; padding:12px 16px; border-bottom:1px solid var(--border); }
+tbody td.mono { font-family:'JetBrains Mono',monospace; font-size:13px; }
+tbody td.right { text-align:right; }
+tbody td.center { text-align:center; }
+tbody tr:last-child td { border-bottom:none; }
+tbody tr:hover { background:rgba(0,0,0,0.015); }
+.pill { display:inline-flex; align-items:center; padding:2px 8px; border-radius:4px; font-family:'JetBrains Mono',monospace; font-size:12px; font-weight:600; }
+.pill.green { background:var(--green-bg); color:var(--green); }
+.pill.red { background:var(--red-bg); color:var(--red); }
+.pill.amber { background:var(--amber-bg); color:var(--amber); }
+.pill.purple { background:var(--purple-bg); color:var(--purple); }
+.pill.teal { background:var(--teal-bg); color:var(--teal); }
+.pill.orange { background:var(--orange-bg); color:var(--orange); }
+.gradient-bar { display:flex; height:48px; border-radius:8px; overflow:hidden; margin-bottom:12px; }
+.gradient-segment { display:flex; align-items:center; justify-content:center; font-family:'JetBrains Mono',monospace; font-size:11px; font-weight:600; color:white; }
+.gradient-legend { display:flex; flex-wrap:wrap; gap:16px; font-size:13px; color:var(--text-secondary); }
+.legend-item { display:flex; align-items:center; gap:6px; }
+.legend-dot { width:10px; height:10px; border-radius:3px; }
+.note-box { background:var(--amber-light); border:1px solid #FDE68A; border-radius:8px; padding:16px 20px; font-size:13px; color:#92400E; line-height:1.6; margin-top:16px; }
+.note-box strong { font-weight:700; }
+.note-box.blue { background:var(--accent-light); border-color:#93C5FD; color:#1E40AF; }
+.chart-container { background:var(--surface); border:1px solid var(--border); border-radius:10px; padding:32px; margin-bottom:32px; }
+.chart-title { font-size:16px; font-weight:700; text-align:center; margin-bottom:6px; }
+.chart-subtitle { font-size:13px; color:var(--text-secondary); text-align:center; margin-bottom:24px; }
+.chart-wrapper { position:relative; height:400px; }
+.footer { margin-top:48px; padding-top:24px; border-top:1px solid var(--border); font-size:12px; color:var(--text-muted); display:flex; justify-content:space-between; flex-wrap:wrap; gap:12px; }
+@media (max-width:768px) {
+  .report { padding:24px 16px; }
+  .kpi-grid { grid-template-columns:1fr 1fr; }
+  .kpi-value { font-size:22px; }
+}
+</style>
+</head>
+<body>
+<div class="report">
+
+  <div class="header">
+    <div class="header-tag">◆ Quantitative Research</div>
+    <h1>DAX Daily — Out-of-Range Opens: Bar Type Analysis</h1>
+    <div class="subtitle">How bar patterns evolve as gap size increases — the compositional shift from touch to no-touch</div>
+    <div class="meta">
+      <span>EUREX FDAX Futures</span>
+      <div class="meta-dot"></div>
+      <span>2007-11-29 — 2026-02-09</span>
+      <div class="meta-dot"></div>
+      <span>1689 OOR Opens</span>
+      <div class="meta-dot"></div>
+      <span>Daily Timeframe</span>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Step 1: Bar Type Distribution — All Out-of-Range Opens</div>
+    <div class="section-desc">When price opens outside yesterday's range (above high or below low), what bar patterns emerge? We begin with the universe of all 1689 out-of-range opens.</div>
+    
+    <div class="kpi-grid">
+      <div class="kpi-card accent">
+        <div class="kpi-label">Total OOR Opens</div>
+        <div class="kpi-value">1689</div>
+        <div class="kpi-sub">36.6% of all trading days</div>
+      </div>
+      <div class="kpi-card green">
+        <div class="kpi-label">Opens Above High</div>
+        <div class="kpi-value">997</div>
+        <div class="kpi-sub">59.0% of OOR opens</div>
+      </div>
+      <div class="kpi-card red">
+        <div class="kpi-label">Opens Below Low</div>
+        <div class="kpi-value">692</div>
+        <div class="kpi-sub">41.0% of OOR opens</div>
+      </div>
+    </div>
+
+    <div style="background:var(--surface); border:1px solid var(--border); border-radius:10px; padding:24px; margin-bottom:24px;">
+      <div style="font-size:14px; font-weight:600; margin-bottom:16px;">Bar Type Taxonomy</div>
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px 32px; font-size:13px; line-height:1.8;">
+        <div><span class="pill green" style="margin-right:6px;">1</span> <strong>Bull No Overlap</strong> — Gap open (low > high[1])</div>
+        <div><span class="pill amber" style="margin-right:6px;">4</span> <strong>Inside Bar</strong> — Impossible when OOR</div>
+        <div><span class="pill red" style="margin-right:6px;">2</span> <strong>Bear No Overlap</strong> — Gap open (high < low[1])</div>
+        <div><span class="pill teal" style="margin-right:6px;">5</span> <strong>Bull Breakout</strong> — Gap closed (touched H[1])</div>
+        <div><span class="pill purple" style="margin-right:6px;">3</strong> <strong>Outside Bar</strong> — Engulfs prior bar</div>
+        <div><span class="pill orange" style="margin-right:6px;">6</span> <strong>Bear Breakout</strong> — Gap closed (touched L[1])</div>
+      </div>
+    </div>
+
+    <div class="gradient-bar">
+      <div class="gradient-segment" style="flex:19.7;background:#16A34A;">Bull No Overlap: 19.7%</div>
+      <div class="gradient-segment" style="flex:15.1;background:#DC2626;">Bear No Overlap: 15.1%</div>
+      <div class="gradient-segment" style="flex:10.3;background:#7C3AED;">Outside: 10.3%</div>
+      <div class="gradient-segment" style="flex:32.8;background:#2563EB;">Bull Breakout: 32.8%</div>
+      <div class="gradient-segment" style="flex:22.1;background:#EA580C;">Bear Breakout: 22.1%</div>
+    </div>
+    <div class="gradient-legend">
+      <div class="legend-item"><div class="legend-dot" style="background:#16A34A;"></div>Bull No Overlap — Gap Open (333)</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#DC2626;"></div>Bear No Overlap — Gap Open (255)</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#7C3AED;"></div>Outside Bar (174)</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#2563EB;"></div>Bull Breakout — Gap Closed (554)</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#EA580C;"></div>Bear Breakout — Gap Closed (373)</div>
+    </div>
+
+    <div class="kpi-grid" style="grid-template-columns:1fr 1fr; margin-top:32px;">
+      <div class="kpi-card red">
+        <div class="kpi-label">Gap Stayed Open</div>
+        <div class="kpi-value">34.8%</div>
+        <div class="kpi-sub">Bull/Bear No Overlap: Pure gaps (588)</div>
+      </div>
+      <div class="kpi-card green">
+        <div class="kpi-label">Gap Closed</div>
+        <div class="kpi-value">65.2%</div>
+        <div class="kpi-sub">Breakouts + Outside: Overlap (1101)</div>
+      </div>
+    </div>
+
+    <div class="note-box blue">
+      <strong>First Observation:</strong> When DAX opens outside yesterday's range, about 2/3 of the time the gap closes during the session (price touches back to the prior bar's range). However, 1/3 of OOR opens maintain complete separation — the gap stays open all day.
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Step 2: Directional Split — Above High vs. Below Low</div>
+    <div class="section-desc">Bar Type patterns differ by gap direction. Opens above the high have limited bar type options (Types 1, 3, 5), while opens below the low have Types 2, 3, 6.</div>
+    
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:24px; margin-bottom:24px;">
+      <div class="table-wrap">
+        <div class="table-header">Opens ABOVE High (+1) — n=997</div>
+        <table>
+          <thead>
+            <tr>
+              <th>Bar Pattern</th>
+              <th>Description</th>
+              <th class="right">Count</th>
+              <th class="right">%</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Bull No Overlap</strong></td>
+              <td>Gap Open</td>
+              <td class="mono right">333</td>
+              <td class="right"><span class="pill green">33.4%</span></td>
+            </tr>
+            <tr>
+              <td><strong>Outside Bar</strong></td>
+              <td>Engulfs prior bar</td>
+              <td class="mono right">5</td>
+              <td class="right"><span class="pill purple">11.0%</span></td>
+            </tr>
+            <tr>
+              <td><strong>Bull Breakout</strong></td>
+              <td>Gap Closed</td>
+              <td class="mono right">554</td>
+              <td class="right"><span class="pill" style="background:#DBEAFE;color:#2563EB;">55.6%</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="table-wrap">
+        <div class="table-header">Opens BELOW Low (-1) — n=692</div>
+        <table>
+          <thead>
+            <tr>
+              <th>Bar Pattern</th>
+              <th>Description</th>
+              <th class="right">Count</th>
+              <th class="right">%</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Bear No Overlap</strong></td>
+              <td>Gap Open</td>
+              <td class="mono right">255</td>
+              <td class="right"><span class="pill red">36.8%</span></td>
+            </tr>
+            <tr>
+              <td><strong>Outside Bar</strong></td>
+              <td>Engulfs prior bar</td>
+              <td class="mono right">64</td>
+              <td class="right"><span class="pill purple">9.2%</span></td>
+            </tr>
+            <tr>
+              <td><strong>Bear Breakout</strong></td>
+              <td>Gap Closed</td>
+              <td class="mono right">373</td>
+              <td class="right"><span class="pill orange">53.9%</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="kpi-grid">
+      <div class="kpi-card green">
+        <div class="kpi-label">Above High: Gap Closed Rate</div>
+        <div class="kpi-value">66.6%</div>
+        <div class="kpi-sub">Bull Breakout + Outside (664)</div>
+      </div>
+      <div class="kpi-card red">
+        <div class="kpi-label">Below Low: Gap Closed Rate</div>
+        <div class="kpi-value">63.2%</div>
+        <div class="kpi-sub">Bear Breakout + Outside (437)</div>
+      </div>
+    </div>
+
+    <div class="note-box blue">
+      <strong>Directional Symmetry:</strong> Both directions show similar overall gap closure rates (~63-67%), with opens above high slightly more likely to close the gap. The dominant pattern in both cases is the breakout bar, where price extends beyond one extreme while touching the other.
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Step 3: The Critical Insight — Bar Type Mix by Gap Size</div>
+    <div class="section-desc">This is where the story becomes clear: as gap size increases, the composition of bar types shifts dramatically. Small gaps close almost always; large gaps rarely close.</div>
+    
+    <div class="chart-container">
+      <div class="chart-title">Opens ABOVE High: Bar Type Composition by Gap Size</div>
+      <div class="chart-subtitle">Stacked percentage showing the compositional shift from gap closed to gap open</div>
+      <div class="chart-wrapper">
+        <canvas id="aboveChart"></canvas>
+      </div>
+    </div>
+
+    <div class="chart-container">
+      <div class="chart-title">Opens BELOW Low: Bar Type Composition by Gap Size</div>
+      <div class="chart-subtitle">Same pattern: larger gaps → higher proportion of gap open bars</div>
+      <div class="chart-wrapper">
+        <canvas id="belowChart"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Detailed Breakdown — Opens Above High</div>
+    <div class="section-desc">Bar Type frequencies and percentages for each gap size bucket when opening above yesterday's high.</div>
+    
+    <div class="table-wrap">
+      <div class="table-header">Bar Type Mix by Gap Size — Opens Above High</div>
+      <table>
+        <thead>
+          <tr>
+            <th>Gap Size</th>
+            <th class="right">n</th>
+            <th class="right">Bull No Overlap<br><span style="font-weight:400;text-transform:none;">Gap Open</span></th>
+            <th class="right">Outside<br><span style="font-weight:400;text-transform:none;">Bar</span></th>
+            <th class="right">Bull Breakout<br><span style="font-weight:400;text-transform:none;">Gap Closed</span></th>
+            <th class="center">Dominant</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="mono">< 10%</td>
+            <td class="mono right">254</td>
+            <td class="mono right">18 (7.1%)</td>
+            <td class="mono right">43 (16.9%)</td>
+            <td class="mono right">193 (76.0%)</td>
+            <td class="center"><span class="pill pill" style="background:#DBEAFE;color:#2563EB;">Bull Breakout</span></td>
+          </tr>
+          <tr>
+            <td class="mono">10-25%</td>
+            <td class="mono right">320</td>
+            <td class="mono right">68 (21.2%)</td>
+            <td class="mono right">40 (12.5%)</td>
+            <td class="mono right">212 (66.2%)</td>
+            <td class="center"><span class="pill pill" style="background:#DBEAFE;color:#2563EB;">Bull Breakout</span></td>
+          </tr>
+          <tr>
+            <td class="mono">25-50%</td>
+            <td class="mono right">269</td>
+            <td class="mono right">122 (45.4%)</td>
+            <td class="mono right">19 (7.1%)</td>
+            <td class="mono right">128 (47.6%)</td>
+            <td class="center"><span class="pill pill" style="background:#DBEAFE;color:#2563EB;">Bull Breakout</span></td>
+          </tr>
+          <tr>
+            <td class="mono">50-75%</td>
+            <td class="mono right">104</td>
+            <td class="mono right">81 (77.9%)</td>
+            <td class="mono right">6 (5.8%)</td>
+            <td class="mono right">17 (16.3%)</td>
+            <td class="center"><span class="pill green">Bull No Overlap</span></td>
+          </tr>
+          <tr>
+            <td class="mono">75-100%</td>
+            <td class="mono right">28</td>
+            <td class="mono right">22 (78.6%)</td>
+            <td class="mono right">2 (7.1%)</td>
+            <td class="mono right">4 (14.3%)</td>
+            <td class="center"><span class="pill green">Bull No Overlap</span></td>
+          </tr>
+          <tr>
+            <td class="mono">> 100%</td>
+            <td class="mono right">22</td>
+            <td class="mono right">22 (100.0%)</td>
+            <td class="mono right">0 (0.0%)</td>
+            <td class="mono right">0 (0.0%)</td>
+            <td class="center"><span class="pill green">Bull No Overlap</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Detailed Breakdown — Opens Below Low</div>
+    <div class="section-desc">Bar Type frequencies and percentages for each gap size bucket when opening below yesterday's low.</div>
+    
+    <div class="table-wrap">
+      <div class="table-header">Bar Type Mix by Gap Size — Opens Below Low</div>
+      <table>
+        <thead>
+          <tr>
+            <th>Gap Size</th>
+            <th class="right">n</th>
+            <th class="right">Bear No Overlap<br><span style="font-weight:400;text-transform:none;">Gap Open</span></th>
+            <th class="right">Outside<br><span style="font-weight:400;text-transform:none;">Bar</span></th>
+            <th class="right">Bear Breakout<br><span style="font-weight:400;text-transform:none;">Gap Closed</span></th>
+            <th class="center">Dominant</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="mono">< 10%</td>
+            <td class="mono right">156</td>
+            <td class="mono right">12 (7.7%)</td>
+            <td class="mono right">30 (19.2%)</td>
+            <td class="mono right">114 (73.1%)</td>
+            <td class="center"><span class="pill orange">Bear Breakout</span></td>
+          </tr>
+          <tr>
+            <td class="mono">10-25%</td>
+            <td class="mono right">185</td>
+            <td class="mono right">49 (26.5%)</td>
+            <td class="mono right">21 (11.4%)</td>
+            <td class="mono right">115 (62.2%)</td>
+            <td class="center"><span class="pill orange">Bear Breakout</span></td>
+          </tr>
+          <tr>
+            <td class="mono">25-50%</td>
+            <td class="mono right">182</td>
+            <td class="mono right">74 (40.7%)</td>
+            <td class="mono right">10 (5.5%)</td>
+            <td class="mono right">98 (53.8%)</td>
+            <td class="center"><span class="pill orange">Bear Breakout</span></td>
+          </tr>
+          <tr>
+            <td class="mono">50-75%</td>
+            <td class="mono right">87</td>
+            <td class="mono right">54 (62.1%)</td>
+            <td class="mono right">2 (2.3%)</td>
+            <td class="mono right">31 (35.6%)</td>
+            <td class="center"><span class="pill red">Bear No Overlap</span></td>
+          </tr>
+          <tr>
+            <td class="mono">75-100%</td>
+            <td class="mono right">46</td>
+            <td class="mono right">35 (76.1%)</td>
+            <td class="mono right">0 (0.0%)</td>
+            <td class="mono right">11 (23.9%)</td>
+            <td class="center"><span class="pill red">Bear No Overlap</span></td>
+          </tr>
+          <tr>
+            <td class="mono">> 100%</td>
+            <td class="mono right">36</td>
+            <td class="mono right">31 (86.1%)</td>
+            <td class="mono right">1 (2.8%)</td>
+            <td class="mono right">4 (11.1%)</td>
+            <td class="center"><span class="pill red">Bear No Overlap</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Executive Summary: The Compositional Shift</div>
+    <div class="section-desc">The transformation from small to large gaps represents one of the clearest patterns in price action analysis.</div>
+    
+    <div class="kpi-grid">
+      <div class="kpi-card green">
+        <div class="kpi-label">Above High: Small Gaps</div>
+        <div class="kpi-value">7.1%</div>
+        <div class="kpi-sub">Bull No Overlap (gap open) when < 10% ABR</div>
+      </div>
+      <div class="kpi-card red">
+        <div class="kpi-label">Above High: Large Gaps</div>
+        <div class="kpi-value">100.0%</div>
+        <div class="kpi-sub">Bull No Overlap (gap open) when > 100% ABR</div>
+      </div>
+      <div class="kpi-card green">
+        <div class="kpi-label">Below Low: Small Gaps</div>
+        <div class="kpi-value">7.7%</div>
+        <div class="kpi-sub">Bear No Overlap (gap open) when < 10% ABR</div>
+      </div>
+      <div class="kpi-card red">
+        <div class="kpi-label">Below Low: Large Gaps</div>
+        <div class="kpi-value">86.1%</div>
+        <div class="kpi-sub">Bear No Overlap (gap open) when > 100% ABR</div>
+      </div>
+    </div>
+
+    <div class="note-box">
+      <strong>The Critical Threshold:</strong> The tipping point occurs between 25-50% of ABR. Below this range, breakout patterns dominate and gaps usually close. Above this range, No Overlap patterns dominate and gaps rarely close. For opens above high, the shift is dramatic: a 93 percentage point increase in Bull No Overlap from smallest to largest gaps. For opens below low: a 78 percentage point increase in Bear No Overlap.
+    </div>
+
+    <div class="note-box blue">
+      <strong>Trading Implication:</strong> Bar Type acts as a real-time confirmation signal. When you see a large gap (>50% ABR) form a Bull No Overlap or Bear No Overlap bar, the probability the gap stays open through the session exceeds 70%. Conversely, small gaps (<25% ABR) that form Bull Breakout or Bear Breakout bars have an 80%+ chance of closing.
+    </div>
+  </div>
+
+  <div class="footer">
+    <span>DAX Daily Out-of-Range Opens · Bar Type Composition Study</span>
+    <span>Source: EUREX FDAX Futures · 2007-2026 · 4618 Days</span>
+  </div>
+
+</div>
+
+<script>
+// Chart.js for stacked bar charts
+
+// Data for Opens Above High
+const aboveData = {
+  labels: ["'< 10%'", "'10-25%'", "'25-50%'", "'50-75%'", "'75-100%'", "'> 100%'"],
+  datasets: [
+    {
+      label: 'Bull No Overlap (Gap Open)',
+      data: [7.086614173228346, 21.25, 45.353159851301115, 77.88461538461539, 78.57142857142857, 100.0],
+      backgroundColor: '#16A34A',
+      borderWidth: 0
+    },
+    {
+      label: 'Outside Bar',
+      data: [16.92913385826772, 12.5, 7.063197026022305, 5.769230769230769, 7.142857142857142, 0.0],
+      backgroundColor: '#7C3AED',
+      borderWidth: 0
+    },
+    {
+      label: 'Bull Breakout (Gap Closed)',
+      data: [75.98425196850394, 66.25, 47.58364312267658, 16.346153846153847, 14.285714285714285, 0.0],
+      backgroundColor: '#2563EB',
+      borderWidth: 0
+    }
+  ]
+};
+
+// Data for Opens Below Low
+const belowData = {
+  labels: ["'< 10%'", "'10-25%'", "'25-50%'", "'50-75%'", "'75-100%'", "'> 100%'"],
+  datasets: [
+    {
+      label: 'Bear No Overlap (Gap Open)',
+      data: [7.6923076923076925, 26.486486486486488, 40.65934065934066, 62.06896551724138, 76.08695652173914, 86.11111111111111],
+      backgroundColor: '#DC2626',
+      borderWidth: 0
+    },
+    {
+      label: 'Outside Bar',
+      data: [19.230769230769234, 11.351351351351353, 5.4945054945054945, 2.2988505747126435, 0.0, 2.7777777777777777],
+      backgroundColor: '#7C3AED',
+      borderWidth: 0
+    },
+    {
+      label: 'Bear Breakout (Gap Closed)',
+      data: [73.07692307692307, 62.16216216216216, 53.84615384615385, 35.63218390804598, 23.91304347826087, 11.11111111111111],
+      backgroundColor: '#EA580C',
+      borderWidth: 0
+    }
+  ]
+};
+
+const stackedOptions = {
+  responsive: true,
+  maintainAspectRatio: false,
+  plugins: {
+    legend: {
+      display: true,
+      position: 'bottom',
+      labels: {
+        font: { family: 'DM Sans', size: 11 },
+        color: '#6B6964',
+        padding: 12,
+        usePointStyle: true
+      }
+    },
+    tooltip: {
+      callbacks: {
+        label: function(context) {
+          return context.dataset.label + ': ' + context.parsed.y.toFixed(1) + '%';
+        }
+      }
+    }
+  },
+  scales: {
+    x: {
+      stacked: true,
+      grid: { display: false },
+      ticks: {
+        font: { family: 'JetBrains Mono', size: 11 },
+        color: '#6B6964'
+      }
+    },
+    y: {
+      stacked: true,
+      min: 0,
+      max: 100,
+      grid: { color: '#E8E6E1' },
+      ticks: {
+        font: { family: 'DM Sans', size: 11 },
+        color: '#6B6964',
+        callback: function(value) {
+          return value + '%';
+        }
+      }
+    }
+  }
+};
+
+new Chart(document.getElementById('aboveChart'), {
+  type: 'bar',
+  data: aboveData,
+  options: stackedOptions
+});
+
+new Chart(document.getElementById('belowChart'), {
+  type: 'bar',
+  data: belowData,
+  options: stackedOptions
+});
+</script>
+
+</body>
+</html>
