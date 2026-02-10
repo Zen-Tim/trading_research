@@ -1,0 +1,1277 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FDAX Pre-Market Breakout Analysis</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #FAFAF8;
+  --surface: #FFFFFF;
+  --surface-alt: #F5F4F0;
+  --border: #E8E6E1;
+  --border-strong: #D4D1C9;
+  --text-primary: #1A1A18;
+  --text-secondary: #6B6964;
+  --text-muted: #9C9890;
+  --accent: #2563EB;
+  --accent-light: #EFF6FF;
+  --green: #16A34A;
+  --green-light: #F0FDF4;
+  --green-bg: #DCFCE7;
+  --red: #DC2626;
+  --red-light: #FEF2F2;
+  --red-bg: #FEE2E2;
+  --amber: #D97706;
+  --amber-light: #FFFBEB;
+  --amber-bg: #FEF3C7;
+  --purple: #7C3AED;
+  --purple-light: #F5F3FF;
+  --purple-bg: #EDE9FE;
+  --slate: #64748B;
+  --slate-bg: #F1F5F9;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  font-family: 'DM Sans', -apple-system, sans-serif;
+  background: var(--bg);
+  color: var(--text-primary);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+
+.report {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 48px 32px;
+}
+
+.header {
+  margin-bottom: 48px;
+  padding-bottom: 32px;
+  border-bottom: 2px solid var(--border);
+}
+
+.header-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--accent);
+  background: var(--accent-light);
+  padding: 4px 12px;
+  border-radius: 4px;
+  margin-bottom: 16px;
+}
+
+.header h1 {
+  font-size: 32px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  margin-bottom: 8px;
+}
+
+.header .subtitle {
+  font-size: 16px;
+  color: var(--text-secondary);
+}
+
+.header .meta {
+  display: flex;
+  gap: 24px;
+  margin-top: 16px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.meta-dot {
+  width: 5px; height: 5px;
+  border-radius: 50%;
+  background: var(--text-muted);
+  opacity: 0.5;
+  align-self: center;
+}
+
+.section {
+  margin-bottom: 48px;
+}
+
+.section-title {
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  margin-bottom: 8px;
+}
+
+.section-desc {
+  font-size: 14px;
+  color: var(--text-secondary);
+  margin-bottom: 24px;
+}
+
+.kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+  margin-bottom: 32px;
+}
+
+.kpi-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 20px;
+  transition: box-shadow 0.2s;
+}
+
+.kpi-card:hover { box-shadow: 0 2px 12px rgba(0,0,0,0.06); }
+
+.kpi-label {
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-muted);
+  margin-bottom: 8px;
+}
+
+.kpi-value {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 28px;
+  font-weight: 700;
+  line-height: 1.1;
+}
+
+.kpi-sub {
+  font-size: 13px;
+  color: var(--text-secondary);
+  margin-top: 4px;
+}
+
+.kpi-card.accent { border-left: 3px solid var(--accent); }
+.kpi-card.green { border-left: 3px solid var(--green); }
+.kpi-card.red { border-left: 3px solid var(--red); }
+.kpi-card.amber { border-left: 3px solid var(--amber); }
+.kpi-card.purple { border-left: 3px solid var(--purple); }
+.kpi-card.slate { border-left: 3px solid var(--slate); }
+
+.table-wrap {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  overflow: hidden;
+  margin-bottom: 24px;
+}
+
+.table-header {
+  padding: 16px 20px;
+  background: var(--surface-alt);
+  border-bottom: 1px solid var(--border);
+  font-size: 14px;
+  font-weight: 600;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+thead th {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-muted);
+  text-align: left;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border);
+  background: var(--surface-alt);
+}
+
+thead th.right { text-align: right; }
+thead th.center { text-align: center; }
+
+tbody td {
+  font-size: 14px;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border);
+}
+
+tbody td.mono {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 13px;
+}
+
+tbody td.right { text-align: right; }
+tbody td.center { text-align: center; }
+
+tbody tr:last-child td { border-bottom: none; }
+tbody tr:hover { background: rgba(0,0,0,0.015); }
+
+.pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.pill.green { background: var(--green-bg); color: var(--green); }
+.pill.red { background: var(--red-bg); color: var(--red); }
+.pill.amber { background: var(--amber-bg); color: var(--amber); }
+.pill.blue { background: var(--accent-light); color: var(--accent); }
+.pill.purple { background: var(--purple-bg); color: var(--purple); }
+.pill.slate { background: var(--slate-bg); color: var(--slate); }
+
+.split-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+}
+
+.gradient-bar-container {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 24px;
+  margin-bottom: 24px;
+}
+
+.gradient-bar-title {
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 16px;
+}
+
+.gradient-bar {
+  display: flex;
+  height: 48px;
+  border-radius: 8px;
+  overflow: hidden;
+  margin-bottom: 12px;
+}
+
+.gradient-segment {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  font-weight: 600;
+  color: white;
+  min-width: 32px;
+}
+
+.gradient-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.legend-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 3px;
+}
+
+.note-box {
+  background: var(--amber-light);
+  border: 1px solid #FDE68A;
+  border-radius: 8px;
+  padding: 16px 20px;
+  font-size: 13px;
+  color: #92400E;
+  line-height: 1.6;
+  margin-top: 16px;
+}
+
+.note-box strong { font-weight: 700; }
+
+.note-box.blue {
+  background: var(--accent-light);
+  border-color: #BFDBFE;
+  color: #1E40AF;
+}
+
+.note-box.green {
+  background: var(--green-light);
+  border-color: #BBF7D0;
+  color: #166534;
+}
+
+/* Stacked bar for bucket rows */
+.stacked-bar {
+  display: flex;
+  height: 24px;
+  border-radius: 6px;
+  overflow: hidden;
+  min-width: 120px;
+}
+
+.stacked-seg {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px;
+  font-weight: 600;
+  color: white;
+  min-width: 2px;
+  transition: opacity 0.2s;
+}
+
+.stacked-seg:hover { opacity: 0.85; }
+
+.stacked-seg.high { background: #2563EB; }
+.stacked-seg.low { background: #DC2626; }
+.stacked-seg.both { background: #7C3AED; }
+.stacked-seg.neither { background: #64748B; }
+
+/* Chart containers */
+.chart-container {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 24px;
+  margin-bottom: 24px;
+}
+
+.chart-title {
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+.chart-subtitle {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-bottom: 16px;
+}
+
+canvas {
+  width: 100% !important;
+  max-height: 320px;
+}
+
+.footer {
+  margin-top: 48px;
+  padding-top: 24px;
+  border-top: 1px solid var(--border);
+  font-size: 12px;
+  color: var(--text-muted);
+  display: flex;
+  justify-content: space-between;
+}
+
+.insight-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 20px 24px;
+  margin-bottom: 16px;
+  border-left: 3px solid var(--accent);
+}
+
+.insight-card .insight-title {
+  font-size: 14px;
+  font-weight: 700;
+  margin-bottom: 6px;
+}
+
+.insight-card .insight-body {
+  font-size: 13px;
+  color: var(--text-secondary);
+  line-height: 1.6;
+}
+
+.insight-card .insight-body strong {
+  color: var(--text-primary);
+}
+
+@media (max-width: 768px) {
+  .report { padding: 24px 16px; }
+  .kpi-grid { grid-template-columns: 1fr 1fr; }
+  .split-grid { grid-template-columns: 1fr; }
+  .header .meta { flex-wrap: wrap; gap: 12px; }
+  .kpi-value { font-size: 22px; }
+}
+</style>
+</head>
+<body>
+<div class="report">
+
+  <!-- HEADER -->
+  <div class="header">
+    <div class="header-tag">◆ Quantitative Research</div>
+    <h1>FDAX Pre-Market Breakout Analysis</h1>
+    <div class="subtitle">Globex and Frankfurt pre-market ranges — breakout frequency, directional bias, and range-conditioned probabilities</div>
+    <div class="meta">
+      <span>FDAX Futures (Eurex)</span>
+      <div class="meta-dot"></div>
+      <span>Mar 2024 — Jan 2026</span>
+      <div class="meta-dot"></div>
+      <span>477 Trading Days</span>
+      <div class="meta-dot"></div>
+      <span>Daily ABR Lookback</span>
+    </div>
+  </div>
+
+  <!-- DATA UNIVERSE -->
+  <div class="section">
+    <div class="section-title">Data Universe</div>
+    <div class="section-desc">Two pre-market sessions tracked against the RTH session. Globex captures the full overnight range; Frankfurt captures the final hour before the XETRA open. Breakout = RTH price exceeds the pre-market high, low, both, or neither.</div>
+
+    <div class="kpi-grid">
+      <div class="kpi-card accent">
+        <div class="kpi-label">Trading Days</div>
+        <div class="kpi-value">477</div>
+        <div class="kpi-sub">Mar 6, 2024 — Jan 23, 2026</div>
+      </div>
+      <div class="kpi-card green">
+        <div class="kpi-label">Avg Daily Range</div>
+        <div class="kpi-value">233</div>
+        <div class="kpi-sub">points · ABR avg 232 pts</div>
+      </div>
+      <div class="kpi-card purple">
+        <div class="kpi-label">Avg Globex Range</div>
+        <div class="kpi-value">172</div>
+        <div class="kpi-sub">points · median 61.8% of ABR</div>
+      </div>
+      <div class="kpi-card amber">
+        <div class="kpi-label">Avg Frankfurt Range</div>
+        <div class="kpi-value">65</div>
+        <div class="kpi-sub">points · median 26.0% of ABR</div>
+      </div>
+    </div>
+
+    <div class="note-box">
+      <strong>Methodology:</strong> Globex range = full overnight session high/low. Frankfurt range = final 60-minute pre-open session only. Both are compared to the RTH daily high and low to determine breakout type. "% of ABR" normalises the pre-market range against the rolling daily average bar range to make comparisons meaningful across volatility regimes.
+    </div>
+  </div>
+
+  <!-- GLOBEX BREAKOUT DISTRIBUTION -->
+  <div class="section">
+    <div class="section-title">Globex Range — RTH Breakout Distribution</div>
+    <div class="section-desc">How often does RTH extend beyond the overnight Globex high, low, both, or stay contained within the range?</div>
+
+    <div class="kpi-grid" style="grid-template-columns: repeat(4, 1fr);">
+      <div class="kpi-card accent">
+        <div class="kpi-label">Broke High Only</div>
+        <div class="kpi-value">187</div>
+        <div class="kpi-sub">39.2% of days</div>
+      </div>
+      <div class="kpi-card red">
+        <div class="kpi-label">Broke Low Only</div>
+        <div class="kpi-value">153</div>
+        <div class="kpi-sub">32.1% of days</div>
+      </div>
+      <div class="kpi-card purple">
+        <div class="kpi-label">Broke Both</div>
+        <div class="kpi-value">111</div>
+        <div class="kpi-sub">23.3% of days</div>
+      </div>
+      <div class="kpi-card slate">
+        <div class="kpi-label">Neither</div>
+        <div class="kpi-value">26</div>
+        <div class="kpi-sub">5.5% of days</div>
+      </div>
+    </div>
+
+    <div class="gradient-bar-container">
+      <div class="gradient-bar-title">Globex Breakout Distribution</div>
+      <div class="gradient-bar">
+        <div class="gradient-segment" style="flex: 39.2; background: #2563EB;">39.2%</div>
+        <div class="gradient-segment" style="flex: 32.1; background: #DC2626;">32.1%</div>
+        <div class="gradient-segment" style="flex: 23.3; background: #7C3AED;">23.3%</div>
+        <div class="gradient-segment" style="flex: 5.5; background: #64748B; font-size:10px;">5.5%</div>
+      </div>
+      <div class="gradient-legend">
+        <div class="legend-item"><div class="legend-dot" style="background: #2563EB;"></div>Broke High Only (187)</div>
+        <div class="legend-item"><div class="legend-dot" style="background: #DC2626;"></div>Broke Low Only (153)</div>
+        <div class="legend-item"><div class="legend-dot" style="background: #7C3AED;"></div>Broke Both (111)</div>
+        <div class="legend-item"><div class="legend-dot" style="background: #64748B;"></div>Neither (26)</div>
+      </div>
+    </div>
+
+    <div class="note-box blue">
+      <strong>Key finding:</strong> RTH breaks at least one side of the Globex range 94.5% of the time. A slight upward bias exists — the high is broken (alone or with the low) on 62.5% of days vs. the low on 55.3%. True inside days where RTH stays entirely within the Globex range are rare at just 5.5%.
+    </div>
+  </div>
+
+  <!-- FRANKFURT BREAKOUT DISTRIBUTION -->
+  <div class="section">
+    <div class="section-title">Frankfurt Range — RTH Breakout Distribution</div>
+    <div class="section-desc">How often does RTH extend beyond the 1-hour Frankfurt pre-open high, low, or both?</div>
+
+    <div class="kpi-grid" style="grid-template-columns: repeat(3, 1fr);">
+      <div class="kpi-card accent">
+        <div class="kpi-label">Broke High Only</div>
+        <div class="kpi-value">104</div>
+        <div class="kpi-sub">21.8% of days</div>
+      </div>
+      <div class="kpi-card red">
+        <div class="kpi-label">Broke Low Only</div>
+        <div class="kpi-value">88</div>
+        <div class="kpi-sub">18.4% of days</div>
+      </div>
+      <div class="kpi-card purple">
+        <div class="kpi-label">Broke Both</div>
+        <div class="kpi-value">285</div>
+        <div class="kpi-sub">59.7% of days</div>
+      </div>
+    </div>
+
+    <div class="gradient-bar-container">
+      <div class="gradient-bar-title">Frankfurt Breakout Distribution</div>
+      <div class="gradient-bar">
+        <div class="gradient-segment" style="flex: 21.8; background: #2563EB;">21.8%</div>
+        <div class="gradient-segment" style="flex: 18.4; background: #DC2626;">18.4%</div>
+        <div class="gradient-segment" style="flex: 59.7; background: #7C3AED;">59.7%</div>
+      </div>
+      <div class="gradient-legend">
+        <div class="legend-item"><div class="legend-dot" style="background: #2563EB;"></div>Broke High Only (104)</div>
+        <div class="legend-item"><div class="legend-dot" style="background: #DC2626;"></div>Broke Low Only (88)</div>
+        <div class="legend-item"><div class="legend-dot" style="background: #7C3AED;"></div>Broke Both (285)</div>
+      </div>
+    </div>
+
+    <div class="note-box green">
+      <strong>Remarkable finding:</strong> In 477 trading days, RTH has <em>never</em> stayed inside the Frankfurt range — not a single "Neither" day. The Frankfurt hour covers only ~26% of the daily ABR on average, so this makes intuitive sense, but the 100% breakout rate is notable. Nearly 6 in 10 days break <em>both</em> sides of the Frankfurt range.
+    </div>
+  </div>
+
+  <!-- GLOBEX BREAKOUT BY RANGE BUCKET -->
+  <div class="section">
+    <div class="section-title">Globex Breakout by Pre-Market Range Size</div>
+    <div class="section-desc">Breakout probabilities conditioned on how much of the daily ABR the Globex session has already consumed. As the Globex range grows relative to ABR, "Both" collapses and "Neither" emerges.</div>
+
+    <div class="table-wrap">
+      <div class="table-header">Globex Breakout Probability by GX Range / Daily ABR Bucket</div>
+      <table>
+        <thead>
+          <tr>
+            <th>GX / ABR<br><span style="font-weight:400;text-transform:none;letter-spacing:0;">Bucket</span></th>
+            <th class="right">n</th>
+            <th class="right">Broke<br>High</th>
+            <th class="right">Broke<br>Low</th>
+            <th class="right">Both</th>
+            <th class="right">Neither</th>
+            <th style="width: 200px;">Distribution</th>
+          </tr>
+        </thead>
+        <tbody>
+          <!-- 0-30% -->
+          <tr>
+            <td class="mono">0–30%</td>
+            <td class="mono right">11</td>
+            <td class="mono right"><span class="pill blue">18.2%</span></td>
+            <td class="mono right"><span class="pill red">45.5%</span></td>
+            <td class="mono right"><span class="pill purple">36.4%</span></td>
+            <td class="mono right"><span class="pill slate">0.0%</span></td>
+            <td>
+              <div class="stacked-bar">
+                <div class="stacked-seg high" style="flex:18.2"></div>
+                <div class="stacked-seg low" style="flex:45.5"></div>
+                <div class="stacked-seg both" style="flex:36.4"></div>
+              </div>
+            </td>
+          </tr>
+          <!-- 30-40% -->
+          <tr>
+            <td class="mono">30–40%</td>
+            <td class="mono right">53</td>
+            <td class="mono right"><span class="pill blue">32.1%</span></td>
+            <td class="mono right"><span class="pill red">22.6%</span></td>
+            <td class="mono right"><span class="pill purple">45.3%</span></td>
+            <td class="mono right"><span class="pill slate">0.0%</span></td>
+            <td>
+              <div class="stacked-bar">
+                <div class="stacked-seg high" style="flex:32.1"></div>
+                <div class="stacked-seg low" style="flex:22.6"></div>
+                <div class="stacked-seg both" style="flex:45.3"></div>
+              </div>
+            </td>
+          </tr>
+          <!-- 40-50% -->
+          <tr>
+            <td class="mono">40–50%</td>
+            <td class="mono right">76</td>
+            <td class="mono right"><span class="pill blue">34.2%</span></td>
+            <td class="mono right"><span class="pill red">27.6%</span></td>
+            <td class="mono right"><span class="pill purple">38.2%</span></td>
+            <td class="mono right"><span class="pill slate">0.0%</span></td>
+            <td>
+              <div class="stacked-bar">
+                <div class="stacked-seg high" style="flex:34.2"></div>
+                <div class="stacked-seg low" style="flex:27.6"></div>
+                <div class="stacked-seg both" style="flex:38.2"></div>
+              </div>
+            </td>
+          </tr>
+          <!-- 50-60% -->
+          <tr>
+            <td class="mono">50–60%</td>
+            <td class="mono right">78</td>
+            <td class="mono right"><span class="pill blue">39.7%</span></td>
+            <td class="mono right"><span class="pill red">33.3%</span></td>
+            <td class="mono right"><span class="pill purple">25.6%</span></td>
+            <td class="mono right"><span class="pill slate">1.3%</span></td>
+            <td>
+              <div class="stacked-bar">
+                <div class="stacked-seg high" style="flex:39.7"></div>
+                <div class="stacked-seg low" style="flex:33.3"></div>
+                <div class="stacked-seg both" style="flex:25.6"></div>
+                <div class="stacked-seg neither" style="flex:1.3"></div>
+              </div>
+            </td>
+          </tr>
+          <!-- 60-70% -->
+          <tr>
+            <td class="mono">60–70%</td>
+            <td class="mono right">74</td>
+            <td class="mono right"><span class="pill blue">50.0%</span></td>
+            <td class="mono right"><span class="pill red">29.7%</span></td>
+            <td class="mono right"><span class="pill purple">18.9%</span></td>
+            <td class="mono right"><span class="pill slate">1.4%</span></td>
+            <td>
+              <div class="stacked-bar">
+                <div class="stacked-seg high" style="flex:50"></div>
+                <div class="stacked-seg low" style="flex:29.7"></div>
+                <div class="stacked-seg both" style="flex:18.9"></div>
+                <div class="stacked-seg neither" style="flex:1.4"></div>
+              </div>
+            </td>
+          </tr>
+          <!-- 70-80% -->
+          <tr>
+            <td class="mono">70–80%</td>
+            <td class="mono right">44</td>
+            <td class="mono right"><span class="pill blue">50.0%</span></td>
+            <td class="mono right"><span class="pill red">27.3%</span></td>
+            <td class="mono right"><span class="pill purple">20.5%</span></td>
+            <td class="mono right"><span class="pill slate">2.3%</span></td>
+            <td>
+              <div class="stacked-bar">
+                <div class="stacked-seg high" style="flex:50"></div>
+                <div class="stacked-seg low" style="flex:27.3"></div>
+                <div class="stacked-seg both" style="flex:20.5"></div>
+                <div class="stacked-seg neither" style="flex:2.3"></div>
+              </div>
+            </td>
+          </tr>
+          <!-- 80-90% -->
+          <tr>
+            <td class="mono">80–90%</td>
+            <td class="mono right">35</td>
+            <td class="mono right"><span class="pill blue">45.7%</span></td>
+            <td class="mono right"><span class="pill red">37.1%</span></td>
+            <td class="mono right"><span class="pill purple">11.4%</span></td>
+            <td class="mono right"><span class="pill slate">5.7%</span></td>
+            <td>
+              <div class="stacked-bar">
+                <div class="stacked-seg high" style="flex:45.7"></div>
+                <div class="stacked-seg low" style="flex:37.1"></div>
+                <div class="stacked-seg both" style="flex:11.4"></div>
+                <div class="stacked-seg neither" style="flex:5.7"></div>
+              </div>
+            </td>
+          </tr>
+          <!-- 90-100% -->
+          <tr>
+            <td class="mono">90–100%</td>
+            <td class="mono right">31</td>
+            <td class="mono right"><span class="pill blue">38.7%</span></td>
+            <td class="mono right"><span class="pill red">35.5%</span></td>
+            <td class="mono right"><span class="pill purple">12.9%</span></td>
+            <td class="mono right"><span class="pill slate">12.9%</span></td>
+            <td>
+              <div class="stacked-bar">
+                <div class="stacked-seg high" style="flex:38.7"></div>
+                <div class="stacked-seg low" style="flex:35.5"></div>
+                <div class="stacked-seg both" style="flex:12.9"></div>
+                <div class="stacked-seg neither" style="flex:12.9"></div>
+              </div>
+            </td>
+          </tr>
+          <!-- 100-120% -->
+          <tr>
+            <td class="mono">100–120%</td>
+            <td class="mono right">28</td>
+            <td class="mono right"><span class="pill blue">28.6%</span></td>
+            <td class="mono right"><span class="pill red">57.1%</span></td>
+            <td class="mono right"><span class="pill purple">3.6%</span></td>
+            <td class="mono right"><span class="pill slate">10.7%</span></td>
+            <td>
+              <div class="stacked-bar">
+                <div class="stacked-seg high" style="flex:28.6"></div>
+                <div class="stacked-seg low" style="flex:57.1"></div>
+                <div class="stacked-seg both" style="flex:3.6"></div>
+                <div class="stacked-seg neither" style="flex:10.7"></div>
+              </div>
+            </td>
+          </tr>
+          <!-- 120%+ -->
+          <tr>
+            <td class="mono">120%+</td>
+            <td class="mono right">47</td>
+            <td class="mono right"><span class="pill blue">34.0%</span></td>
+            <td class="mono right"><span class="pill red">31.9%</span></td>
+            <td class="mono right"><span class="pill purple">4.3%</span></td>
+            <td class="mono right"><span class="pill slate">29.8%</span></td>
+            <td>
+              <div class="stacked-bar">
+                <div class="stacked-seg high" style="flex:34"></div>
+                <div class="stacked-seg low" style="flex:31.9"></div>
+                <div class="stacked-seg both" style="flex:4.3"></div>
+                <div class="stacked-seg neither" style="flex:29.8"></div>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="gradient-bar-container">
+      <div class="gradient-bar-title" style="margin-bottom:8px;">Stacked Bar Legend</div>
+      <div class="gradient-legend">
+        <div class="legend-item"><div class="legend-dot" style="background: #2563EB;"></div>Broke High Only</div>
+        <div class="legend-item"><div class="legend-dot" style="background: #DC2626;"></div>Broke Low Only</div>
+        <div class="legend-item"><div class="legend-dot" style="background: #7C3AED;"></div>Broke Both</div>
+        <div class="legend-item"><div class="legend-dot" style="background: #64748B;"></div>Neither</div>
+      </div>
+    </div>
+
+    <div class="split-grid">
+      <div class="insight-card">
+        <div class="insight-title">Both Sides → One-Sided Transition</div>
+        <div class="insight-body">When GX uses <strong>&lt;50% of ABR</strong>, "Both" probability is 40.7%. When GX uses <strong>≥90% of ABR</strong>, it collapses to just 6.6%. The market shifts from exploration to commitment as the pre-market range grows.</div>
+      </div>
+      <div class="insight-card">
+        <div class="insight-title">Neither Emerges at Scale</div>
+        <div class="insight-body">"Neither" is virtually non-existent below 50% ABR (0 of 140 days) but reaches <strong>19.8%</strong> when GX exceeds 90% of ABR. These are days where the overnight session has already captured the day's full range.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- FRANKFURT BREAKOUT BY RANGE BUCKET -->
+  <div class="section">
+    <div class="section-title">Frankfurt Breakout by Pre-Market Range Size</div>
+    <div class="section-desc">Breakout probabilities conditioned on how much of the daily ABR the Frankfurt hour has consumed. The Frankfurt range is tighter than Globex, so bucket boundaries are narrower.</div>
+
+    <div class="table-wrap">
+      <div class="table-header">Frankfurt Breakout Probability by FF Range / Daily ABR Bucket</div>
+      <table>
+        <thead>
+          <tr>
+            <th>FF / ABR<br><span style="font-weight:400;text-transform:none;letter-spacing:0;">Bucket</span></th>
+            <th class="right">n</th>
+            <th class="right">Broke<br>High</th>
+            <th class="right">Broke<br>Low</th>
+            <th class="right">Both</th>
+            <th style="width: 200px;">Distribution</th>
+          </tr>
+        </thead>
+        <tbody>
+          <!-- 10-15% -->
+          <tr>
+            <td class="mono">10–15%</td>
+            <td class="mono right">31</td>
+            <td class="mono right"><span class="pill blue">19.4%</span></td>
+            <td class="mono right"><span class="pill red">6.5%</span></td>
+            <td class="mono right"><span class="pill purple">74.2%</span></td>
+            <td>
+              <div class="stacked-bar">
+                <div class="stacked-seg high" style="flex:19.4"></div>
+                <div class="stacked-seg low" style="flex:6.5"></div>
+                <div class="stacked-seg both" style="flex:74.2"></div>
+              </div>
+            </td>
+          </tr>
+          <!-- 15-20% -->
+          <tr>
+            <td class="mono">15–20%</td>
+            <td class="mono right">86</td>
+            <td class="mono right"><span class="pill blue">15.1%</span></td>
+            <td class="mono right"><span class="pill red">9.3%</span></td>
+            <td class="mono right"><span class="pill purple">75.6%</span></td>
+            <td>
+              <div class="stacked-bar">
+                <div class="stacked-seg high" style="flex:15.1"></div>
+                <div class="stacked-seg low" style="flex:9.3"></div>
+                <div class="stacked-seg both" style="flex:75.6"></div>
+              </div>
+            </td>
+          </tr>
+          <!-- 20-25% -->
+          <tr>
+            <td class="mono">20–25%</td>
+            <td class="mono right">95</td>
+            <td class="mono right"><span class="pill blue">31.6%</span></td>
+            <td class="mono right"><span class="pill red">21.1%</span></td>
+            <td class="mono right"><span class="pill purple">47.4%</span></td>
+            <td>
+              <div class="stacked-bar">
+                <div class="stacked-seg high" style="flex:31.6"></div>
+                <div class="stacked-seg low" style="flex:21.1"></div>
+                <div class="stacked-seg both" style="flex:47.4"></div>
+              </div>
+            </td>
+          </tr>
+          <!-- 25-30% -->
+          <tr>
+            <td class="mono">25–30%</td>
+            <td class="mono right">96</td>
+            <td class="mono right"><span class="pill blue">19.8%</span></td>
+            <td class="mono right"><span class="pill red">16.7%</span></td>
+            <td class="mono right"><span class="pill purple">63.5%</span></td>
+            <td>
+              <div class="stacked-bar">
+                <div class="stacked-seg high" style="flex:19.8"></div>
+                <div class="stacked-seg low" style="flex:16.7"></div>
+                <div class="stacked-seg both" style="flex:63.5"></div>
+              </div>
+            </td>
+          </tr>
+          <!-- 30-35% -->
+          <tr>
+            <td class="mono">30–35%</td>
+            <td class="mono right">67</td>
+            <td class="mono right"><span class="pill blue">20.9%</span></td>
+            <td class="mono right"><span class="pill red">16.4%</span></td>
+            <td class="mono right"><span class="pill purple">62.7%</span></td>
+            <td>
+              <div class="stacked-bar">
+                <div class="stacked-seg high" style="flex:20.9"></div>
+                <div class="stacked-seg low" style="flex:16.4"></div>
+                <div class="stacked-seg both" style="flex:62.7"></div>
+              </div>
+            </td>
+          </tr>
+          <!-- 35-40% -->
+          <tr>
+            <td class="mono">35–40%</td>
+            <td class="mono right">33</td>
+            <td class="mono right"><span class="pill blue">15.2%</span></td>
+            <td class="mono right"><span class="pill red">30.3%</span></td>
+            <td class="mono right"><span class="pill purple">54.5%</span></td>
+            <td>
+              <div class="stacked-bar">
+                <div class="stacked-seg high" style="flex:15.2"></div>
+                <div class="stacked-seg low" style="flex:30.3"></div>
+                <div class="stacked-seg both" style="flex:54.5"></div>
+              </div>
+            </td>
+          </tr>
+          <!-- 40-50% -->
+          <tr>
+            <td class="mono">40–50%</td>
+            <td class="mono right">47</td>
+            <td class="mono right"><span class="pill blue">21.3%</span></td>
+            <td class="mono right"><span class="pill red">40.4%</span></td>
+            <td class="mono right"><span class="pill purple">38.3%</span></td>
+            <td>
+              <div class="stacked-bar">
+                <div class="stacked-seg high" style="flex:21.3"></div>
+                <div class="stacked-seg low" style="flex:40.4"></div>
+                <div class="stacked-seg both" style="flex:38.3"></div>
+              </div>
+            </td>
+          </tr>
+          <!-- 50%+ -->
+          <tr>
+            <td class="mono">50%+</td>
+            <td class="mono right">21</td>
+            <td class="mono right"><span class="pill blue">33.3%</span></td>
+            <td class="mono right"><span class="pill red">9.5%</span></td>
+            <td class="mono right"><span class="pill purple">57.1%</span></td>
+            <td>
+              <div class="stacked-bar">
+                <div class="stacked-seg high" style="flex:33.3"></div>
+                <div class="stacked-seg low" style="flex:9.5"></div>
+                <div class="stacked-seg both" style="flex:57.1"></div>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="split-grid">
+      <div class="insight-card">
+        <div class="insight-title">Both Sides Dominates the Frankfurt Range</div>
+        <div class="insight-body">When Frankfurt uses <strong>&lt;20% of ABR</strong>, "Both" reaches 75%. Even at the widest Frankfurt ranges (40–50% ABR), "Both" remains at 38%. The Frankfurt range is simply too small to contain RTH on most days.</div>
+      </div>
+      <div class="insight-card">
+        <div class="insight-title">Bearish Tilt at Wider Frankfurt Ranges</div>
+        <div class="insight-body">When Frankfurt uses <strong>35–50% of ABR</strong>, "Broke Low Only" jumps to 30–40% — roughly double the rate seen in tighter ranges. A wide Frankfurt pre-open may signal downside directional pressure during RTH.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- GX RANGE DISTRIBUTION HISTOGRAM -->
+  <div class="section">
+    <div class="section-title">Globex Range Distribution</div>
+    <div class="section-desc">Histogram of Globex range as a percentage of daily ABR across all 477 days. The distribution is right-skewed with a fat tail — most days cluster around 40–70% of ABR, but outsized overnight moves regularly exceed 100%.</div>
+
+    <div class="chart-container">
+      <div class="chart-title">Globex Range / Daily ABR — Frequency Distribution</div>
+      <div class="chart-subtitle">Each bar = 10 percentage point bucket · Median = 61.8% · Mean = 73.0%</div>
+      <canvas id="gxHistogram" height="280"></canvas>
+    </div>
+
+    <div class="split-grid">
+      <div class="kpi-card accent" style="padding: 24px;">
+        <div class="kpi-label">Below Median (≤61.8% ABR)</div>
+        <div style="margin-top: 12px;">
+          <div style="display:flex;justify-content:space-between;margin-bottom:8px;">
+            <span style="font-size:13px;color:var(--text-secondary);">Days</span>
+            <span class="mono" style="font-weight:600;">239</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;margin-bottom:8px;">
+            <span style="font-size:13px;color:var(--text-secondary);">Both sides broken</span>
+            <span class="mono" style="font-weight:600;">34.7%</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;">
+            <span style="font-size:13px;color:var(--text-secondary);">Neither side broken</span>
+            <span class="mono" style="font-weight:600;">0.4%</span>
+          </div>
+        </div>
+      </div>
+      <div class="kpi-card red" style="padding: 24px;">
+        <div class="kpi-label">Above Median (>61.8% ABR)</div>
+        <div style="margin-top: 12px;">
+          <div style="display:flex;justify-content:space-between;margin-bottom:8px;">
+            <span style="font-size:13px;color:var(--text-secondary);">Days</span>
+            <span class="mono" style="font-weight:600;">238</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;margin-bottom:8px;">
+            <span style="font-size:13px;color:var(--text-secondary);">Both sides broken</span>
+            <span class="mono" style="font-weight:600;">11.8%</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;">
+            <span style="font-size:13px;color:var(--text-secondary);">Neither side broken</span>
+            <span class="mono" style="font-weight:600;">10.5%</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SCATTER PLOT -->
+  <div class="section">
+    <div class="section-title">Globex Range vs. RTH Daily Range</div>
+    <div class="section-desc">Scatter plot of Globex range (% ABR) against the actual daily range (% ABR). Colour-coded by breakout type. Correlation is weak (r = 0.18), suggesting the overnight range is a poor predictor of how far RTH will travel — but it does predict <em>how</em> it travels.</div>
+
+    <div class="chart-container">
+      <div class="chart-title">GX Range % ABR vs Daily Range % ABR — Coloured by Breakout Type</div>
+      <div class="chart-subtitle">r = 0.18 · 477 observations · Hover for detail</div>
+      <canvas id="scatterPlot" height="360"></canvas>
+      <div class="gradient-legend" style="margin-top:12px;">
+        <div class="legend-item"><div class="legend-dot" style="background: #2563EB;"></div>Broke High Only</div>
+        <div class="legend-item"><div class="legend-dot" style="background: #DC2626;"></div>Broke Low Only</div>
+        <div class="legend-item"><div class="legend-dot" style="background: #7C3AED;"></div>Broke Both</div>
+        <div class="legend-item"><div class="legend-dot" style="background: #64748B;"></div>Neither</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- NEITHER DAYS PROFILE -->
+  <div class="section">
+    <div class="section-title">"Neither" Days — Inside Day Profile</div>
+    <div class="section-desc">When RTH stays entirely within the Globex range, what characterises these days?</div>
+
+    <div class="kpi-grid" style="grid-template-columns: repeat(4, 1fr);">
+      <div class="kpi-card slate">
+        <div class="kpi-label">Occurrences</div>
+        <div class="kpi-value">26</div>
+        <div class="kpi-sub">5.5% of 477 days</div>
+      </div>
+      <div class="kpi-card slate">
+        <div class="kpi-label">Avg GX / ABR</div>
+        <div class="kpi-value">135.7%</div>
+        <div class="kpi-sub">vs 73.0% population avg</div>
+      </div>
+      <div class="kpi-card slate">
+        <div class="kpi-label">Median GX / ABR</div>
+        <div class="kpi-value">126.2%</div>
+        <div class="kpi-sub">nearly 2× the population median</div>
+      </div>
+      <div class="kpi-card slate">
+        <div class="kpi-label">Avg Daily Range / ABR</div>
+        <div class="kpi-value">84.9%</div>
+        <div class="kpi-sub">vs 100.7% all-day avg</div>
+      </div>
+    </div>
+
+    <div class="note-box">
+      <strong>Profile:</strong> "Neither" days are overwhelmingly high-GX-range days (median 126% of ABR) where the overnight session has already exhausted most of the day's available range, leaving RTH compressed. The daily range on these days averages just 85% of ABR — a 16% compression vs the population average. These are not quiet markets; the action has already happened.
+    </div>
+  </div>
+
+  <!-- KEY CONCLUSIONS -->
+  <div class="section">
+    <div class="section-title">Key Conclusions</div>
+    <div class="section-desc">Actionable takeaways from the pre-market breakout analysis.</div>
+
+    <div class="insight-card" style="border-left-color: var(--green);">
+      <div class="insight-title">1. RTH Almost Always Extends Beyond the Frankfurt Range</div>
+      <div class="insight-body">Zero "Neither" days in 477 observations. The Frankfurt 1-hour range (avg 26% ABR) is reliably broken in at least one direction during RTH. If you are fading the Frankfurt range, the odds are strongly against you being stopped in both directions — but know that 60% of the time, <em>both</em> sides get hit.</div>
+    </div>
+
+    <div class="insight-card" style="border-left-color: var(--accent);">
+      <div class="insight-title">2. Globex Range Size is the Key Conditioning Variable</div>
+      <div class="insight-body">When GX range is <strong>&lt;50% of ABR</strong>, expect double-sided breakouts (41% "Both", 0% "Neither"). When GX range is <strong>&gt;90% of ABR</strong>, the market shifts to one-sided or contained behaviour (7% "Both", 20% "Neither"). This is the single most important variable for framing RTH expectations.</div>
+    </div>
+
+    <div class="insight-card" style="border-left-color: var(--red);">
+      <div class="insight-title">3. Wide Pre-Market Ranges Favour Downside Breaks</div>
+      <div class="insight-body">At GX ranges above 100% ABR, "Broke Low Only" reaches 57% in the 100–120% bucket — a sharp asymmetry. Similarly, wide Frankfurt ranges (35–50% ABR) see "Broke Low Only" at 30–40%. Large overnight moves may be driven by gap-ups that are subsequently faded, leaving the low as the more likely breakout direction.</div>
+    </div>
+
+    <div class="insight-card" style="border-left-color: var(--purple);">
+      <div class="insight-title">4. The Overnight Range Predicts Shape, Not Size</div>
+      <div class="insight-body">Correlation between GX range and daily range is just r = 0.18. A big overnight range doesn't mean a big RTH day. But it <em>does</em> predict whether RTH will break one side, both, or neither — shape, not magnitude.</div>
+    </div>
+
+    <div class="insight-card" style="border-left-color: var(--amber);">
+      <div class="insight-title">5. Upside Bias in Moderate Globex Ranges</div>
+      <div class="insight-body">"Broke High Only" consistently exceeds "Broke Low Only" in the 50–80% ABR range (40–50% vs 27–33%). This upside tilt at moderate ranges suggests a structural buy-side lean in the FDAX during normal volatility regimes.</div>
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <div class="footer">
+    <span>FDAX Pre-Market Breakout Study · Globex &amp; Frankfurt Sessions</span>
+    <span>Source: FDAX Futures (Eurex) · Mar 2024 — Jan 2026 · 477 Days</span>
+  </div>
+
+</div>
+
+<script>
+// === GX HISTOGRAM ===
+(function() {
+  const canvas = document.getElementById('gxHistogram');
+  const ctx = canvas.getContext('2d');
+  const dpr = window.devicePixelRatio || 1;
+
+  function draw() {
+    const rect = canvas.parentElement.getBoundingClientRect();
+    const w = rect.width - 48;
+    const h = 280;
+    canvas.width = w * dpr;
+    canvas.height = h * dpr;
+    canvas.style.width = w + 'px';
+    canvas.style.height = h + 'px';
+    ctx.scale(dpr, dpr);
+
+    const data = [
+      {label:'10-20',v:1},{label:'20-30',v:10},{label:'30-40',v:52},{label:'40-50',v:77},
+      {label:'50-60',v:78},{label:'60-70',v:73},{label:'70-80',v:45},{label:'80-90',v:35},
+      {label:'90-100',v:31},{label:'100-110',v:16},{label:'110-120',v:12},{label:'120-130',v:5},
+      {label:'130-140',v:11},{label:'140-150',v:8},{label:'150-160',v:5},{label:'160+',v:18}
+    ];
+
+    const maxV = Math.max(...data.map(d=>d.v));
+    const padL = 48, padR = 16, padT = 16, padB = 48;
+    const chartW = w - padL - padR;
+    const chartH = h - padT - padB;
+    const barW = (chartW / data.length) - 4;
+
+    ctx.clearRect(0, 0, w, h);
+
+    // Y axis
+    ctx.font = '11px JetBrains Mono';
+    ctx.fillStyle = '#9C9890';
+    ctx.textAlign = 'right';
+    for (let i = 0; i <= 4; i++) {
+      const val = Math.round(maxV * i / 4);
+      const y = padT + chartH - (chartH * i / 4);
+      ctx.fillText(val, padL - 8, y + 4);
+      ctx.strokeStyle = '#E8E6E1';
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(padL, y);
+      ctx.lineTo(w - padR, y);
+      ctx.stroke();
+    }
+
+    // Bars
+    data.forEach((d, i) => {
+      const x = padL + i * (chartW / data.length) + 2;
+      const barH = (d.v / maxV) * chartH;
+      const y = padT + chartH - barH;
+
+      // Gradient fill
+      const isMedian = d.label === '60-70';
+      ctx.fillStyle = isMedian ? '#2563EB' : (i < 9 ? '#7C3AED' : '#DC2626');
+      ctx.globalAlpha = isMedian ? 1 : 0.7;
+      ctx.beginPath();
+      ctx.roundRect(x, y, barW, barH, [3, 3, 0, 0]);
+      ctx.fill();
+      ctx.globalAlpha = 1;
+
+      // Value on top
+      if (d.v > 4) {
+        ctx.fillStyle = '#1A1A18';
+        ctx.font = '10px JetBrains Mono';
+        ctx.textAlign = 'center';
+        ctx.fillText(d.v, x + barW/2, y - 4);
+      }
+
+      // X label
+      ctx.fillStyle = '#9C9890';
+      ctx.font = '9px JetBrains Mono';
+      ctx.textAlign = 'center';
+      ctx.save();
+      ctx.translate(x + barW/2, padT + chartH + 12);
+      ctx.fillText(d.label + '%', 0, 0);
+      ctx.restore();
+    });
+
+    // Median line
+    const medianIdx = 5; // 60-70 bucket
+    const medianX = padL + 4.8 * (chartW / data.length);
+    ctx.strokeStyle = '#2563EB';
+    ctx.lineWidth = 2;
+    ctx.setLineDash([4,3]);
+    ctx.beginPath();
+    ctx.moveTo(medianX, padT);
+    ctx.lineTo(medianX, padT + chartH);
+    ctx.stroke();
+    ctx.setLineDash([]);
+
+    ctx.fillStyle = '#2563EB';
+    ctx.font = '600 10px JetBrains Mono';
+    ctx.textAlign = 'left';
+    ctx.fillText('← Median 61.8%', medianX + 4, padT + 12);
+  }
+
+  draw();
+  window.addEventListener('resize', draw);
+})();
+
+// === SCATTER PLOT ===
+(function() {
+  const canvas = document.getElementById('scatterPlot');
+  const ctx = canvas.getContext('2d');
+  const dpr = window.devicePixelRatio || 1;
+
+  const scatterData = [{"x":60.6,"y":66.8,"gx":"1"},{"x":85.9,"y":215.5,"gx":"3"},{"x":57.0,"y":72.2,"gx":"2"},{"x":99.4,"y":77.1,"gx":"2"},{"x":99.8,"y":177.2,"gx":"1"},{"x":69.3,"y":52.8,"gx":"4"},{"x":50.3,"y":106.8,"gx":"3"},{"x":75.1,"y":96.3,"gx":"1"},{"x":60.9,"y":82.0,"gx":"3"},{"x":60.3,"y":74.1,"gx":"1"},{"x":40.9,"y":78.4,"gx":"3"},{"x":159.8,"y":111.2,"gx":"4"},{"x":51.1,"y":84.2,"gx":"1"},{"x":54.6,"y":100.2,"gx":"3"},{"x":48.9,"y":139.7,"gx":"1"},{"x":55.0,"y":111.7,"gx":"1"},{"x":67.8,"y":42.4,"gx":"2"},{"x":40.4,"y":228.5,"gx":"3"},{"x":65.5,"y":65.5,"gx":"1"},{"x":41.0,"y":69.4,"gx":"1"},{"x":231.8,"y":94.6,"gx":"2"},{"x":49.9,"y":112.3,"gx":"1"},{"x":42.6,"y":150.8,"gx":"2"},{"x":71.7,"y":165.2,"gx":"3"},{"x":36.2,"y":130.4,"gx":"2"},{"x":91.7,"y":166.7,"gx":"3"},{"x":83.5,"y":110.6,"gx":"1"},{"x":131.9,"y":75.7,"gx":"2"},{"x":49.2,"y":79.5,"gx":"1"},{"x":55.7,"y":69.5,"gx":"3"},{"x":218.2,"y":69.5,"gx":"4"},{"x":99.1,"y":68.3,"gx":"1"},{"x":86.3,"y":103.0,"gx":"1"},{"x":68.9,"y":102.2,"gx":"2"},{"x":59.8,"y":166.4,"gx":"2"},{"x":88.2,"y":110.7,"gx":"1"},{"x":47.9,"y":74.9,"gx":"2"},{"x":35.2,"y":123.7,"gx":"2"},{"x":56.6,"y":61.5,"gx":"3"},{"x":63.9,"y":105.4,"gx":"1"},{"x":35.3,"y":98.2,"gx":"1"},{"x":39.6,"y":114.8,"gx":"1"},{"x":31.0,"y":67.0,"gx":"1"},{"x":47.9,"y":113.3,"gx":"1"},{"x":47.3,"y":58.3,"gx":"1"},{"x":28.2,"y":60.2,"gx":"2"},{"x":23.0,"y":74.1,"gx":"2"},{"x":60.8,"y":98.9,"gx":"1"},{"x":48.1,"y":116.6,"gx":"2"},{"x":60.8,"y":76.8,"gx":"2"},{"x":65.9,"y":58.8,"gx":"1"},{"x":62.2,"y":103.7,"gx":"2"},{"x":63.5,"y":72.3,"gx":"2"},{"x":117.2,"y":109.6,"gx":"1"},{"x":151.7,"y":154.1,"gx":"2"},{"x":38.1,"y":76.1,"gx":"1"},{"x":45.7,"y":174.0,"gx":"3"},{"x":71.3,"y":153.9,"gx":"2"},{"x":92.0,"y":94.0,"gx":"1"},{"x":79.4,"y":79.4,"gx":"1"},{"x":145.5,"y":81.1,"gx":"1"},{"x":72.3,"y":122.8,"gx":"2"},{"x":93.2,"y":90.6,"gx":"1"},{"x":59.7,"y":102.0,"gx":"1"},{"x":35.1,"y":133.8,"gx":"2"},{"x":102.9,"y":84.4,"gx":"2"},{"x":38.1,"y":154.1,"gx":"2"},{"x":69.4,"y":123.4,"gx":"1"},{"x":39.1,"y":168.8,"gx":"2"},{"x":49.0,"y":150.8,"gx":"2"},{"x":54.7,"y":74.6,"gx":"3"},{"x":62.6,"y":60.5,"gx":"1"},{"x":29.3,"y":42.0,"gx":"2"},{"x":39.0,"y":65.4,"gx":"1"},{"x":26.7,"y":77.1,"gx":"2"},{"x":49.4,"y":90.6,"gx":"1"},{"x":103.8,"y":65.0,"gx":"2"},{"x":85.1,"y":191.7,"gx":"3"},{"x":65.9,"y":76.5,"gx":"1"},{"x":66.2,"y":99.3,"gx":"1"},{"x":149.0,"y":115.7,"gx":"1"},{"x":54.4,"y":122.1,"gx":"2"},{"x":62.8,"y":93.5,"gx":"1"},{"x":36.2,"y":35.6,"gx":"1"},{"x":41.3,"y":130.7,"gx":"3"},{"x":59.0,"y":108.2,"gx":"1"},{"x":49.0,"y":136.0,"gx":"2"},{"x":34.5,"y":92.7,"gx":"1"},{"x":50.3,"y":86.8,"gx":"1"},{"x":41.8,"y":138.2,"gx":"1"},{"x":51.7,"y":89.0,"gx":"2"},{"x":58.8,"y":47.7,"gx":"2"},{"x":58.9,"y":101.5,"gx":"2"},{"x":49.7,"y":95.2,"gx":"3"},{"x":61.2,"y":77.4,"gx":"2"},{"x":72.9,"y":134.7,"gx":"1"},{"x":64.6,"y":102.6,"gx":"1"},{"x":93.6,"y":66.9,"gx":"2"},{"x":107.4,"y":135.8,"gx":"2"},{"x":67.7,"y":115.2,"gx":"3"},{"x":61.1,"y":123.7,"gx":"3"},{"x":63.4,"y":72.0,"gx":"1"},{"x":86.3,"y":71.4,"gx":"1"},{"x":92.4,"y":181.9,"gx":"2"},{"x":107.4,"y":136.9,"gx":"2"},{"x":216.7,"y":140.4,"gx":"2"},{"x":104.3,"y":111.4,"gx":"2"},{"x":106.1,"y":109.6,"gx":"1"},{"x":92.8,"y":99.6,"gx":"1"},{"x":42.0,"y":65.4,"gx":"3"},{"x":52.6,"y":57.4,"gx":"3"},{"x":42.9,"y":62.1,"gx":"3"},{"x":44.1,"y":45.0,"gx":"1"},{"x":61.8,"y":138.6,"gx":"1"},{"x":45.4,"y":63.4,"gx":"1"},{"x":36.7,"y":96.7,"gx":"3"},{"x":52.6,"y":88.4,"gx":"3"},{"x":45.9,"y":79.8,"gx":"1"},{"x":55.1,"y":67.5,"gx":"1"},{"x":63.2,"y":104.2,"gx":"1"},{"x":58.4,"y":59.7,"gx":"2"},{"x":50.4,"y":83.7,"gx":"1"},{"x":52.3,"y":101.4,"gx":"1"},{"x":79.4,"y":118.0,"gx":"1"},{"x":125.3,"y":77.2,"gx":"4"},{"x":81.9,"y":134.4,"gx":"2"},{"x":31.4,"y":184.1,"gx":"3"},{"x":196.4,"y":113.8,"gx":"4"},{"x":58.2,"y":110.7,"gx":"3"},{"x":69.0,"y":181.3,"gx":"2"},{"x":71.3,"y":68.6,"gx":"1"},{"x":43.4,"y":131.1,"gx":"2"},{"x":80.8,"y":106.0,"gx":"1"},{"x":99.9,"y":98.1,"gx":"1"},{"x":57.6,"y":86.6,"gx":"1"},{"x":50.1,"y":35.7,"gx":"2"},{"x":52.7,"y":71.4,"gx":"1"},{"x":72.8,"y":41.0,"gx":"1"},{"x":125.8,"y":138.1,"gx":"1"},{"x":90.3,"y":122.9,"gx":"2"},{"x":70.2,"y":108.9,"gx":"3"},{"x":108.5,"y":83.8,"gx":"1"},{"x":110.9,"y":84.2,"gx":"2"},{"x":139.4,"y":114.4,"gx":"1"},{"x":44.2,"y":146.3,"gx":"1"},{"x":61.7,"y":74.9,"gx":"2"},{"x":57.3,"y":165.2,"gx":"3"},{"x":75.7,"y":103.6,"gx":"2"},{"x":87.9,"y":81.4,"gx":"2"},{"x":41.8,"y":113.7,"gx":"3"},{"x":62.2,"y":87.4,"gx":"2"},{"x":97.5,"y":93.2,"gx":"4"},{"x":34.8,"y":123.1,"gx":"3"},{"x":39.0,"y":67.9,"gx":"2"},{"x":38.0,"y":100.9,"gx":"3"},{"x":42.3,"y":72.2,"gx":"1"},{"x":55.8,"y":97.7,"gx":"3"},{"x":47.2,"y":63.3,"gx":"2"},{"x":54.8,"y":116.4,"gx":"1"},{"x":73.2,"y":77.9,"gx":"1"},{"x":39.6,"y":119.4,"gx":"2"},{"x":67.5,"y":129.3,"gx":"3"},{"x":49.7,"y":85.4,"gx":"2"},{"x":79.1,"y":93.4,"gx":"1"},{"x":61.3,"y":81.1,"gx":"1"},{"x":115.4,"y":104.2,"gx":"4"},{"x":70.1,"y":109.6,"gx":"3"},{"x":65.4,"y":127.4,"gx":"2"},{"x":99.5,"y":103.4,"gx":"2"},{"x":40.8,"y":129.5,"gx":"1"},{"x":66.4,"y":72.6,"gx":"2"},{"x":54.3,"y":91.9,"gx":"1"},{"x":164.2,"y":242.5,"gx":"3"},{"x":55.3,"y":134.4,"gx":"1"},{"x":36.3,"y":104.0,"gx":"2"},{"x":79.4,"y":68.9,"gx":"1"},{"x":78.3,"y":117.8,"gx":"2"},{"x":44.8,"y":103.4,"gx":"3"},{"x":42.5,"y":90.0,"gx":"1"},{"x":51.6,"y":56.9,"gx":"3"},{"x":56.2,"y":75.8,"gx":"2"},{"x":48.8,"y":153.3,"gx":"2"},{"x":61.1,"y":93.4,"gx":"3"},{"x":48.9,"y":94.9,"gx":"3"},{"x":39.9,"y":116.0,"gx":"3"},{"x":63.7,"y":58.1,"gx":"1"},{"x":84.5,"y":63.6,"gx":"4"},{"x":29.9,"y":73.4,"gx":"2"},{"x":55.6,"y":46.2,"gx":"1"},{"x":44.7,"y":129.8,"gx":"1"},{"x":55.4,"y":163.4,"gx":"1"},{"x":28.7,"y":67.6,"gx":"1"},{"x":54.2,"y":97.4,"gx":"1"},{"x":32.7,"y":85.7,"gx":"1"},{"x":38.7,"y":52.2,"gx":"1"},{"x":49.9,"y":86.2,"gx":"3"},{"x":61.6,"y":64.8,"gx":"1"},{"x":47.4,"y":73.5,"gx":"1"},{"x":53.3,"y":56.3,"gx":"1"},{"x":57.2,"y":121.0,"gx":"3"},{"x":81.2,"y":71.6,"gx":"2"},{"x":79.4,"y":98.8,"gx":"3"},{"x":84.1,"y":78.1,"gx":"1"},{"x":271.2,"y":127.9,"gx":"2"},{"x":164.4,"y":204.8,"gx":"2"},{"x":78.1,"y":74.4,"gx":"2"},{"x":110.0,"y":119.6,"gx":"2"},{"x":69.3,"y":140.6,"gx":"2"},{"x":116.4,"y":119.4,"gx":"1"},{"x":84.0,"y":98.5,"gx":"2"},{"x":56.3,"y":150.7,"gx":"1"},{"x":68.3,"y":118.4,"gx":"1"},{"x":44.9,"y":119.0,"gx":"3"},{"x":49.8,"y":53.7,"gx":"2"},{"x":39.2,"y":101.9,"gx":"3"},{"x":84.6,"y":79.3,"gx":"2"},{"x":75.6,"y":75.1,"gx":"1"},{"x":41.0,"y":156.7,"gx":"1"},{"x":61.3,"y":62.3,"gx":"2"},{"x":49.4,"y":109.4,"gx":"1"},{"x":32.4,"y":93.6,"gx":"1"},{"x":107.7,"y":68.3,"gx":"4"},{"x":80.8,"y":100.6,"gx":"1"},{"x":38.8,"y":92.4,"gx":"1"},{"x":66.5,"y":90.1,"gx":"2"},{"x":144.6,"y":146.3,"gx":"2"},{"x":83.2,"y":96.5,"gx":"1"},{"x":80.3,"y":107.3,"gx":"1"},{"x":43.1,"y":47.7,"gx":"1"},{"x":79.1,"y":66.9,"gx":"4"},{"x":182.9,"y":121.1,"gx":"1"},{"x":108.0,"y":121.2,"gx":"3"},{"x":70.0,"y":93.3,"gx":"3"},{"x":88.6,"y":136.0,"gx":"1"},{"x":46.5,"y":107.0,"gx":"3"},{"x":55.2,"y":93.2,"gx":"1"},{"x":29.8,"y":90.6,"gx":"3"},{"x":48.6,"y":125.1,"gx":"3"},{"x":153.3,"y":149.6,"gx":"1"},{"x":94.1,"y":71.3,"gx":"4"},{"x":32.0,"y":121.7,"gx":"1"},{"x":47.2,"y":81.5,"gx":"2"},{"x":19.1,"y":209.6,"gx":"3"},{"x":65.2,"y":113.1,"gx":"3"},{"x":31.4,"y":64.6,"gx":"3"},{"x":170.0,"y":109.3,"gx":"4"},{"x":60.6,"y":116.8,"gx":"3"},{"x":83.7,"y":106.2,"gx":"1"},{"x":87.8,"y":101.9,"gx":"2"},{"x":111.5,"y":66.8,"gx":"4"},{"x":125.4,"y":231.7,"gx":"1"},{"x":81.9,"y":163.3,"gx":"2"},{"x":139.1,"y":96.3,"gx":"1"},{"x":77.8,"y":99.7,"gx":"3"},{"x":80.6,"y":86.7,"gx":"2"},{"x":60.2,"y":139.7,"gx":"2"},{"x":74.8,"y":116.4,"gx":"3"},{"x":62.5,"y":69.1,"gx":"1"},{"x":42.0,"y":73.7,"gx":"3"},{"x":50.5,"y":127.0,"gx":"3"},{"x":38.3,"y":50.4,"gx":"3"},{"x":40.6,"y":56.6,"gx":"1"},{"x":59.4,"y":58.7,"gx":"2"},{"x":34.3,"y":129.7,"gx":"2"},{"x":50.3,"y":70.0,"gx":"2"},{"x":67.2,"y":96.3,"gx":"3"},{"x":40.6,"y":102.5,"gx":"1"},{"x":40.5,"y":122.5,"gx":"2"},{"x":95.7,"y":86.3,"gx":"2"},{"x":58.9,"y":77.3,"gx":"2"},{"x":92.0,"y":104.6,"gx":"2"},{"x":66.6,"y":93.3,"gx":"1"},{"x":48.0,"y":112.2,"gx":"2"},{"x":189.8,"y":142.6,"gx":"2"},{"x":77.3,"y":270.6,"gx":"2"},{"x":231.1,"y":307.6,"gx":"3"},{"x":95.9,"y":85.6,"gx":"1"},{"x":142.9,"y":92.0,"gx":"4"},{"x":237.4,"y":104.0,"gx":"4"},{"x":87.4,"y":83.6,"gx":"2"},{"x":61.9,"y":40.5,"gx":"1"},{"x":32.3,"y":32.5,"gx":"1"},{"x":50.1,"y":49.7,"gx":"2"},{"x":76.8,"y":57.4,"gx":"1"},{"x":82.5,"y":53.3,"gx":"4"},{"x":131.3,"y":80.5,"gx":"1"},{"x":34.7,"y":95.7,"gx":"3"},{"x":51.5,"y":81.2,"gx":"1"},{"x":45.1,"y":65.9,"gx":"1"},{"x":46.3,"y":52.1,"gx":"1"},{"x":44.1,"y":137.9,"gx":"3"},{"x":135.2,"y":116.9,"gx":"1"},{"x":55.2,"y":105.3,"gx":"1"},{"x":43.1,"y":180.9,"gx":"3"},{"x":66.1,"y":69.5,"gx":"2"},{"x":96.1,"y":62.7,"gx":"1"},{"x":55.4,"y":44.0,"gx":"1"},{"x":90.6,"y":170.9,"gx":"3"},{"x":58.6,"y":38.8,"gx":"4"},{"x":46.0,"y":90.6,"gx":"3"},{"x":51.8,"y":116.6,"gx":"3"},{"x":49.3,"y":88.8,"gx":"3"},{"x":60.6,"y":94.8,"gx":"1"},{"x":66.2,"y":71.9,"gx":"3"},{"x":52.8,"y":103.1,"gx":"3"},{"x":108.4,"y":86.4,"gx":"2"},{"x":33.7,"y":266.1,"gx":"3"},{"x":146.8,"y":37.7,"gx":"1"},{"x":26.9,"y":93.3,"gx":"1"},{"x":34.6,"y":90.6,"gx":"3"},{"x":110.9,"y":115.8,"gx":"2"},{"x":56.3,"y":68.2,"gx":"1"},{"x":65.2,"y":77.4,"gx":"2"},{"x":50.8,"y":81.8,"gx":"3"},{"x":67.2,"y":86.3,"gx":"1"},{"x":24.0,"y":99.5,"gx":"3"},{"x":62.9,"y":55.1,"gx":"1"},{"x":34.8,"y":81.3,"gx":"2"},{"x":53.6,"y":98.0,"gx":"2"},{"x":80.5,"y":99.4,"gx":"1"},{"x":98.9,"y":118.9,"gx":"2"},{"x":233.6,"y":93.7,"gx":"4"},{"x":89.1,"y":97.3,"gx":"1"},{"x":126.1,"y":111.2,"gx":"2"},{"x":80.7,"y":108.7,"gx":"3"},{"x":119.1,"y":88.1,"gx":"2"},{"x":114.9,"y":131.5,"gx":"1"},{"x":102.4,"y":124.6,"gx":"2"},{"x":264.0,"y":95.4,"gx":"1"},{"x":48.4,"y":103.4,"gx":"2"},{"x":58.2,"y":78.5,"gx":"1"},{"x":93.0,"y":95.8,"gx":"1"},{"x":71.1,"y":122.7,"gx":"2"},{"x":42.0,"y":110.2,"gx":"2"},{"x":84.0,"y":83.3,"gx":"2"},{"x":49.6,"y":76.1,"gx":"3"},{"x":66.8,"y":72.3,"gx":"2"},{"x":78.6,"y":95.4,"gx":"1"},{"x":72.2,"y":80.4,"gx":"1"},{"x":33.7,"y":146.7,"gx":"1"},{"x":49.5,"y":85.0,"gx":"3"},{"x":102.1,"y":94.3,"gx":"2"},{"x":140.2,"y":89.6,"gx":"4"},{"x":66.5,"y":95.4,"gx":"2"},{"x":77.9,"y":112.4,"gx":"1"},{"x":142.5,"y":86.6,"gx":"1"},{"x":66.9,"y":107.2,"gx":"3"},{"x":69.2,"y":72.1,"gx":"1"},{"x":63.4,"y":149.1,"gx":"2"},{"x":139.4,"y":86.8,"gx":"4"},{"x":148.1,"y":121.1,"gx":"4"},{"x":69.9,"y":82.9,"gx":"2"},{"x":136.4,"y":210.0,"gx":"2"},{"x":57.6,"y":99.6,"gx":"1"},{"x":39.8,"y":63.7,"gx":"3"},{"x":69.6,"y":132.3,"gx":"3"},{"x":98.0,"y":147.4,"gx":"2"},{"x":65.9,"y":87.0,"gx":"1"},{"x":56.3,"y":61.8,"gx":"1"},{"x":69.2,"y":60.8,"gx":"2"},{"x":69.1,"y":156.5,"gx":"1"},{"x":71.2,"y":61.3,"gx":"2"},{"x":44.6,"y":78.6,"gx":"2"},{"x":50.5,"y":78.4,"gx":"2"},{"x":64.8,"y":46.3,"gx":"1"},{"x":53.1,"y":94.2,"gx":"1"},{"x":73.0,"y":91.3,"gx":"3"},{"x":56.4,"y":56.0,"gx":"2"},{"x":42.4,"y":89.0,"gx":"3"},{"x":112.0,"y":89.1,"gx":"2"},{"x":53.9,"y":79.7,"gx":"2"},{"x":61.9,"y":134.8,"gx":"1"},{"x":99.7,"y":90.7,"gx":"4"},{"x":117.8,"y":130.1,"gx":"2"},{"x":51.5,"y":125.7,"gx":"2"},{"x":98.5,"y":123.7,"gx":"3"},{"x":79.4,"y":95.6,"gx":"2"},{"x":68.5,"y":47.2,"gx":"1"},{"x":77.2,"y":218.5,"gx":"2"},{"x":76.1,"y":88.2,"gx":"1"},{"x":44.2,"y":84.6,"gx":"1"},{"x":53.3,"y":136.8,"gx":"2"},{"x":70.5,"y":72.9,"gx":"1"},{"x":50.4,"y":94.3,"gx":"3"},{"x":61.2,"y":112.7,"gx":"3"},{"x":32.0,"y":85.2,"gx":"3"},{"x":39.6,"y":83.5,"gx":"3"},{"x":61.8,"y":82.0,"gx":"1"},{"x":31.7,"y":165.3,"gx":"2"},{"x":41.5,"y":80.5,"gx":"3"},{"x":83.6,"y":82.0,"gx":"1"},{"x":38.9,"y":79.8,"gx":"3"},{"x":58.7,"y":74.5,"gx":"2"},{"x":61.5,"y":75.2,"gx":"1"},{"x":60.3,"y":108.2,"gx":"3"},{"x":37.7,"y":123.2,"gx":"2"},{"x":78.3,"y":91.4,"gx":"1"},{"x":86.2,"y":98.3,"gx":"2"},{"x":32.6,"y":105.8,"gx":"3"},{"x":75.2,"y":178.7,"gx":"3"},{"x":78.5,"y":105.7,"gx":"1"},{"x":51.4,"y":74.4,"gx":"2"},{"x":44.0,"y":87.6,"gx":"3"},{"x":40.5,"y":64.6,"gx":"2"},{"x":37.5,"y":112.4,"gx":"1"},{"x":52.7,"y":72.7,"gx":"1"},{"x":40.0,"y":167.4,"gx":"3"},{"x":104.6,"y":82.0,"gx":"1"},{"x":118.0,"y":110.5,"gx":"2"},{"x":56.4,"y":69.1,"gx":"2"},{"x":92.8,"y":99.9,"gx":"1"},{"x":159.0,"y":120.7,"gx":"2"},{"x":96.7,"y":114.2,"gx":"1"},{"x":44.0,"y":71.0,"gx":"3"},{"x":43.0,"y":92.9,"gx":"2"},{"x":106.1,"y":80.9,"gx":"1"},{"x":58.2,"y":74.9,"gx":"2"},{"x":94.2,"y":71.1,"gx":"2"},{"x":46.8,"y":78.0,"gx":"3"},{"x":83.8,"y":118.9,"gx":"2"},{"x":132.5,"y":101.8,"gx":"4"},{"x":50.0,"y":114.5,"gx":"2"},{"x":67.0,"y":143.8,"gx":"1"},{"x":172.6,"y":140.9,"gx":"2"},{"x":155.7,"y":154.0,"gx":"1"},{"x":46.2,"y":126.1,"gx":"2"},{"x":53.0,"y":132.1,"gx":"3"},{"x":139.7,"y":61.5,"gx":"1"},{"x":52.3,"y":58.7,"gx":"3"},{"x":72.0,"y":79.4,"gx":"1"},{"x":48.1,"y":131.1,"gx":"2"},{"x":58.7,"y":137.4,"gx":"2"},{"x":32.8,"y":129.4,"gx":"3"},{"x":166.8,"y":90.1,"gx":"2"},{"x":72.1,"y":95.0,"gx":"1"},{"x":102.1,"y":75.6,"gx":"1"},{"x":127.1,"y":102.0,"gx":"4"},{"x":70.0,"y":76.9,"gx":"1"},{"x":36.2,"y":113.2,"gx":"3"},{"x":109.8,"y":93.4,"gx":"2"},{"x":30.1,"y":49.7,"gx":"1"},{"x":36.0,"y":68.8,"gx":"3"},{"x":72.3,"y":129.2,"gx":"2"},{"x":45.7,"y":76.1,"gx":"1"},{"x":39.1,"y":83.5,"gx":"3"},{"x":84.6,"y":60.4,"gx":"1"},{"x":57.7,"y":100.5,"gx":"1"},{"x":43.9,"y":68.7,"gx":"3"},{"x":53.9,"y":62.9,"gx":"1"},{"x":48.1,"y":91.9,"gx":"2"},{"x":134.7,"y":190.8,"gx":"1"},{"x":75.7,"y":149.9,"gx":"3"},{"x":83.9,"y":82.4,"gx":"1"},{"x":97.9,"y":89.7,"gx":"2"},{"x":80.9,"y":114.2,"gx":"3"},{"x":59.5,"y":126.7,"gx":"1"},{"x":60.5,"y":65.6,"gx":"1"},{"x":39.5,"y":67.4,"gx":"3"},{"x":28.3,"y":55.6,"gx":"3"},{"x":57.3,"y":94.1,"gx":"2"},{"x":38.9,"y":161.0,"gx":"3"},{"x":90.5,"y":111.7,"gx":"3"},{"x":97.3,"y":108.2,"gx":"1"},{"x":60.2,"y":70.7,"gx":"1"},{"x":67.1,"y":74.5,"gx":"1"},{"x":76.3,"y":104.5,"gx":"1"},{"x":42.4,"y":85.7,"gx":"3"},{"x":39.3,"y":105.8,"gx":"1"},{"x":35.9,"y":92.4,"gx":"3"},{"x":50.5,"y":105.4,"gx":"3"},{"x":97.8,"y":84.5,"gx":"4"},{"x":82.3,"y":87.4,"gx":"2"},{"x":235.1,"y":89.6,"gx":"2"},{"x":136.9,"y":162.4,"gx":"2"},{"x":74.9,"y":157.8,"gx":"2"},{"x":258.9,"y":81.3,"gx":"4"},{"x":45.0,"y":69.0,"gx":"3"}];
+
+  const colors = {'1':'#2563EB','2':'#DC2626','3':'#7C3AED','4':'#64748B'};
+
+  function draw() {
+    const rect = canvas.parentElement.getBoundingClientRect();
+    const w = rect.width - 48;
+    const h = 360;
+    canvas.width = w * dpr;
+    canvas.height = h * dpr;
+    canvas.style.width = w + 'px';
+    canvas.style.height = h + 'px';
+    ctx.scale(dpr, dpr);
+
+    const padL = 56, padR = 20, padT = 20, padB = 48;
+    const chartW = w - padL - padR;
+    const chartH = h - padT - padB;
+    const xMax = 280, yMax = 320;
+
+    ctx.clearRect(0, 0, w, h);
+
+    // Grid
+    ctx.font = '10px JetBrains Mono';
+    ctx.fillStyle = '#9C9890';
+    ctx.strokeStyle = '#E8E6E1';
+    ctx.lineWidth = 1;
+
+    // X axis
+    for (let v = 0; v <= xMax; v += 50) {
+      const x = padL + (v / xMax) * chartW;
+      ctx.textAlign = 'center';
+      ctx.fillText(v + '%', x, h - padB + 20);
+      ctx.beginPath();
+      ctx.moveTo(x, padT);
+      ctx.lineTo(x, h - padB);
+      ctx.stroke();
+    }
+
+    // Y axis
+    for (let v = 0; v <= yMax; v += 50) {
+      const y = padT + chartH - (v / yMax) * chartH;
+      ctx.textAlign = 'right';
+      ctx.fillText(v + '%', padL - 8, y + 4);
+      ctx.beginPath();
+      ctx.moveTo(padL, y);
+      ctx.lineTo(w - padR, y);
+      ctx.stroke();
+    }
+
+    // Axis labels
+    ctx.fillStyle = '#6B6964';
+    ctx.font = '11px DM Sans';
+    ctx.textAlign = 'center';
+    ctx.fillText('GX Range / ABR', padL + chartW/2, h - 4);
+    ctx.save();
+    ctx.translate(12, padT + chartH/2);
+    ctx.rotate(-Math.PI/2);
+    ctx.fillText('Daily Range / ABR', 0, 0);
+    ctx.restore();
+
+    // 100% reference lines
+    ctx.strokeStyle = '#D4D1C9';
+    ctx.lineWidth = 1.5;
+    ctx.setLineDash([6, 3]);
+    // Vertical at x=100
+    const x100 = padL + (100 / xMax) * chartW;
+    ctx.beginPath();
+    ctx.moveTo(x100, padT);
+    ctx.lineTo(x100, h - padB);
+    ctx.stroke();
+    // Horizontal at y=100
+    const y100 = padT + chartH - (100 / yMax) * chartH;
+    ctx.beginPath();
+    ctx.moveTo(padL, y100);
+    ctx.lineTo(w - padR, y100);
+    ctx.stroke();
+    ctx.setLineDash([]);
+
+    // Points — draw "Neither" last so they're visible
+    const order = ['3','1','2','4'];
+    order.forEach(cat => {
+      scatterData.filter(d => d.gx === cat).forEach(d => {
+        const x = padL + (Math.min(d.x, xMax) / xMax) * chartW;
+        const y = padT + chartH - (Math.min(d.y, yMax) / yMax) * chartH;
+        ctx.globalAlpha = cat === '4' ? 0.9 : 0.55;
+        ctx.fillStyle = colors[cat];
+        ctx.beginPath();
+        ctx.arc(x, y, cat === '4' ? 5 : 3.5, 0, Math.PI * 2);
+        ctx.fill();
+      });
+    });
+    ctx.globalAlpha = 1;
+  }
+
+  draw();
+  window.addEventListener('resize', draw);
+})();
+</script>
+</body>
+</html>
