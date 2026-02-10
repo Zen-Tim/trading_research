@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CME MINI ES1 — Day After Inside & Outside Bars</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #FAFAF8; --surface: #FFFFFF; --surface-alt: #F5F4F0;
+  --border: #E8E6E1; --border-strong: #D4D1C9;
+  --text-primary: #1A1A18; --text-secondary: #6B6964; --text-muted: #9C9890;
+  --accent: #2563EB; --accent-light: #EFF6FF;
+  --green: #16A34A; --green-light: #F0FDF4; --green-bg: #DCFCE7;
+  --red: #DC2626; --red-light: #FEF2F2; --red-bg: #FEE2E2;
+  --amber: #D97706; --amber-light: #FFFBEB; --amber-bg: #FEF3C7;
+  --purple: #7C3AED; --purple-light: #F5F3FF; --purple-bg: #EDE9FE;
+  --slate: #64748B; --slate-bg: #F1F5F9;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: 'DM Sans', -apple-system, sans-serif; background: var(--bg); color: var(--text-primary); line-height: 1.6; -webkit-font-smoothing: antialiased; }
+.container { max-width: 1200px; margin: 0 auto; padding: 48px 32px; }
+.header { margin-bottom: 48px; }
+.header-tag { font-family: 'JetBrains Mono', monospace; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: var(--accent); background: var(--accent-light); display: inline-block; padding: 4px 12px; border-radius: 4px; margin-bottom: 16px; }
+.header h1 { font-size: 32px; font-weight: 700; letter-spacing: -0.02em; margin-bottom: 8px; }
+.header .subtitle { font-size: 16px; color: var(--text-secondary); margin-bottom: 16px; }
+.meta-row { display: flex; gap: 24px; flex-wrap: wrap; font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--text-muted); }
+.meta-row span::before { content: '\00B7'; margin-right: 8px; }
+.meta-row span:first-child::before { content: ''; margin: 0; }
+.section { margin-bottom: 56px; }
+.section-divider { border: none; border-top: 2px solid var(--border-strong); margin-bottom: 40px; }
+.section-header { margin-bottom: 32px; }
+.section-header h2 { font-size: 20px; font-weight: 700; letter-spacing: -0.01em; margin-bottom: 4px; }
+.section-header .section-desc { font-size: 14px; color: var(--text-secondary); }
+.kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 32px; }
+.kpi-card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 20px; border-left: 3px solid var(--accent); transition: box-shadow 0.2s; }
+.kpi-card:hover { box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+.kpi-card.green { border-left-color: var(--green); }
+.kpi-card.red { border-left-color: var(--red); }
+.kpi-card.amber { border-left-color: var(--amber); }
+.kpi-card.purple { border-left-color: var(--purple); }
+.kpi-label { font-family: 'DM Sans', sans-serif; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-muted); margin-bottom: 4px; }
+.kpi-value { font-family: 'JetBrains Mono', monospace; font-size: 28px; font-weight: 700; line-height: 1.1; }
+.kpi-sub { font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--text-muted); margin-top: 4px; }
+.chart-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 32px; }
+@media (max-width: 768px) { .chart-grid { grid-template-columns: 1fr; } }
+.chart-card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 28px; }
+.chart-card h3 { font-size: 16px; font-weight: 700; margin-bottom: 4px; letter-spacing: -0.01em; }
+.chart-card .chart-subtitle { font-size: 13px; color: var(--text-secondary); margin-bottom: 20px; }
+.chart-canvas-wrap { display: flex; justify-content: center; align-items: center; margin-bottom: 20px; }
+.chart-canvas-wrap canvas { max-width: 100%; }
+.data-table { width: 100%; border-collapse: collapse; }
+.data-table th { font-family: 'JetBrains Mono', monospace; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-muted); background: var(--surface-alt); padding: 8px 12px; text-align: left; }
+.data-table th:last-child, .data-table td:last-child { text-align: right; }
+.data-table td { padding: 10px 12px; border-bottom: 1px solid var(--border); font-size: 14px; }
+.data-table tr:last-child td { border-bottom: none; }
+.data-table tr:hover td { background: rgba(0,0,0,0.015); }
+.mono { font-family: 'JetBrains Mono', monospace; font-size: 13px; }
+.right { text-align: right; }
+.pill { font-family: 'JetBrains Mono', monospace; font-size: 12px; font-weight: 600; padding: 3px 10px; border-radius: 99px; display: inline-block; }
+.pill.green { background: var(--green-bg); color: var(--green); }
+.pill.red { background: var(--red-bg); color: var(--red); }
+.pill.amber { background: var(--amber-bg); color: var(--amber); }
+.pill.blue { background: var(--accent-light); color: var(--accent); }
+.pill.purple { background: var(--purple-bg); color: var(--purple); }
+.pill.slate { background: var(--slate-bg); color: var(--slate); }
+.pill.orange { background: #FFF7ED; color: #EA580C; }
+.pill.yellow { background: #FEF9C3; color: #A16207; }
+.color-dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 8px; vertical-align: middle; }
+.footer { border-top: 1px solid var(--border); padding-top: 24px; margin-top: 48px; display: flex; justify-content: space-between; font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--text-muted); }
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="header">
+    <div class="header-tag">&#9670; Quantitative Research</div>
+    <h1>CME MINI ES1 — Day After Inside & Outside Bars</h1>
+    <div class="subtitle">How does the market behave the day after an inside bar vs an outside bar?</div>
+    <div class="meta-row">
+      <span>CME MINI ES1 (Daily)</span>
+      <span>2010-03-26 to 2026-02-09</span>
+      <span>3,994 total bars</span>
+      <span>Zen Stats v11</span>
+    </div>
+  </div>
+
+  <!-- Bar Type Legend -->
+  <div class="section" style="margin-bottom: 40px;">
+    <div class="chart-card" style="max-width: 680px;">
+      <h3 style="margin-bottom: 16px;">Bar Type Definitions</h3>
+      <table class="data-table">
+        <thead><tr><th>Type</th><th>Pattern Name</th><th>Definition</th></tr></thead>
+        <tbody>
+          <tr><td class="mono">1</td><td>BL NOL</td><td>Bull No Overlap (Low &gt; High[1])</td></tr>
+          <tr><td class="mono">2</td><td>BR NOL</td><td>Bear No Overlap (High &lt; Low[1])</td></tr>
+          <tr><td class="mono">3</td><td>Outside</td><td>High &gt; High[1] AND Low &lt; Low[1]</td></tr>
+          <tr><td class="mono">4</td><td>Inside</td><td>High &lt; High[1] AND Low &gt; Low[1]</td></tr>
+          <tr><td class="mono">5</td><td>BLBO</td><td>Bull Breakout (High &gt; High[1])</td></tr>
+          <tr><td class="mono">6</td><td>BRBO</td><td>Bear Breakout (Low &lt; Low[1])</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  
+    <div class="section" id="inside">
+      <div class="section-header">
+        <h2>After an Inside Day</h2>
+        <div class="section-desc">An inside bar has its high below the prior high and its low above the prior low — a contraction day. What happens next?</div>
+      </div>
+
+      <div class="kpi-grid">
+        <div class="kpi-card amber">
+          <div class="kpi-label">Sample Size</div>
+          <div class="kpi-value">419</div>
+          <div class="kpi-sub">10.5% of all bars</div>
+        </div>
+        <div class="kpi-card green">
+          <div class="kpi-label">Gap Up Next Day</div>
+          <div class="kpi-value">54.2%</div>
+          <div class="kpi-sub">227 of 419</div>
+        </div>
+        <div class="kpi-card red">
+          <div class="kpi-label">Gap Down Next Day</div>
+          <div class="kpi-value">44.9%</div>
+          <div class="kpi-sub">188 of 419</div>
+        </div>
+        <div class="kpi-card purple">
+          <div class="kpi-label">Open Outside Range</div>
+          <div class="kpi-value">55.6%</div>
+          <div class="kpi-sub">233 of 419</div>
+        </div>
+      </div>
+
+      <div class="chart-grid">
+        <!-- Gap Open -->
+        <div class="chart-card">
+          <h3>Gap Open</h3>
+          <div class="chart-subtitle">Direction of the opening gap</div>
+          <div class="chart-canvas-wrap"><canvas id="pie-inside-gap" width="280" height="280"></canvas></div>
+          <table class="data-table">
+            <thead><tr><th>Category</th><th>Count</th><th>%</th></tr></thead>
+            <tbody>
+              <tr><td><span class="color-dot" style="background:#16A34A"></span>Gap Up</td><td class="mono right">227</td><td class="mono right"><span class="pill green">54.2%</span></td></tr>
+              <tr><td><span class="color-dot" style="background:#DC2626"></span>Gap Down</td><td class="mono right">188</td><td class="mono right"><span class="pill red">44.9%</span></td></tr>
+              <tr><td><span class="color-dot" style="background:#9C9890"></span>No Gap</td><td class="mono right">4</td><td class="mono right"><span class="pill slate">1.0%</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Open Location -->
+        <div class="chart-card">
+          <h3>Open Location</h3>
+          <div class="chart-subtitle">Where price opens relative to yesterday's range</div>
+          <div class="chart-canvas-wrap"><canvas id="pie-inside-open" width="280" height="280"></canvas></div>
+          <table class="data-table">
+            <thead><tr><th>Category</th><th>Count</th><th>%</th></tr></thead>
+            <tbody>
+              <tr><td><span class="color-dot" style="background:#16A34A"></span>Above Range</td><td class="mono right">138</td><td class="mono right"><span class="pill green">32.9%</span></td></tr>
+              <tr><td><span class="color-dot" style="background:#64748B"></span>Inside Range</td><td class="mono right">186</td><td class="mono right"><span class="pill slate">44.4%</span></td></tr>
+              <tr><td><span class="color-dot" style="background:#DC2626"></span>Below Range</td><td class="mono right">95</td><td class="mono right"><span class="pill red">22.7%</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Close Location -->
+        <div class="chart-card">
+          <h3>Close Location</h3>
+          <div class="chart-subtitle">Where price closes relative to the prior bar's range</div>
+          <div class="chart-canvas-wrap"><canvas id="pie-inside-close" width="280" height="280"></canvas></div>
+          <table class="data-table">
+            <thead><tr><th>Category</th><th>Count</th><th>%</th></tr></thead>
+            <tbody>
+              <tr><td><span class="color-dot" style="background:#16A34A"></span>Above Range</td><td class="mono right">167</td><td class="mono right"><span class="pill green">39.9%</span></td></tr>
+              <tr><td><span class="color-dot" style="background:#64748B"></span>Inside Range</td><td class="mono right">149</td><td class="mono right"><span class="pill slate">35.6%</span></td></tr>
+              <tr><td><span class="color-dot" style="background:#DC2626"></span>Below Range</td><td class="mono right">103</td><td class="mono right"><span class="pill red">24.6%</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Bar Type -->
+        <div class="chart-card">
+          <h3>Bar Type</h3>
+          <div class="chart-subtitle">Classification of the day that follows</div>
+          <div class="chart-canvas-wrap"><canvas id="pie-inside-bartype" width="280" height="280"></canvas></div>
+          <table class="data-table">
+            <thead><tr><th>Bar Type</th><th>Count</th><th>%</th></tr></thead>
+            <tbody>
+              <tr><td><span class="color-dot" style="background:#16A34A"></span>BLBO (Bull Breakout)</td><td class="mono right">139</td><td class="mono right"><span class="pill green">33.2%</span></td></tr>
+              <tr><td><span class="color-dot" style="background:#DC2626"></span>BRBO (Bear Breakout)</td><td class="mono right">108</td><td class="mono right"><span class="pill red">25.8%</span></td></tr>
+              <tr><td><span class="color-dot" style="background:#7C3AED"></span>Outside</td><td class="mono right">72</td><td class="mono right"><span class="pill purple">17.2%</span></td></tr>
+              <tr><td><span class="color-dot" style="background:#2563EB"></span>BL NOL</td><td class="mono right">53</td><td class="mono right"><span class="pill blue">12.6%</span></td></tr>
+              <tr><td><span class="color-dot" style="background:#F97316"></span>BR NOL</td><td class="mono right">30</td><td class="mono right"><span class="pill orange">7.2%</span></td></tr>
+              <tr><td><span class="color-dot" style="background:#EAB308"></span>Inside</td><td class="mono right">17</td><td class="mono right"><span class="pill yellow">4.1%</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+  <hr class="section-divider">
+
+  
+    <div class="section" id="outside">
+      <div class="section-header">
+        <h2>After an Outside Day</h2>
+        <div class="section-desc">An outside bar engulfs the prior bar's entire range — an expansion day. What happens next?</div>
+      </div>
+
+      <div class="kpi-grid">
+        <div class="kpi-card amber">
+          <div class="kpi-label">Sample Size</div>
+          <div class="kpi-value">405</div>
+          <div class="kpi-sub">10.1% of all bars</div>
+        </div>
+        <div class="kpi-card green">
+          <div class="kpi-label">Gap Up Next Day</div>
+          <div class="kpi-value">52.3%</div>
+          <div class="kpi-sub">212 of 405</div>
+        </div>
+        <div class="kpi-card red">
+          <div class="kpi-label">Gap Down Next Day</div>
+          <div class="kpi-value">46.9%</div>
+          <div class="kpi-sub">190 of 405</div>
+        </div>
+        <div class="kpi-card purple">
+          <div class="kpi-label">Open Outside Range</div>
+          <div class="kpi-value">30.4%</div>
+          <div class="kpi-sub">123 of 405</div>
+        </div>
+      </div>
+
+      <div class="chart-grid">
+        <!-- Gap Open -->
+        <div class="chart-card">
+          <h3>Gap Open</h3>
+          <div class="chart-subtitle">Direction of the opening gap</div>
+          <div class="chart-canvas-wrap"><canvas id="pie-outside-gap" width="280" height="280"></canvas></div>
+          <table class="data-table">
+            <thead><tr><th>Category</th><th>Count</th><th>%</th></tr></thead>
+            <tbody>
+              <tr><td><span class="color-dot" style="background:#16A34A"></span>Gap Up</td><td class="mono right">212</td><td class="mono right"><span class="pill green">52.3%</span></td></tr>
+              <tr><td><span class="color-dot" style="background:#DC2626"></span>Gap Down</td><td class="mono right">190</td><td class="mono right"><span class="pill red">46.9%</span></td></tr>
+              <tr><td><span class="color-dot" style="background:#9C9890"></span>No Gap</td><td class="mono right">3</td><td class="mono right"><span class="pill slate">0.7%</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Open Location -->
+        <div class="chart-card">
+          <h3>Open Location</h3>
+          <div class="chart-subtitle">Where price opens relative to yesterday's range</div>
+          <div class="chart-canvas-wrap"><canvas id="pie-outside-open" width="280" height="280"></canvas></div>
+          <table class="data-table">
+            <thead><tr><th>Category</th><th>Count</th><th>%</th></tr></thead>
+            <tbody>
+              <tr><td><span class="color-dot" style="background:#16A34A"></span>Above Range</td><td class="mono right">69</td><td class="mono right"><span class="pill green">17.0%</span></td></tr>
+              <tr><td><span class="color-dot" style="background:#64748B"></span>Inside Range</td><td class="mono right">282</td><td class="mono right"><span class="pill slate">69.6%</span></td></tr>
+              <tr><td><span class="color-dot" style="background:#DC2626"></span>Below Range</td><td class="mono right">54</td><td class="mono right"><span class="pill red">13.3%</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Close Location -->
+        <div class="chart-card">
+          <h3>Close Location</h3>
+          <div class="chart-subtitle">Where price closes relative to the prior bar's range</div>
+          <div class="chart-canvas-wrap"><canvas id="pie-outside-close" width="280" height="280"></canvas></div>
+          <table class="data-table">
+            <thead><tr><th>Category</th><th>Count</th><th>%</th></tr></thead>
+            <tbody>
+              <tr><td><span class="color-dot" style="background:#16A34A"></span>Above Range</td><td class="mono right">91</td><td class="mono right"><span class="pill green">22.5%</span></td></tr>
+              <tr><td><span class="color-dot" style="background:#64748B"></span>Inside Range</td><td class="mono right">228</td><td class="mono right"><span class="pill slate">56.3%</span></td></tr>
+              <tr><td><span class="color-dot" style="background:#DC2626"></span>Below Range</td><td class="mono right">86</td><td class="mono right"><span class="pill red">21.2%</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Bar Type -->
+        <div class="chart-card">
+          <h3>Bar Type</h3>
+          <div class="chart-subtitle">Classification of the day that follows</div>
+          <div class="chart-canvas-wrap"><canvas id="pie-outside-bartype" width="280" height="280"></canvas></div>
+          <table class="data-table">
+            <thead><tr><th>Bar Type</th><th>Count</th><th>%</th></tr></thead>
+            <tbody>
+              <tr><td><span class="color-dot" style="background:#DC2626"></span>BRBO (Bear Breakout)</td><td class="mono right">140</td><td class="mono right"><span class="pill red">34.6%</span></td></tr>
+              <tr><td><span class="color-dot" style="background:#16A34A"></span>BLBO (Bull Breakout)</td><td class="mono right">116</td><td class="mono right"><span class="pill green">28.6%</span></td></tr>
+              <tr><td><span class="color-dot" style="background:#EAB308"></span>Inside</td><td class="mono right">86</td><td class="mono right"><span class="pill yellow">21.2%</span></td></tr>
+              <tr><td><span class="color-dot" style="background:#2563EB"></span>BL NOL</td><td class="mono right">26</td><td class="mono right"><span class="pill blue">6.4%</span></td></tr>
+              <tr><td><span class="color-dot" style="background:#7C3AED"></span>Outside</td><td class="mono right">22</td><td class="mono right"><span class="pill purple">5.4%</span></td></tr>
+              <tr><td><span class="color-dot" style="background:#F97316"></span>BR NOL</td><td class="mono right">15</td><td class="mono right"><span class="pill orange">3.7%</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+  <div class="footer">
+    <span>CME MINI ES1 Prior Bar Type Conditional Analysis</span>
+    <span>Source: Zen Stats v11</span>
+  </div>
+</div>
+
+<script>
+function drawPie(canvasId, data) {
+  const canvas = document.getElementById(canvasId);
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  const dpr = window.devicePixelRatio || 1;
+  const w = canvas.width; const h = canvas.height;
+  canvas.width = w * dpr; canvas.height = h * dpr;
+  canvas.style.width = w + 'px'; canvas.style.height = h + 'px';
+  ctx.scale(dpr, dpr);
+  const cx = w / 2; const cy = h / 2;
+  const radius = Math.min(w, h) / 2 - 16;
+  const total = data.reduce((s, d) => s + d.value, 0);
+  let startAngle = -Math.PI / 2;
+  data.forEach(d => {
+    if (d.value === 0) return;
+    const sliceAngle = (d.value / total) * Math.PI * 2;
+    const endAngle = startAngle + sliceAngle;
+    ctx.beginPath(); ctx.moveTo(cx, cy);
+    ctx.arc(cx, cy, radius, startAngle, endAngle);
+    ctx.closePath(); ctx.fillStyle = d.color; ctx.fill();
+    ctx.strokeStyle = '#FFFFFF'; ctx.lineWidth = 2; ctx.stroke();
+    const pctVal = ((d.value / total) * 100);
+    if (pctVal >= 2.5) {
+      const midAngle = startAngle + sliceAngle / 2;
+      const labelRadius = radius * 0.65;
+      const lx = cx + Math.cos(midAngle) * labelRadius;
+      const ly = cy + Math.sin(midAngle) * labelRadius;
+      ctx.save();
+      ctx.font = "600 13px 'JetBrains Mono', monospace";
+      ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      const text = pctVal.toFixed(1) + '%';
+      const metrics = ctx.measureText(text);
+      const pw = metrics.width + 12; const ph = 20;
+      ctx.fillStyle = 'rgba(255,255,255,0.92)';
+      ctx.beginPath(); ctx.roundRect(lx - pw/2, ly - ph/2, pw, ph, 10); ctx.fill();
+      ctx.fillStyle = '#1A1A18'; ctx.fillText(text, lx, ly);
+      ctx.restore();
+    }
+    startAngle = endAngle;
+  });
+  ctx.beginPath(); ctx.arc(cx, cy, radius * 0.42, 0, Math.PI * 2);
+  ctx.fillStyle = '#FFFFFF'; ctx.fill();
+  ctx.font = "700 22px 'JetBrains Mono', monospace";
+  ctx.fillStyle = '#1A1A18'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  ctx.fillText(total, cx, cy - 8);
+  ctx.font = "500 11px 'DM Sans', sans-serif";
+  ctx.fillStyle = '#9C9890'; ctx.fillText('BARS', cx, cy + 12);
+}
+
+
+  drawPie('pie-inside-gap', [
+    { label: 'Gap Up', value: 227, color: '#16A34A' },
+    { label: 'Gap Down', value: 188, color: '#DC2626' },
+    { label: 'No Gap', value: 4, color: '#9C9890' }
+  ]);
+  drawPie('pie-inside-open', [
+    { label: 'Above Range', value: 138, color: '#16A34A' },
+    { label: 'Inside Range', value: 186, color: '#64748B' },
+    { label: 'Below Range', value: 95, color: '#DC2626' }
+  ]);
+  drawPie('pie-inside-close', [
+    { label: 'Above Range', value: 167, color: '#16A34A' },
+    { label: 'Inside Range', value: 149, color: '#64748B' },
+    { label: 'Below Range', value: 103, color: '#DC2626' }
+  ]);
+  drawPie('pie-inside-bartype', [
+    { label: 'BLBO', value: 139, color: '#16A34A' },
+    { label: 'BRBO', value: 108, color: '#DC2626' },
+    { label: 'Outside', value: 72, color: '#7C3AED' },
+    { label: 'BL NOL', value: 53, color: '#2563EB' },
+    { label: 'BR NOL', value: 30, color: '#F97316' },
+    { label: 'Inside', value: 17, color: '#EAB308' }
+  ]);
+
+  drawPie('pie-outside-gap', [
+    { label: 'Gap Up', value: 212, color: '#16A34A' },
+    { label: 'Gap Down', value: 190, color: '#DC2626' },
+    { label: 'No Gap', value: 3, color: '#9C9890' }
+  ]);
+  drawPie('pie-outside-open', [
+    { label: 'Above Range', value: 69, color: '#16A34A' },
+    { label: 'Inside Range', value: 282, color: '#64748B' },
+    { label: 'Below Range', value: 54, color: '#DC2626' }
+  ]);
+  drawPie('pie-outside-close', [
+    { label: 'Above Range', value: 91, color: '#16A34A' },
+    { label: 'Inside Range', value: 228, color: '#64748B' },
+    { label: 'Below Range', value: 86, color: '#DC2626' }
+  ]);
+  drawPie('pie-outside-bartype', [
+    { label: 'BRBO', value: 140, color: '#DC2626' },
+    { label: 'BLBO', value: 116, color: '#16A34A' },
+    { label: 'Inside', value: 86, color: '#EAB308' },
+    { label: 'BL NOL', value: 26, color: '#2563EB' },
+    { label: 'Outside', value: 22, color: '#7C3AED' },
+    { label: 'BR NOL', value: 15, color: '#F97316' }
+  ]);
+</script>
+</body>
+</html>
