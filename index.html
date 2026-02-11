@@ -16,13 +16,10 @@
   .biz-name { font-family: 'JetBrains Mono', monospace; font-size: 14px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.15em; color: var(--accent); margin-bottom: 8px; display: block; }
   h1 { font-size: 42px; font-weight: 700; letter-spacing: -0.02em; margin: 0; }
 
-  /* Row-Based Grid Layout */
   .hub-row { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; margin-bottom: 12px; align-items: center; }
-  
   .column-header-row { margin-bottom: 32px; border-bottom: 2px solid var(--text-main); padding-bottom: 12px; }
   .column-title { font-family: 'JetBrains Mono', monospace; font-size: 14px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; }
 
-  /* Category Headers */
   .category-row { margin-top: 32px; margin-bottom: 16px; }
   .category-label {
     font-family: 'JetBrains Mono', monospace; font-size: 11px; font-weight: 700;
@@ -31,7 +28,6 @@
   }
   .category-label::after { content: ""; flex: 1; height: 1px; background: var(--border); }
 
-  /* Report Cards */
   .report-card { 
     background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 18px;
     text-decoration: none; display: flex; align-items: center; justify-content: space-between;
@@ -42,7 +38,6 @@
   .report-date { font-size: 10px; color: var(--text-sub); margin-top: 2px; display: block; }
   .arrow { color: var(--accent); font-weight: 700; font-size: 16px; opacity: 0.5; }
 
-  /* Spacers */
   .spacer { 
     height: 64px; border: 1px dashed var(--border); border-radius: 10px; opacity: 0.4; 
     display: flex; align-items: center; justify-content: center; 
@@ -50,10 +45,7 @@
     text-transform: uppercase; text-align: center; padding: 0 10px; box-sizing: border-box;
   }
 
-  @media (max-width: 800px) { 
-    .hub-row { grid-template-columns: 1fr; gap: 12px; } 
-    .category-row .category-label:nth-child(2) { display: none; }
-  }
+  @media (max-width: 800px) { .hub-row { grid-template-columns: 1fr; gap: 12px; } .category-row .category-label:nth-child(2) { display: none; } }
 </style>
 </head>
 <body>
@@ -111,8 +103,16 @@
       <a href="./FDAX-Open-Out-of-Range-Analysis/" class="report-card"><div><span class="report-title">Open Out of Range Analysis</span><span class="report-date">Feb 2026</span></div><div class="arrow">→</div></a>
     </div>
     <div class="hub-row">
+      <a href="./ES-Open-Outside-Range-Analysis/" class="report-card"><div><span class="report-title">Open Outside Yesterday's Range</span><span class="report-date">Feb 2026</span></div><div class="arrow">→</div></a>
+      <div class="spacer">FDAX Open Outside Range Pending</div>
+    </div>
+    <div class="hub-row">
       <a href="./ES-Open-Inside-Range-Analysis/" class="report-card"><div><span class="report-title">Open Inside Yesterday's Range</span><span class="report-date">Feb 2026</span></div><div class="arrow">→</div></a>
       <div class="spacer">FDAX Open Inside Range Pending</div>
+    </div>
+    <div class="hub-row">
+      <a href="./ES-Yesterday-Measuring-Gap-Analysis/" class="report-card"><div><span class="report-title">Yesterday Measuring Gap Analysis</span><span class="report-date">Feb 2026</span></div><div class="arrow">→</div></a>
+      <div class="spacer">FDAX Yesterday Measuring Gap Pending</div>
     </div>
 
   </div>
