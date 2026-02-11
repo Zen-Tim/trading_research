@@ -1,0 +1,50 @@
+//@version=5
+indicator("Measuring Gap Detector V4", overlay=true)
+
+// ========== CURRENT BAR GAP ==========
+// Current bar vs Previous bar
+bullish_gap = low > high[1]
+bearish_gap = high < low[1]
+
+// Single value: +1 (bull gap), 0 (no gap), -1 (bear gap)
+measuring_gap = bullish_gap ? 1 : bearish_gap ? -1 : 0
+
+// Gap price levels
+bull_price = bullish_gap ? high[1] : na
+bear_price = bearish_gap ? low[1] : na
+
+// ========== PRIOR BAR GAP ==========
+// Did bar[1] have a measuring gap relative to bar[2]?
+prior_bullish_gap = low[1] > high[2]
+prior_bearish_gap = high[1] < low[2]
+
+// Single value for prior bar: +1, 0, -1
+prior_measuring_gap = prior_bullish_gap ? 1 : prior_bearish_gap ? -1 : 0
+
+// Prior gap price levels
+prior_bull_price = prior_bullish_gap ? high[2] : na
+prior_bear_price = prior_bearish_gap ? low[2] : na
+
+// ========== VISUAL DRAWINGS ==========
+// Current bar gaps (solid lines)
+if bullish_gap
+    line.new(bar_index[1], high[1], bar_index, high[1], color=color.blue, width=2)
+if bearish_gap
+    line.new(bar_index[1], low[1], bar_index, low[1], color=color.red, width=2)
+
+// Prior bar gaps (dashed lines)
+if prior_bullish_gap
+    line.new(bar_index[2], high[2], bar_index[1], high[2], color=color.aqua, width=1, style=line.style_dashed)
+if prior_bearish_gap
+    line.new(bar_index[2], low[2], bar_index[1], low[2], color=color.orange, width=1, style=line.style_dashed)
+
+// ========== DATA WINDOW PLOTS ==========
+// Current bar
+plot(measuring_gap, "Measuring Gap", color=color.new(color.white, 100), display=display.data_window)
+plot(bull_price, "Bullish Gap Level", color=color.new(color.blue, 100), display=display.data_window)
+plot(bear_price, "Bearish Gap Level", color=color.new(color.red, 100), display=display.data_window)
+
+// Prior bar
+plot(prior_measuring_gap, "Prior Measuring Gap", color=color.new(color.white, 100), display=display.data_window)
+plot(prior_bull_price, "Prior Bull Gap Level", color=color.new(color.aqua, 100), display=display.data_window)
+plot(prior_bear_price, "Prior Bear Gap Level", color=color.new(color.orange, 100), display=display.data_window)
