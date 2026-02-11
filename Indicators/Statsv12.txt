@@ -1,0 +1,578 @@
+// This source code is subject to the terms of the Mozilla Public License 2.0 at https://mozilla.org/MPL/2.0/
+// © Zen_Tim_Trades
+
+//@version=5
+indicator("Zen_Stats_v12" , overlay = true, max_labels_count=100, max_lines_count = 100, precision=2)
+
+bool plotTickGaps = input.string("On", "Show Tick Gaps ?", group="Switches", options = ["On", "Off"]) == "On" 
+bool plotUrgentBars = input.string("On", "Show Urgent Bars ?", group="Switches",  options = ["On", "Off"]) == "On"
+bool plotBarDirection = input.string("Off", "Show Bar Direction ?", group="Switches", options = ["On", "Off"]) == "On"
+bool showStatsTable = input.string("Off", "Show Stats Table?", group="Switches", options = ["On", "Off"]) == "On"
+bool showBigRoundNumbers = input.string("Off", "Show Big Numbers?", group="Switches", options = ["On", "Off"]) == "On"
+
+i_bullIBSfactor = input.int(69, "Bull IBS Threshold", minval = 51, maxval = 99, group="IBS")
+I_bearIBSfactor = input.int(31, "Bear INS Threshold", minval = 1, maxval = 49, group="IBS")
+UrgencyBullThreshold  = input(title = "Urgency Bull %", defval = 15)
+UrgencyBearThreshold  = input(title = "Urgency Bear %", defval = 15)
+BodyRangeThreshold  = input(title = "Body Range Limit", defval = 51)
+
+//========== BAR COUNT (from Zen Bar Count) ==========
+var int totalBarCount = na
+isNewDay = ta.change(time("D"))
+if isNewDay
+    totalBarCount := 1
+else
+    totalBarCount += 1
+
+//bull and bear bar
+bullBar = close > open
+bearBar = open > close
+priorBullBar = close[1] > open[1]
+priorBearBar = open[1] > close[1]
+bullbeardoji = close > open ? 1 : close < open ? -1 : 0
+
+
+//Determine Gap direction
+bullGap = low > high[2] 
+bearGap = high < low[2]
+
+//Determine Gap Strength
+currentbarStatus = (close >= open ? 1 : 0)
+priorbarStatus = (close[2] >= open[2] ? 1 : 0)
+isStrongGap = currentbarStatus == priorbarStatus ? 1 : 0
+
+//Tick Gaps
+bulltickgap = open > close[1]
+beartickgap = open < close[1]
+
+showbulltickgap = bulltickgap and plotTickGaps == true
+showbeartickgap = beartickgap and plotTickGaps == true
+
+
+//IBS
+ibsBullThreshold  = input(title = "IBS Bull", defval = 31)
+ibsBearThreshold  = input(title = "IBS Bear", defval = 69)
+
+isPerfectdoji = close == open
+
+iBS = ((close - low) / (high - low)) * 100
+prioriBS = ((close[1] - low[1]) / (high[1] - low[1])) * 100
+_2avgIBS = (iBS + prioriBS) / 2
+
+//IBS qualifier
+
+bullclose_ok_ibs = bullBar and iBS > i_bullIBSfactor
+bearclose_ok_ibs = bearBar and iBS < I_bearIBSfactor
+
+//Show urgent bars
+
+bar_range = math.abs(high - low)
+isbull = close > open
+isbear = close < open
+body_size = isbull? math.abs(close-open) : isbear ? math.abs(open-close) : na
+
+//========== PRIOR BAR METRICS ==========
+priorBarRange = high[1] - low[1]
+priorBodyPct = priorBarRange > 0 ? math.abs(close[1] - open[1]) / priorBarRange : 0
+// priorIBS already exists as prioriBS, but adding explicit version for clarity
+priorIBS = priorBarRange > 0 ? ((close[1] - low[1]) / priorBarRange) * 100 : 0
+rangeExpansion = priorBarRange > 0 ? bar_range / priorBarRange : 0
+
+
+bodyoverrange = body_size / bar_range
+tailoverrange = (bar_range-body_size) / bar_range
+
+toptail = isbull? high - close : isbear? high - open : na
+bottomtail = isbull? open - low : isbear? close - low : na
+
+toptailoverbarrange = toptail / bar_range
+bottomtailoverbarrange = bottomtail / bar_range
+bigenoughbody = bodyoverrange > (BodyRangeThreshold / 100)
+
+
+urgentbull = isbull and bottomtailoverbarrange < (UrgencyBullThreshold / 100) and bigenoughbody
+urgentbear = isbear and toptailoverbarrange < (UrgencyBearThreshold / 100) and bigenoughbody
+
+ploturgentbull = urgentbull and plotUrgentBars == true
+ploturgentbear = urgentbear and plotUrgentBars == true
+
+//Avg Bar Range Lookback
+
+lookbackPeriod = input(8, "Lookback Period")
+
+averageBarRange = math.sum(bar_range, lookbackPeriod) / lookbackPeriod
+scalp_trend = averageBarRange * 0.8
+scalp_countertrend = averageBarRange * 0.8 * 0.5
+
+
+
+//targets
+
+//Targets
+
+targets_range_BTCSTC = isbull? math.abs(close-low) + (2*syminfo.mintick) : isbear? math.abs(high - close) + (2*syminfo.mintick) : na
+
+targets_range_i1r = math.abs(high-low) + (2*syminfo.mintick)
+
+bull_target_close = isbull? math.abs(close + targets_range_BTCSTC) : na
+bear_target_close = isbear? math.abs(close - targets_range_BTCSTC) : na
+
+bull_target_i1r = high + targets_range_i1r 
+bear_target_i1r = low - targets_range_i1r
+
+//ema
+
+len = input.int(20, minval=1, title="Length", group = "5 min EMA")
+src = input(close, title="Source")
+offset = input.int(title="Offset", defval=0, minval=-500, maxval=500)
+out = ta.ema(src, len)
+//plot(out, title="EMA", color=color.blue, offset=offset)
+
+ma(source, length, type) =>
+    switch type
+        "SMA" => ta.sma(source, length)
+        "EMA" => ta.ema(source, length)
+        "SMMA (RMA)" => ta.rma(source, length)
+        "WMA" => ta.wma(source, length)
+        "VWMA" => ta.vwma(source, length)
+
+typeMA = input.string(title = "Method", defval = "SMA", options=["SMA", "EMA", "SMMA (RMA)", "WMA", "VWMA"], group="Smoothing")
+smoothingLength = input.int(title = "Length", defval = 5, minval = 1, maxval = 100, group="Smoothing")
+
+smoothingLine = ma(out, smoothingLength, typeMA)
+//plot(smoothingLine, title="Smoothing Line", color=#f37f20, offset=offset, display=display.none)
+
+_20ema = close > out ? 1 : -1
+
+//60ema
+
+len6 = input.int(240, minval=1, title="Length 60min EMA", group = "60 min EMA")
+src6 = input(close, title="Source")
+offset6 = input.int(title="Offset", defval=0, minval=-500, maxval=500)
+out6 = ta.ema(src6, len6)
+//plot(out, title="EMA", color=color.blue, offset=offset)
+
+
+typeMA6 = input.string(title = "Method", defval = "SMA", options=["SMA", "EMA", "SMMA (RMA)", "WMA", "VWMA"], group="Smoothing")
+smoothingLength6 = input.int(title = "Length", defval = 5, minval = 1, maxval = 100, group="Smoothing")
+
+smoothingLine6 = ma(out6, smoothingLength6, typeMA6)
+//plot(smoothingLine, title="Smoothing Line", color=#f37f20, offset=offset, display=display.none)
+
+_60ema = close > out6 ? 1 : -1
+
+//daily ema
+
+//Bar direction
+
+var barDirection = 0
+
+// Check a condition and change the variable value if needed
+if close > open and iBS >=50
+    barDirection := 1  
+else
+    if close < open and iBS <=50
+        barDirection := -1   
+    else
+        if close == open and iBS > 50
+            barDirection := 1
+        else
+            if close == open and iBS < 50 
+                barDirection := -1
+            else    
+                if close == open and iBS == 50
+                    barDirection := barDirection[1]
+                else   
+                    if close < open and iBS > 50
+                        barDirection := 1
+                    else
+                        if close > open and iBS < 50
+                            barDirection := -1
+                        else
+                            if iBS == 50
+                                barDirection := barDirection[1]
+                            else 
+                                barDirection := barDirection[1]
+                          
+//
+
+//Candle Range and ATR
+
+length = input.int(title="Length", defval=14, minval=1, group = "ATR")
+smoothing = input.string(title="Smoothing", defval="RMA", options=["RMA", "SMA", "EMA", "WMA"])
+
+ma_function(source, length) =>
+	switch smoothing
+		"RMA" => ta.rma(source, length)
+		"SMA" => ta.sma(source, length)
+		"EMA" => ta.ema(source, length)
+		=> ta.wma(source, length)
+//
+
+atr = ma_function(ta.tr(true), length)
+
+candleRangeCurrenBar = math.abs(high - low)
+candleRangePriorBar = math.abs(high[1] - low[1])
+diff_priorbar = math.abs(candleRangeCurrenBar - candleRangePriorBar)
+
+smallbar = candleRangeCurrenBar < ma_function(ta.tr(true),length)
+bigBar = atr < candleRangeCurrenBar
+bigbullbar = bigBar and bullBar
+bigbearbar = bigBar and bearBar
+bigbigbar = 2 * atr < candleRangeCurrenBar
+twoATR = 2 * atr
+threeATR = 3 * atr
+
+// Tail stuff
+
+top_tail_size = isbull? math.abs(high-close) : isbear? math.abs(high-open) : na
+bottom_tail_size = isbull? math.abs(open-low) : isbear? math.abs(close-low) : na
+bigger_tail = top_tail_size > bottom_tail_size? top_tail_size : top_tail_size < bottom_tail_size ? bottom_tail_size : na
+big_enough_tail = bigger_tail > atr
+
+range_midbody_calc = math.abs(open-close)/2
+range_mid_calc = (high-low)/2
+range_mid = isbull? high-range_mid_calc: isbear? low+range_mid_calc :na
+range_midbody = isbull? close-range_midbody_calc : isbear? close+range_midbody_calc : na
+
+//plot colours
+bardirectiontextcolour = barDirection > 0? color.green : color.red
+ibstextcolour = iBS > 51 ? color.blue : iBS < 49? color.red : color.gray
+bodypercentagetextcolour = bodyoverrange > 0.51?  color.blue : bodyoverrange < 0.49? color.red : color.gray
+barrangecolour = bigBar?  color.blue : smallbar? color.red : color.gray
+
+//avg bar range colours
+//biggeraveragebarrange = averageBarRange > atr
+
+//bar range multiple
+barrangemultiple = bar_range / averageBarRange
+barrangemultiplecolour = barrangemultiple > 2? color.white : barrangemultiple > 1? color.blue : barrangemultiple < 1? color.red : na
+
+//barcolourbardirection
+bardirectionup = barDirection > 0
+bardirectiondown = barDirection < 0
+
+plotbardirectionup = bardirectionup and plotBarDirection == true
+plotbardirectiondown = bardirectiondown and plotBarDirection == true
+
+barcolor(plotbardirectionup? color.green : plotbardirectiondown? color.red :na)
+
+//breakout detector
+
+bullbo = isbull and close > high[1]
+bearbo = isbear and close < low[1]
+bocolour = bullbo? color.blue : bearbo? color.red : color.gray
+
+breakoutdetect = bullbo ? 1 : bearbo ? -1 : 0
+//range to ma
+
+range_to_ma = close < out? out - close : close > out? close - out : na 
+bull_vs_bear = isbull? 1 : isbear? -1 : 0
+bull_vs_bear_colour = bull_vs_bear > 0? color.blue : bull_vs_bear < 0? color.red : color.gray
+
+//
+
+currRange = high - low                         // full range of current bar
+overlapHigh = math.min(high, high[1])          // top of overlap zone
+overlapLow = math.max(low, low[1])             // bottom of overlap zone
+overlap = math.max(overlapHigh - overlapLow, 0) // size of overlap in price units
+
+overlapPct = currRange > 0 ? overlap / currRange : na
+
+
+
+
+//Plots
+// Breakout calculations
+priorLow = low[1]
+priorHigh = high[1]
+priorClose = close[1]
+
+BRBO = math.max(0, priorLow - low)  // Bear breakout (downward)
+BLBO = math.max(0, high - priorHigh)  // Bull breakout (upward)
+
+BLfromLow = math.max(0, high - priorLow)  //
+BRfromHigh = math.max(0, priorHigh-low)  // 
+
+// Breakout from prior close
+BRBO_CL = math.max(0, priorClose - low)
+BLBO_CL = math.max(0, high - priorClose)
+
+// === MA Lookback % Over MA ===
+maSource = close
+maLength = input.int(20, "MA Length", group="MA Lookback")
+maType = input.string("EMA", "MA Type", options=["SMA", "EMA", "WMA", "RMA"], group="MA Lookback")
+lookbackBars = input.int(20, "Lookback Bars", group="MA Lookback")
+
+getMA(src, len, type) =>
+    type == "SMA" ? ta.sma(src, len) :    type == "EMA" ? ta.ema(src, len) :    type == "WMA" ? ta.wma(src, len) :    ta.rma(src, len)
+
+maVal = getMA(maSource, maLength, maType)
+
+countOver = 0
+for i = 0 to lookbackBars - 1
+    countOver += close[i] > maVal[i] ? 1 : 0
+
+percentOverMA = 100 * countOver / lookbackBars
+percentColour = percentOverMA < 50 ? color.red : color.blue
+
+//========== NEW TRACKING FEATURES ==========
+
+// Higher High / Higher Low / Lower High / Lower Low
+higherHigh = high > high[1]
+var int consecutiveHH = 0
+if higherHigh
+    consecutiveHH += 1
+else
+    consecutiveHH := 0
+
+higherLow = low > low[1]
+var int consecutiveHL = 0
+if higherLow
+    consecutiveHL += 1
+else
+    consecutiveHL := 0
+
+lowerHigh = high < high[1]
+var int consecutiveLH = 0
+if lowerHigh
+    consecutiveLH += 1
+else
+    consecutiveLH := 0
+
+lowerLow = low < low[1]
+var int consecutiveLL = 0
+if lowerLow
+    consecutiveLL += 1
+else
+    consecutiveLL := 0
+
+// Close > high[1] / Close < low[1]
+closeAbovePriorHigh = close > high[1]
+var int consecutiveCloseAbovePriorHigh = 0
+if closeAbovePriorHigh
+    consecutiveCloseAbovePriorHigh += 1
+else
+    consecutiveCloseAbovePriorHigh := 0
+
+closeBelowPriorLow = close < low[1]
+var int consecutiveCloseBelowPriorLow = 0
+if closeBelowPriorLow
+    consecutiveCloseBelowPriorLow += 1
+else
+    consecutiveCloseBelowPriorLow := 0
+
+// Microgaps
+bullMicrogap = bullBar and low > high[2]
+bearMicrogap = bearBar and high < low[2]
+
+//========== NEW INDICATORS ADDED ==========
+
+// 3. Gap Open (-1, 0, +1)
+gapOpen = open < close[1] ? -1 : open > close[1] ? 1 : 0
+gapOpenColour = gapOpen == 1 ? color.green : gapOpen == -1 ? color.red : color.gray
+
+// 4. Bar Type (1-6 priority system)
+barType = low > high[1] ? 1 : high < low[1] ? 2 : (high >= high[1] and low <= low[1]) ? 3 : (high <= high[1] and low >= low[1]) ? 4 : high > high[1] ? 5 : low < low[1] ? 6 : 0
+
+barTypeColour = barType == 1 or barType == 5 ? color.green : barType == 2 or barType == 6 ? color.red : barType == 3 ? color.blue : barType == 4 ? color.orange : color.gray
+
+// 5. Open Type (-1, 0, +1)
+openType = open > high[1] ? 1 : open < low[1] ? -1 : 0
+openTypeColour = openType == 1 ? color.green : openType == -1 ? color.red : color.gray
+
+// 6. Close Type (-1, 0, +1)
+closeType = close > high[1] ? 1 : close < low[1] ? -1 : 0
+closeTypeColour = closeType == 1 ? color.green : closeType == -1 ? color.red : color.gray
+
+// 7. Outside Bar (1, 0)
+outsideBar = (high >= high[1] and low <= low[1]) ? 1 : 0
+
+// 8. Inside Bar (1, 0)
+insideBar = (high <= high[1] and low >= low[1]) ? 1 : 0
+
+// 9. Gap Close (1, 0) - did current bar's range overlap prior close?
+gapClose = (low <= close[1] and high >= close[1]) ? 1 : 0
+gapCloseColour = gapClose == 1 ? color.green : color.red
+
+//========== OPEN GAP AND OUT OF RANGE CALCULATIONS ==========
+
+// 10. Open Gap Points (absolute distance from open to close[1])
+opengappoints = math.abs(open - close[1])
+
+// 11. Open Gap % of ABR
+opengappcabr = averageBarRange > 0 ? opengappoints / averageBarRange : 0
+
+// 12. Open Out of Range Points (distance open is outside prior bar's range)
+openoutofrangepoints = openType == 1 ? open - high[1] : openType == -1 ? low[1] - open : 0
+
+// 13. Open Out of Range % of ABR
+openoutofrangepcabr = averageBarRange > 0 ? openoutofrangepoints / averageBarRange : 0
+
+//========== CONSECUTIVE BAR STREAKS ==========
+// Consecutive Bull Bars
+var int consecutiveBullBars = 0
+if bullBar
+    consecutiveBullBars += 1
+else
+    consecutiveBullBars := 0
+
+// Consecutive Bear Bars  
+var int consecutiveBearBars = 0
+if bearBar
+    consecutiveBearBars += 1
+else
+    consecutiveBearBars := 0
+
+//========== ALL PLOTS ==========
+
+// Bar Count
+plot(totalBarCount, "Bar Count", display=display.data_window)
+
+// Original plots
+plot((bar_range * 100) / 100, "Bar range", display=display.data_window, color = barrangecolour)
+plot(averageBarRange, "ABR", display=display.data_window, precision=2)
+plot((barrangemultiple * 100) / 100, "Range X", display=display.data_window, color = barrangemultiplecolour, format=format.price)
+
+plot(BLBO, title="H[1] -> H", display=display.data_window, color=color.green)
+plot(BRfromHigh, title="H[1] -> L", display=display.data_window, color=color.lime)
+
+plot(BLBO_CL, title="CL[1] -> H", display=display.data_window, color=color.lime)
+plot(BRBO_CL, title="CL[1] -> L", display=display.data_window, color=color.red)
+
+plot(BLfromLow, title="L[1] -> H", display=display.data_window, color=color.red)
+plot(BRBO, title="L[1] -> L", display=display.data_window, color=color.red)
+
+plot(iBS, "IBS", display=display.data_window, color = ibstextcolour)
+
+plot(body_size, "Body", display=display.data_window)
+//plot((bodyoverrange * 1000) / 10, "Body %", display=display.data_window, color = bodypercentagetextcolour)
+
+//plot(range_mid, "Mid", display=display.data_window, color = color.rgb(33, 149, 243, 100))
+//plot(range_midbody, "Mid Body", display=display.data_window, color = color.rgb(33, 149, 243, 100))
+
+plot(overlapPct * 100, "Overlap %", display=display.data_window, color=color.orange, format=format.percent)
+//plot(percentOverMA, title="Closes > MA (%)", color=percentColour, display=display.data_window)
+
+//plot(range_to_ma, title = "Range to MA")
+//plot(breakoutdetect, title = "BO Close", color = bocolour)
+
+plot(barDirection, "Bar Direction", color = bardirectiontextcolour)
+
+plot(_20ema, "Above 20ma?", color = _20ema > 0? color.blue: color.red )
+plot(_60ema, "Above 200ma?", color = _60ema > 0? color.blue: color.red )
+
+// New tracking plots
+plot(higherHigh ? 1 : 0, "Higher High", display=display.data_window, color=color.green)
+//plot(consecutiveHH, "Consec HH", display=display.data_window, color=color.green)
+
+plot(higherLow ? 1 : 0, "Higher Low", display=display.data_window, color=color.green)
+//plot(consecutiveHL, "Consec HL", display=display.data_window, color=color.green)
+
+plot(lowerHigh ? 1 : 0, "Lower High", display=display.data_window, color=color.red)
+//plot(consecutiveLH, "Consec LH", display=display.data_window, color=color.red)
+
+plot(lowerLow ? 1 : 0, "Lower Low", display=display.data_window, color=color.red)
+//plot(consecutiveLL, "Consec LL", display=display.data_window, color=color.red)
+
+plot(closeAbovePriorHigh ? 1 : 0, "CL > H[1]", display=display.data_window, color=color.blue)
+plot(consecutiveCloseAbovePriorHigh, "Consec CL>H[1]", display=display.data_window, color=color.blue)
+
+plot(closeBelowPriorLow ? 1 : 0, "CL < L[1]", display=display.data_window, color=color.orange)
+plot(consecutiveCloseBelowPriorLow, "Consec CL<L[1]", display=display.data_window, color=color.orange)
+
+plot(bullMicrogap ? 1 : 0, "Bull Microgap", display=display.data_window, color=color.lime)
+plot(bearMicrogap ? 1 : 0, "Bear Microgap", display=display.data_window, color=color.maroon)
+
+//========== NEW INDICATOR PLOTS ==========
+
+plot(gapOpen, "Gap Open", display=display.data_window, color=gapOpenColour)
+plot(barType, "Bar Type", display=display.data_window, color=barTypeColour)
+plot(openType, "Open Type", display=display.data_window, color=openTypeColour)
+plot(closeType, "Close Type", display=display.data_window, color=closeTypeColour)
+//plot(outsideBar, "Outside Bar", display=display.data_window, color=color.blue)
+//plot(insideBar, "Inside Bar", display=display.data_window, color=color.orange)
+plot(gapClose, "Gap Close", display=display.data_window, color=gapCloseColour)
+
+plot(opengappoints, "Open Gap Points", display=display.data_window, color=color.yellow)
+plot(opengappcabr, "Open Gap % ABR", display=display.data_window, color=color.yellow)
+plot(openoutofrangepoints, "Open Out Range Pts", display=display.data_window, color=color.purple)
+plot(openoutofrangepcabr, "Open Out Range % ABR", display=display.data_window, color=color.purple)
+
+//========== PLOTS FOR NEW INDICATORS ==========
+plot(bullbeardoji, "Bull/Bear/Doji", display=display.data_window)
+
+plot(priorBarRange, "Prior Bar Range", display=display.data_window, color=color.gray)
+plot(priorBodyPct * 100, "Prior Body %", display=display.data_window, color=color.gray)
+plot(priorIBS, "Prior IBS", display=display.data_window, color=color.gray)
+//plot(rangeExpansion, "Range Expansion", display=display.data_window, color=color.yellow)
+
+plot(consecutiveBullBars, "Consec Bull Bars", display=display.data_window, color=color.green)
+plot(consecutiveBearBars, "Consec Bear Bars", display=display.data_window, color=color.red)
+
+// Current bar Inside/Outside (uncommented from existing definitions)
+plot(insideBar, "Inside Bar", display=display.data_window, color=color.orange)
+plot(outsideBar, "Outside Bar", display=display.data_window, color=color.blue)
+
+// Prior bar versions
+plot(insideBar[1] ? 1 : 0, "Prior Inside Bar", display=display.data_window, color=color.orange)
+plot(outsideBar[1] ? 1 : 0, "Prior Outside Bar", display=display.data_window, color=color.blue)
+plot(barType[1], "Prior Bar Type", display=display.data_window, color=color.gray)
+
+//========== INSIDE RANGE OPEN ANALYSIS ==========
+
+// Open Location within Prior Range (1=bottom third, 2=middle third, 3=top third, 0=not applicable)
+var int openLocation = 0
+if openType == 0  // Only when opening inside yesterday's range
+    priorRangeLow = low[1]
+    priorRangeHigh = high[1]
+    priorRangeSize = priorRangeHigh - priorRangeLow
+    
+    if priorRangeSize > 0
+        bottomThird = priorRangeLow + (priorRangeSize / 3)
+        topThird = priorRangeLow + (2 * priorRangeSize / 3)
+        openLocation := open <= bottomThird ? 1 : open >= topThird ? 3 : 2
+    else
+        openLocation := 0
+else
+    openLocation := 0  // Not inside range
+
+// Open Location % (0-100, where did we open within yesterday's range)
+openLocationPct = openType == 0 and (high[1] - low[1]) > 0 ? ((open - low[1]) / (high[1] - low[1])) * 100 : na
+
+// Prior Bar Direction (explicit version for clarity)
+priorBarDirection = close[1] > open[1] ? 1 : close[1] < open[1] ? -1 : 0
+
+// Close Location (where did we close relative to yesterday's range)
+// 0=broke below, 1=bottom third, 2=middle third, 3=top third, 4=broke above, na=not applicable
+var int closeLocation = na
+if openType == 0  // Only when we opened inside range
+    priorRangeLow = low[1]
+    priorRangeHigh = high[1]
+    priorRangeSize = priorRangeHigh - priorRangeLow
+    
+    if priorRangeSize > 0
+        if close > priorRangeHigh
+            closeLocation := 4  // Broke above
+        else if close < priorRangeLow
+            closeLocation := 0  // Broke below
+        else
+            // Stayed inside - which third?
+            bottomThird = priorRangeLow + (priorRangeSize / 3)
+            topThird = priorRangeLow + (2 * priorRangeSize / 3)
+            closeLocation := close <= bottomThird ? 1 : close >= topThird ? 3 : 2
+    else
+        closeLocation := na
+else
+    closeLocation := na  // Not inside range open
+
+// Close Location % (0-100, where did we close within yesterday's range, can be >100 or <0 if broke out)
+closeLocationPct = (high[1] - low[1]) > 0 ? ((close - low[1]) / (high[1] - low[1])) * 100 : na
+
+//========== PLOTS FOR INSIDE RANGE ANALYSIS ==========
+
+plot(openLocation, "Open Location", display=display.data_window, color=color.yellow)
+plot(openLocationPct, "Open Location %", display=display.data_window, color=color.yellow)
+plot(priorBarDirection, "Prior Bar Direction", display=display.data_window, color=priorBarDirection > 0 ? color.green : color.red)
+plot(closeLocation, "Close Location", display=display.data_window, color=color.aqua)
+plot(closeLocationPct, "Close Location %", display=display.data_window, color=color.aqua)
