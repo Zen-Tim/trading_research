@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ES 5-Minute MIG Reversal — Bull Trade Setup Analysis</title>
+    <title>ES 5-Minute MIG Reversal &mdash; Trade Setup Analysis</title>
     <style>
         * {
             margin: 0;
@@ -330,9 +330,9 @@
 </head>
 <body>
     <div class="container">
-        <div class="meta">◆ Quantitative Research</div>
+        <div class="meta">&#9830; Quantitative Research</div>
         
-        <h1>ES 5-Minute MIG Reversal — Bull Trade Setup Analysis</h1>
+        <h1>ES 5-Minute MIG Reversal &mdash; Trade Setup Analysis</h1>
         
         <p class="subtitle">Bull MIG Reversal performance: win rates, target hit analysis, and optimal filtering criteria</p>
 
@@ -355,7 +355,7 @@
                 <div class="data-item">
                     <div class="data-label">Date Range</div>
                     <div class="data-value">4 Years</div>
-                    <div class="data-subvalue">Jan 2022 — Feb 2026</div>
+                    <div class="data-subvalue">Jan 2022 &mdash; Feb 2026</div>
                 </div>
                 
                 <div class="data-item">
@@ -371,7 +371,7 @@
         </div>
 
         <section>
-            <h2>Step 1: Overall Performance — All Bull MIG Reversals (n=894)</h2>
+            <h2>Step 1: Overall Performance &mdash; All Bull MIG Reversals (n=894)</h2>
             
             <div class="stat-grid">
                 <div class="stat-card purple">
@@ -393,9 +393,9 @@
                 </div>
                 
                 <div class="stat-card purple">
-                    <div class="stat-label">Avg Bars Tracked</div>
-                    <div class="stat-number purple">41.5</div>
-                    <div class="stat-sublabel">Median: 43 bars (215 min)</div>
+                    <div class="stat-label">Avg Bars to Resolution</div>
+                    <div class="stat-number purple">7.9</div>
+                    <div class="stat-sublabel">Median: 5 bars (25 min)</div>
                 </div>
             </div>
 
@@ -451,12 +451,12 @@
             </table>
 
             <div class="methodology" style="margin-top: 30px;">
-                <strong>Performance Insight:</strong> At the 0.5R target, bull setups show strong 66.8% win rate with 2.01:1 win/loss ratio. At 1R, the win rate is 53.6% with positive 1.15:1 ratio. The crossover occurs between 1R and 1.5R — the 1.5R target shows 47.1% win rate with 0.89:1 ratio (slightly negative). Beyond 1.5R, win rates continue declining to 44.4% at 2R and 41.8% at 3R. This suggests that while setups have positive directional edge at shorter targets, most favorable excursion occurs within the 1R range.
+                <strong>Performance Insight:</strong> At the 0.5R target, bull setups show strong 66.8% win rate with 2.01:1 win/loss ratio. At 1R, the win rate is 53.6% with positive 1.15:1 ratio. The crossover occurs between 1R and 1.5R &mdash; the 1.5R target shows 47.1% win rate with 0.89:1 ratio (slightly negative). Beyond 1.5R, win rates continue declining to 44.4% at 2R and 41.8% at 3R. This suggests that while setups have positive directional edge at shorter targets, most favorable excursion occurs within the 1R range.
             </div>
         </section>
 
         <section>
-            <h2>Step 2: Optimal Target Selection — Expectancy Analysis</h2>
+            <h2>Step 2: Optimal Target Selection &mdash; Expectancy Analysis</h2>
             
             <p style="color: #6b7280; margin-bottom: 30px;">To determine the optimal profit target, we calculate expectancy using actual R-multiples for all outcomes. Trades that hit target generate their full R-multiple (+0.5R, +1R, +1.5R, or +2R). Trades that hit stop generate -1R. Trades that reach end-of-day without hitting either target or stop are closed at the 2nd-last bar, and actual R-multiple is calculated based on final price relative to entry.</p>
 
@@ -523,12 +523,12 @@
             </table>
 
             <div class="methodology" style="margin-top: 30px;">
-                <strong>Critical Finding:</strong> The 0.5R target produces the highest expectancy at +0.18R per trade, driven by its 63.4% win rate and 2.26:1 win/loss ratio. The 1.0R target maintains positive expectancy at +0.05R, making it viable for traders seeking larger reward. All targets above 1R show negative expectancy — the 1.5R target produces -0.12R expectancy despite its 1.5:1 reward profile, as the 30.3% win rate cannot overcome the 43.0% loss rate.
+                <strong>Critical Finding:</strong> The 0.5R target produces the highest expectancy at +0.18R per trade, driven by its 63.4% win rate and 2.26:1 win/loss ratio. The 1.0R target maintains positive expectancy at +0.05R, making it viable for traders seeking larger reward. All targets above 1R show negative expectancy &mdash; the 1.5R target produces -0.12R expectancy despite its 1.5:1 reward profile, as the 30.3% win rate cannot overcome the 43.0% loss rate.
             </div>
         </section>
 
         <section>
-            <h2>Step 3: Filter Optimization — Close Below EMA20 + 3-Bar Patterns</h2>
+            <h2>Step 3: Filter Optimization &mdash; Close Below EMA20 + 3-Bar Patterns</h2>
             
             <p style="color: #6b7280; margin-bottom: 30px;">We test whether filtering for setups where the signal bar closes BELOW the 20 EMA (bears disappointed that bulls are strong) combined with the minimum 3-bar pattern improves performance. This represents 29.4% of all bull setups (263 of 894).</p>
 
@@ -635,16 +635,16 @@
 
             <div class="key-finding">
                 <h4>Filter Performance: More Than Doubles Expectancy at 2R</h4>
-                <p>The "Close Below EMA20 + 3-Bar" filter produces substantial improvements across all target levels. At <strong>2R, expectancy more than doubles from +0.101R to +0.208R</strong> (+0.107R improvement), while hit rate improves from 22.0% to 28.9%. At <strong>1R, expectancy doubles from +0.062R to +0.129R</strong> (+0.067R improvement), with hit rate improving +6.3% (43.8% → 50.2%). The filter improvement scales with target size: +0.039R at 0.5R, +0.067R at 1R, +0.083R at 1.5R, and +0.107R at 2R. Average MFE increases by +0.24R (1.25R → 1.49R), indicating filtered setups have significantly more directional follow-through. The tradeoff: frequency reduces from 0.88 to 0.26 setups per day (70% reduction).</p>
+                <p>The "Close Below EMA20 + 3-Bar" filter produces substantial improvements across all target levels. At <strong>2R, expectancy more than doubles from +0.101R to +0.208R</strong> (+0.107R improvement), while hit rate improves from 22.0% to 28.9%. At <strong>1R, expectancy doubles from +0.062R to +0.129R</strong> (+0.067R improvement), with hit rate improving +6.3% (43.8% &rarr; 50.2%). The filter improvement scales with target size: +0.039R at 0.5R, +0.067R at 1R, +0.083R at 1.5R, and +0.107R at 2R. Average MFE increases by +0.24R (1.25R &rarr; 1.49R), indicating filtered setups have significantly more directional follow-through. The tradeoff: frequency reduces from 0.88 to 0.26 setups per day (70% reduction).</p>
             </div>
 
             <div class="methodology" style="margin-top: 30px;">
-                <strong>Practical Application:</strong> The filter reduces setup frequency from 894 to 263 (70% reduction) while improving edge quality. Traders using this filter would see approximately 0.26 setups per day (263 setups / 1,017 days) versus 0.88 per day for all bulls. The selectivity tradeoff is justified by the improved win rates and expectancy — particularly at the 1R and 1.5R targets, where the filter creates positive mathematical edge.
+                <strong>Practical Application:</strong> The filter reduces setup frequency from 894 to 263 (70% reduction) while improving edge quality. Traders using this filter would see approximately 0.26 setups per day (263 setups / 1,017 days) versus 0.88 per day for all bulls. The selectivity tradeoff is justified by the improved win rates and expectancy &mdash; particularly at the 1R and 1.5R targets, where the filter creates positive mathematical edge.
             </div>
         </section>
 
         <section>
-            <h2>Step 4: Close Above vs Below EMA20 — Validating the "Disappointment" Thesis</h2>
+            <h2>Step 4: Close Above vs Below EMA20 &mdash; Validating the "Disappointment" Thesis</h2>
             
             <p style="color: #6b7280; margin-bottom: 30px;">The core "disappointment" concept suggests that bull MIG patterns occurring BELOW the 20 EMA (bears disappointed by bulls' strength) should outperform those occurring ABOVE the EMA. We compare these two populations to validate this hypothesis and quantify the performance difference.</p>
 
@@ -680,28 +680,28 @@
                         <td>-0.000R</td>
                         <td class="highlight-green">+0.066R</td>
                         <td class="highlight-red">-0.066R</td>
-                        <td>—</td>
+                        <td>&mdash;</td>
                     </tr>
                     <tr>
                         <td>1.0R</td>
                         <td>+0.014R</td>
                         <td class="highlight-green">+0.136R</td>
                         <td class="highlight-red">-0.122R</td>
-                        <td><span class="highlight-green">9.7× better</span></td>
+                        <td><span class="highlight-green">9.7&times; better</span></td>
                     </tr>
                     <tr>
                         <td>1.5R</td>
                         <td>+0.017R</td>
                         <td class="highlight-green">+0.171R</td>
                         <td class="highlight-red">-0.154R</td>
-                        <td><span class="highlight-green">10.1× better</span></td>
+                        <td><span class="highlight-green">10.1&times; better</span></td>
                     </tr>
                     <tr>
                         <td><strong>2.0R</strong></td>
                         <td>+0.031R</td>
                         <td class="highlight-green">+0.209R</td>
                         <td class="highlight-red">-0.178R</td>
-                        <td><span class="highlight-green">6.7× better</span></td>
+                        <td><span class="highlight-green">6.7&times; better</span></td>
                     </tr>
                 </tbody>
             </table>
@@ -737,11 +737,11 @@
                     
                     <div class="metric-row">
                         <span class="metric-label">2R Expectancy</span>
-                        <span class="metric-value highlight-green">+0.209R (6.7× better)</span>
+                        <span class="metric-value highlight-green">+0.209R (6.7&times; better)</span>
                     </div>
                     <div class="metric-row">
                         <span class="metric-label">1R Expectancy</span>
-                        <span class="metric-value highlight-green">+0.136R (9.7× better)</span>
+                        <span class="metric-value highlight-green">+0.136R (9.7&times; better)</span>
                     </div>
                     <div class="metric-row">
                         <span class="metric-label">0.5R Expectancy</span>
@@ -759,7 +759,7 @@
             </div>
 
             <div class="methodology" style="margin-top: 30px;">
-                <strong>Critical Finding — Edge Exists Almost Entirely in "Close Below" Setups:</strong> Bull MIG patterns that close BELOW the 20 EMA show dramatically superior performance across all targets. At 2R, "Close Below" produces +0.209R expectancy versus only +0.031R for "Close Above" — a 6.7× performance advantage. At 1R, the advantage is even more extreme: 9.7× better (+0.136R vs +0.014R). The "Close Above" setups are essentially breakeven at 0.5R (-0.000R) and marginally positive at longer targets. Average MFE for "Close Below" is 1.714R versus 1.301R for "Close Above" (+0.413R difference), indicating significantly stronger directional follow-through when the setup occurs below trend.
+                <strong>Critical Finding &mdash; Edge Exists Almost Entirely in "Close Below" Setups:</strong> Bull MIG patterns that close BELOW the 20 EMA show dramatically superior performance across all targets. At 2R, "Close Below" produces +0.209R expectancy versus only +0.031R for "Close Above" &mdash; a 6.7&times; performance advantage. At 1R, the advantage is even more extreme: 9.7&times; better (+0.136R vs +0.014R). The "Close Above" setups are essentially breakeven at 0.5R (-0.000R) and marginally positive at longer targets. Average MFE for "Close Below" is 1.714R versus 1.301R for "Close Above" (+0.413R difference), indicating significantly stronger directional follow-through when the setup occurs below trend.
             </div>
 
             <div class="key-finding" style="margin-top: 30px;">
@@ -783,31 +783,31 @@
                         <td>0.5R</td>
                         <td>+0.012R</td>
                         <td class="highlight-green">+0.065R</td>
-                        <td class="highlight-green">5.4× better</td>
+                        <td class="highlight-green">5.4&times; better</td>
                     </tr>
                     <tr>
                         <td>1.0R</td>
                         <td>+0.025R</td>
                         <td class="highlight-green">+0.129R</td>
-                        <td class="highlight-green">5.2× better</td>
+                        <td class="highlight-green">5.2&times; better</td>
                     </tr>
                     <tr>
                         <td>1.5R</td>
                         <td>+0.029R</td>
                         <td class="highlight-green">+0.160R</td>
-                        <td class="highlight-green">5.5× better</td>
+                        <td class="highlight-green">5.5&times; better</td>
                     </tr>
                     <tr>
                         <td>2.0R</td>
                         <td>+0.032R</td>
                         <td class="highlight-green">+0.208R</td>
-                        <td class="highlight-green">6.5× better</td>
+                        <td class="highlight-green">6.5&times; better</td>
                     </tr>
                 </tbody>
             </table>
 
             <div class="methodology" style="margin-top: 20px;">
-                <strong>3-Bar Filter Doesn't Rescue "Close Above":</strong> Even when filtering "Close Above" setups for minimum 3-bar patterns (n=368), expectancy remains weak: +0.032R at 2R and +0.012R at 0.5R. Compare this to "Close Below + 3-Bar" (n=263): +0.208R at 2R and +0.065R at 0.5R. The 3-bar filter improves both populations slightly, but the fundamental performance gap persists — "Close Below" setups are 5-6× better regardless of pattern length. This confirms that EMA position is the primary discriminator of edge quality, not pattern length alone.
+                <strong>3-Bar Filter Doesn't Rescue "Close Above":</strong> Even when filtering "Close Above" setups for minimum 3-bar patterns (n=368), expectancy remains weak: +0.032R at 2R and +0.012R at 0.5R. Compare this to "Close Below + 3-Bar" (n=263): +0.208R at 2R and +0.065R at 0.5R. The 3-bar filter improves both populations slightly, but the fundamental performance gap persists &mdash; "Close Below" setups are 5-6&times; better regardless of pattern length. This confirms that EMA position is the primary discriminator of edge quality, not pattern length alone.
             </div>
         </section>
 
@@ -820,8 +820,8 @@
             </div>
 
             <div class="key-finding">
-                <h4>Excursion Characteristics</h4>
-                <p>Bull setups show average MFE of <strong>1.25R</strong> (median 0.77R) and average MAE of <strong>-0.82R</strong> (median -0.93R). This indicates that while setups have directional edge, they typically experience nearly -1R drawdown before resolution. The average setup is tracked for 41.5 bars (207 minutes), with positions closed at the 2nd-last bar of the day if neither target nor stop is hit. EOD closure rates vary by target: 8.5% at 0.5R, 17.9% at 1R, 26.7% at 1.5R, and 33.1% at 2R — demonstrating that higher targets often require the full session to resolve, with actual R-multiple at close factored into expectancy.</p>
+                <h4>Excursion Characteristics &amp; Holding Time</h4>
+                <p>Bull setups show average MFE of <strong>1.25R</strong> (median 0.77R) and average MAE of <strong>-0.82R</strong> (median -0.93R). This indicates that while setups have directional edge, they typically experience nearly -1R drawdown before resolution. <strong>Time to resolution varies significantly by target:</strong> 0.5R targets resolve in an average of 6.5 bars (33 minutes), 1R targets in 13.5 bars (67 minutes), 1.5R targets in 19.5 bars (98 minutes), and 2R targets in 24.0 bars (120 minutes). The overall average time to resolution is 7.9 bars (40 minutes), with a median of 5 bars (25 minutes), demonstrating that most setups resolve relatively quickly. Positions are closed at the 2nd-last bar of the day if neither target nor stop is hit. EOD closure rates vary by target: 8.5% at 0.5R, 17.9% at 1R, 26.7% at 1.5R, and 33.1% at 2R &mdash; higher targets often require more time to resolve, with actual R-multiple at close factored into expectancy.</p>
             </div>
 
             <div class="key-finding">
@@ -832,13 +832,13 @@
             <div class="key-finding">
                 <h4>Target Selection Strategy</h4>
                 <p><strong>For maximum expectancy (all bulls):</strong> Use 2R target for +0.101R expectancy and 44.4% win rate. Accept 22.0% target hit rate with 0.88 setups/day. The 0.5R target offers highest hit rate (63.4%) but lowest expectancy (+0.026R) for traders prioritizing win frequency over profit per trade.</p>
-                <p style="margin-top: 10px;"><strong>For quality-filtered approach:</strong> Apply "Close Below EMA20 + 3-Bar" filter and use 2R target for <strong>+0.208R expectancy</strong> (best performance), or 1.5R for +0.160R expectancy (more frequent resolution). Accept 0.26 setups/day with superior edge — filter more than doubles expectancy at all target levels.</p>
+                <p style="margin-top: 10px;"><strong>For quality-filtered approach:</strong> Apply "Close Below EMA20 + 3-Bar" filter and use 2R target for <strong>+0.208R expectancy</strong> (best performance), or 1.5R for +0.160R expectancy (more frequent resolution). Accept 0.26 setups/day with superior edge &mdash; filter more than doubles expectancy at all target levels.</p>
                 <p style="margin-top: 10px;"><strong>Key Finding:</strong> All targets from 0.5R to 2R show positive expectancy across both filtered and unfiltered populations. Filter improvement scales with target size, making 2R particularly attractive for filtered setups (+107% expectancy improvement vs +150% at 0.5R).</p>
             </div>
 
             <div class="key-finding">
                 <h4>Disappointment Thesis Validated: Edge Exists in "Close Below" Only</h4>
-                <p>Bull MIG patterns that close BELOW the 20 EMA dramatically outperform those closing ABOVE across all targets. At 2R: "Close Below" produces +0.209R expectancy versus only +0.031R for "Close Above" — a <strong>6.7× performance advantage</strong>. At 1R: 9.7× better (+0.136R vs +0.014R). The "Close Above" setups (60.7% of all bulls) are essentially breakeven, while the entire edge exists in the 39.3% minority that close below the EMA. Average MFE for "Close Below" is 1.714R versus 1.301R for "Close Above" (+0.413R difference). This validates the core "disappointment" concept: bears disappointed by bulls' strength below trend represents a genuine reversal signal, while bulls continuing above trend is noise. <strong>"Close Below EMA20" should be considered a mandatory filter, not an optional enhancement.</strong></p>
+                <p>Bull MIG patterns that close BELOW the 20 EMA dramatically outperform those closing ABOVE across all targets. At 2R: "Close Below" produces +0.209R expectancy versus only +0.031R for "Close Above" &mdash; a <strong>6.7&times; performance advantage</strong>. At 1R: 9.7&times; better (+0.136R vs +0.014R). The "Close Above" setups (60.7% of all bulls) are essentially breakeven, while the entire edge exists in the 39.3% minority that close below the EMA. Average MFE for "Close Below" is 1.714R versus 1.301R for "Close Above" (+0.413R difference). This validates the core "disappointment" concept: bears disappointed by bulls' strength below trend represents a genuine reversal signal, while bulls continuing above trend is noise. <strong>"Close Below EMA20" should be considered a mandatory filter, not an optional enhancement.</strong></p>
             </div>
 
             <div class="key-finding">
@@ -848,8 +848,8 @@
         </div>
 
         <footer>
-            ES 5-Minute MIG Reversal · Trade Setup Analysis · Bull Patterns<br>
-            Source: CME E-mini S&P 500 Futures (ES1) · 5-Minute Bars · Jan 2022 — Feb 2026
+            ES 5-Minute MIG Reversal &middot; Trade Setup Analysis &middot; Bull Patterns<br>
+            Source: CME E-mini S&P 500 Futures (ES1) &middot; 5-Minute Bars &middot; Jan 2022 &mdash; Feb 2026
         </footer>
     </div>
 </body>
