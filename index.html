@@ -13,10 +13,8 @@
   html { scroll-behavior: smooth; }
   body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text-main); margin: 0; padding: 0; display: flex; justify-content: center; }
   
-  /* Layout Wrapper */
   .container { display: flex; width: 100%; max-width: 1300px; padding: 60px 32px; gap: 40px; position: relative; }
   
-  /* Floating TOC Sidebar */
   .toc-sidebar {
     position: sticky; top: 60px; height: fit-content; width: 200px;
     flex-shrink: 0; padding-top: 100px;
@@ -28,18 +26,15 @@
   }
   .toc-link:hover { color: var(--accent); }
 
-  /* Main Content Area */
   .content-main { flex-grow: 1; max-width: 1100px; }
   .biz-header { margin-bottom: 48px; text-align: center; }
   .biz-name { font-family: 'JetBrains Mono', monospace; font-size: 14px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.15em; color: var(--accent); margin-bottom: 8px; display: block; }
   h1 { font-size: 42px; font-weight: 700; letter-spacing: -0.02em; margin: 0; }
 
-  /* Grid Layout */
   .hub-row { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; margin-bottom: 12px; align-items: center; }
   .column-header-row { margin-bottom: 32px; border-bottom: 2px solid var(--text-main); padding-bottom: 12px; }
   .column-title { font-family: 'JetBrains Mono', monospace; font-size: 14px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; }
 
-  /* Category Headers */
   .category-row { margin-top: 48px; margin-bottom: 16px; scroll-margin-top: 60px; }
   .category-label {
     font-family: 'JetBrains Mono', monospace; font-size: 11px; font-weight: 700;
@@ -48,7 +43,6 @@
   }
   .category-label::after { content: ""; flex: 1; height: 1px; background: var(--border); }
 
-  /* Report Cards */
   .report-card { 
     background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 18px;
     text-decoration: none; display: flex; align-items: center; justify-content: space-between;
@@ -80,7 +74,8 @@
       <div class="toc-title">Navigation</div>
       <a href="#weekly" class="toc-link">Weekly Analysis</a>
       <a href="#daily" class="toc-link">Daily Bar Analysis</a>
-      <a href="#opening" class="toc-link">Opening & Intraday</a>
+      <a href="#opening" class="toc-link">Opening Analysis</a>
+      <a href="#intraday" class="toc-link">Intraday Analysis</a>
     </nav>
 
     <div class="content-main">
@@ -121,8 +116,8 @@
       </div>
 
       <div class="hub-row category-row" id="opening">
-        <div class="category-label">Opening & Intraday</div>
-        <div class="category-label">Opening & Intraday</div>
+        <div class="category-label">Opening Analysis</div>
+        <div class="category-label">Opening Analysis</div>
       </div>
       <div class="hub-row">
         <a href="./ES-Opening-Gap-Closure/" class="report-card"><div><span class="report-title">Opening Gap Closure</span><span class="report-date">Feb 2026</span></div><div class="arrow">→</div></a>
@@ -137,12 +132,25 @@
         <a href="./FDAX-Open-Out-of-Range-Analysis/" class="report-card"><div><span class="report-title">Open Out of Range Analysis</span><span class="report-date">Feb 2026</span></div><div class="arrow">→</div></a>
       </div>
       <div class="hub-row">
+        <a href="./ES-Open-Outside-Range-Analysis/" class="report-card"><div><span class="report-title">Open Outside Yesterday's Range</span><span class="report-date">Feb 2026</span></div><div class="arrow">→</div></a>
+        <div class="spacer">FDAX Open Outside Range Pending</div>
+      </div>
+      <div class="hub-row">
         <a href="./ES-Open-Inside-Range-Analysis/" class="report-card"><div><span class="report-title">Open Inside Yesterday's Range</span><span class="report-date">Feb 2026</span></div><div class="arrow">→</div></a>
         <a href="./FDAX-Open-Inside-Range-Analysis/" class="report-card"><div><span class="report-title">Open Inside Yesterday's Range</span><span class="report-date">Feb 2026</span></div><div class="arrow">→</div></a>
       </div>
       <div class="hub-row">
         <a href="./ES-Yesterday-Measuring-Gap-Analysis/" class="report-card"><div><span class="report-title">Yesterday Measuring Gap Analysis</span><span class="report-date">Feb 2026</span></div><div class="arrow">→</div></a>
         <a href="./FDAX-Yesterday-Measuring-Gap-Analysis/" class="report-card"><div><span class="report-title">Yesterday Measuring Gap Analysis</span><span class="report-date">Feb 2026</span></div><div class="arrow">→</div></a>
+      </div>
+
+      <div class="hub-row category-row" id="intraday">
+        <div class="category-label">Intraday Analysis</div>
+        <div class="category-label">Intraday Analysis</div>
+      </div>
+      <div class="hub-row">
+        <a href="./ES-Consecutive-60min-Bars/" class="report-card"><div><span class="report-title">Consecutive 60min Bars</span><span class="report-date">Feb 2026</span></div><div class="arrow">→</div></a>
+        <div class="spacer">FDAX Consecutive 60min Bars Pending</div>
       </div>
     </div>
   </div>
