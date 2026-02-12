@@ -1,0 +1,732 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ES 5-Minute MIG Reversal Analysis — Setup Frequency Study</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: #f9fafb;
+            color: #1f2937;
+            line-height: 1.6;
+            padding: 40px 20px;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        .meta {
+            color: #7c3aed;
+            font-size: 0.9rem;
+            font-weight: 500;
+            margin-bottom: 15px;
+            letter-spacing: 0.5px;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: #111827;
+            margin-bottom: 20px;
+            line-height: 1.2;
+        }
+
+        .subtitle {
+            font-size: 1.1rem;
+            color: #6b7280;
+            margin-bottom: 40px;
+        }
+
+        .data-universe {
+            background: #ffffff;
+            border-radius: 12px;
+            padding: 30px;
+            margin-bottom: 50px;
+            border: 1px solid #e5e7eb;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        .data-universe h3 {
+            color: #111827;
+            font-size: 1.3rem;
+            margin-bottom: 20px;
+        }
+
+        .data-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 25px;
+        }
+
+        .data-item {
+            background: #f9fafb;
+            padding: 20px;
+            border-radius: 8px;
+            border-left: 3px solid #7c3aed;
+        }
+
+        .data-label {
+            color: #6b7280;
+            font-size: 0.85rem;
+            margin-bottom: 8px;
+        }
+
+        .data-value {
+            color: #111827;
+            font-size: 1.8rem;
+            font-weight: 700;
+        }
+
+        .data-subvalue {
+            color: #9ca3af;
+            font-size: 0.9rem;
+            margin-top: 5px;
+        }
+
+        .methodology {
+            background: #f0f9ff;
+            padding: 20px 25px;
+            border-radius: 8px;
+            border-left: 3px solid #3b82f6;
+            margin-top: 20px;
+        }
+
+        .methodology strong {
+            color: #2563eb;
+        }
+
+        section {
+            margin-bottom: 60px;
+        }
+
+        h2 {
+            color: #111827;
+            font-size: 1.8rem;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #e5e7eb;
+        }
+
+        .stat-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 20px;
+            margin: 30px 0;
+        }
+
+        .stat-card {
+            background: #ffffff;
+            padding: 25px;
+            border-radius: 10px;
+            border: 1px solid #e5e7eb;
+            text-align: center;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        .stat-card.green {
+            border-left: 4px solid #10b981;
+        }
+
+        .stat-card.red {
+            border-left: 4px solid #ef4444;
+        }
+
+        .stat-card.purple {
+            border-left: 4px solid #7c3aed;
+        }
+
+        .stat-card.amber {
+            border-left: 4px solid #d97706;
+        }
+
+        .stat-number {
+            font-size: 3rem;
+            font-weight: 700;
+            margin: 15px 0;
+        }
+
+        .stat-number.green {
+            color: #059669;
+        }
+
+        .stat-number.red {
+            color: #dc2626;
+        }
+
+        .stat-number.purple {
+            color: #7c3aed;
+        }
+
+        .stat-number.amber {
+            color: #d97706;
+        }
+
+        .stat-label {
+            color: #6b7280;
+            font-size: 0.95rem;
+        }
+
+        .stat-sublabel {
+            color: #9ca3af;
+            font-size: 0.85rem;
+            margin-top: 8px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 25px 0;
+            background: #ffffff;
+            border-radius: 8px;
+            overflow: hidden;
+            border: 1px solid #e5e7eb;
+        }
+
+        thead {
+            background: #f9fafb;
+        }
+
+        th {
+            color: #6b7280;
+            font-weight: 600;
+            padding: 15px;
+            text-align: left;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        td {
+            padding: 15px;
+            border-top: 1px solid #e5e7eb;
+            color: #1f2937;
+        }
+
+        tr:hover {
+            background: #f9fafb;
+        }
+
+        .highlight-green {
+            color: #059669;
+            font-weight: 600;
+        }
+
+        .highlight-red {
+            color: #dc2626;
+            font-weight: 600;
+        }
+
+        .highlight-purple {
+            color: #7c3aed;
+            font-weight: 600;
+        }
+
+        .highlight-amber {
+            color: #d97706;
+            font-weight: 600;
+        }
+
+        .percentage-bar {
+            display: flex;
+            height: 40px;
+            border-radius: 6px;
+            overflow: hidden;
+            margin: 20px 0;
+            background: #f3f4f6;
+            border: 1px solid #e5e7eb;
+        }
+
+        .bar-segment {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #ffffff;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        .bar-green {
+            background: #10b981;
+        }
+
+        .bar-red {
+            background: #ef4444;
+        }
+
+        .bar-gray {
+            background: #9ca3af;
+            color: #ffffff;
+        }
+
+        .bar-amber {
+            background: #d97706;
+        }
+
+        .comparison-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin: 30px 0;
+        }
+
+        .comparison-card {
+            background: #ffffff;
+            padding: 30px;
+            border-radius: 10px;
+            border: 1px solid #e5e7eb;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        .comparison-card h3 {
+            color: #111827;
+            font-size: 1.4rem;
+            margin-bottom: 20px;
+        }
+
+        .comparison-card.green {
+            border-top: 4px solid #10b981;
+        }
+
+        .comparison-card.red {
+            border-top: 4px solid #ef4444;
+        }
+
+        .metric-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 12px 0;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .metric-row:last-child {
+            border-bottom: none;
+        }
+
+        .metric-label {
+            color: #6b7280;
+        }
+
+        .metric-value {
+            color: #111827;
+            font-weight: 600;
+        }
+
+        .key-finding {
+            background: #ffffff;
+            padding: 25px;
+            border-radius: 8px;
+            margin: 20px 0;
+            border-left: 4px solid #7c3aed;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        .key-finding h4 {
+            color: #7c3aed;
+            margin-bottom: 12px;
+            font-size: 1.1rem;
+        }
+
+        .key-finding p {
+            color: #1f2937;
+            line-height: 1.7;
+        }
+
+        footer {
+            text-align: center;
+            color: #9ca3af;
+            font-size: 0.85rem;
+            margin-top: 80px;
+            padding-top: 30px;
+            border-top: 1px solid #e5e7eb;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="meta">◆ Quantitative Research</div>
+        
+        <h1>ES 5-Minute MIG Reversal Analysis — Setup Frequency Study</h1>
+        
+        <p class="subtitle">Micro-gap reversal patterns: frequency, distribution, and EMA relationship analysis</p>
+
+        <div class="data-universe">
+            <h3>Data Universe</h3>
+            
+            <div class="data-grid">
+                <div class="data-item">
+                    <div class="data-label">Contract</div>
+                    <div class="data-value">ES1</div>
+                    <div class="data-subvalue">E-mini S&P 500 Futures</div>
+                </div>
+                
+                <div class="data-item">
+                    <div class="data-label">Timeframe</div>
+                    <div class="data-value">5-Min</div>
+                    <div class="data-subvalue">Intraday bar analysis</div>
+                </div>
+                
+                <div class="data-item">
+                    <div class="data-label">Trading Days</div>
+                    <div class="data-value">1,017</div>
+                    <div class="data-subvalue">Jan 2022 — Feb 2026</div>
+                </div>
+                
+                <div class="data-item">
+                    <div class="data-label">Total Bars</div>
+                    <div class="data-value">82,053</div>
+                    <div class="data-subvalue">5-minute intraday bars</div>
+                </div>
+            </div>
+
+            <div class="methodology">
+                <strong>Methodology:</strong> A MIG (Micro-Gap) Reversal occurs when price creates a micro-gap between consecutive bars (3+ in a row) but does so AGAINST the trend defined by the 20 EMA. Bull MIG Reversals = bull micro-gap (Low[0] > High[2]) with the signal bar's low below 20 EMA (bears disappointed — "why are bulls so strong down here?"). Bear MIG Reversals = bear micro-gap (High[0] < Low[2]) with the signal bar's high above 20 EMA (bulls disappointed — "why are bears so strong up here?"). These are "disappointment setups" suggesting potential reversals.
+            </div>
+        </div>
+
+        <section>
+            <h2>Step 1: Setup Frequency — How Often Do MIG Reversals Occur?</h2>
+            
+            <div class="stat-grid">
+                <div class="stat-card purple">
+                    <div class="stat-label">Total MIG Reversals</div>
+                    <div class="stat-number purple">1,755</div>
+                    <div class="stat-sublabel">2.14% of all bars</div>
+                </div>
+                
+                <div class="stat-card green">
+                    <div class="stat-label">Bull MIG Reversals</div>
+                    <div class="stat-number green">902</div>
+                    <div class="stat-sublabel">51.4% of setups · 0.89 per day</div>
+                </div>
+                
+                <div class="stat-card red">
+                    <div class="stat-label">Bear MIG Reversals</div>
+                    <div class="stat-number red">853</div>
+                    <div class="stat-sublabel">48.6% of setups · 0.84 per day</div>
+                </div>
+                
+                <div class="stat-card purple">
+                    <div class="stat-label">Average per Day</div>
+                    <div class="stat-number purple">1.73</div>
+                    <div class="stat-sublabel">Across 1,017 trading days</div>
+                </div>
+            </div>
+
+            <h3 style="color: #6b7280; margin-top: 40px; margin-bottom: 20px; font-size: 1.1rem;">Setup Distribution</h3>
+            
+            <div class="percentage-bar">
+                <div class="bar-segment bar-green" style="width: 51.4%;">
+                    Bull 51.4%
+                </div>
+                <div class="bar-segment bar-red" style="width: 48.6%;">
+                    Bear 48.6%
+                </div>
+            </div>
+
+            <div class="methodology" style="margin-top: 30px;">
+                <strong>Key Insight:</strong> MIG Reversal setups occur on average 1.73 times per trading day, appearing in 2.14% of all bars. Bulls show up slightly more often than bears (902 vs 853, a 1.06× ratio), but the distribution is remarkably balanced at 51.4% / 48.6%. This near-perfect symmetry suggests the pattern captures genuine two-way reversal opportunities without structural directional bias.
+            </div>
+        </section>
+
+        <section>
+            <h2>Step 2: Daily Distribution — How Many Setups Per Day?</h2>
+            
+            <div class="stat-grid">
+                <div class="stat-card purple">
+                    <div class="stat-label">Days with Setups</div>
+                    <div class="stat-number purple">822</div>
+                    <div class="stat-sublabel">80.8% of trading days</div>
+                </div>
+                
+                <div class="stat-card amber">
+                    <div class="stat-label">Days with NO Setups</div>
+                    <div class="stat-number amber">195</div>
+                    <div class="stat-sublabel">19.2% of trading days</div>
+                </div>
+                
+                <div class="stat-card purple">
+                    <div class="stat-label">Median Setups/Day</div>
+                    <div class="stat-number purple">2.0</div>
+                    <div class="stat-sublabel">When setups occur</div>
+                </div>
+                
+                <div class="stat-card purple">
+                    <div class="stat-label">Max in Single Day</div>
+                    <div class="stat-number purple">7</div>
+                    <div class="stat-sublabel">Rare but possible</div>
+                </div>
+            </div>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th>Setups Per Day</th>
+                        <th>Number of Days</th>
+                        <th>% of Days with Setups</th>
+                        <th>Cumulative %</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><span class="highlight-purple">1 setup</span></td>
+                        <td>293</td>
+                        <td>35.6%</td>
+                        <td>35.6%</td>
+                    </tr>
+                    <tr>
+                        <td><span class="highlight-purple">2 setups</span></td>
+                        <td>266</td>
+                        <td>32.4%</td>
+                        <td>68.0%</td>
+                    </tr>
+                    <tr>
+                        <td>3 setups</td>
+                        <td>162</td>
+                        <td>19.7%</td>
+                        <td>87.7%</td>
+                    </tr>
+                    <tr>
+                        <td>4 setups</td>
+                        <td>70</td>
+                        <td>8.5%</td>
+                        <td>96.2%</td>
+                    </tr>
+                    <tr>
+                        <td>5 setups</td>
+                        <td>24</td>
+                        <td>2.9%</td>
+                        <td>99.1%</td>
+                    </tr>
+                    <tr>
+                        <td>6 setups</td>
+                        <td>5</td>
+                        <td>0.6%</td>
+                        <td>99.8%</td>
+                    </tr>
+                    <tr>
+                        <td>7 setups</td>
+                        <td>2</td>
+                        <td>0.2%</td>
+                        <td>100.0%</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <div class="methodology" style="margin-top: 30px;">
+                <strong>Distribution Analysis:</strong> MIG Reversals occur on 80.8% of trading days, meaning only 1 in 5 days has zero setups. The modal outcome is 1-2 setups per day (68.0% of days with setups), with 3+ setups occurring on 31.3% of days. Days with 5+ setups are rare (3.8%). This frequency suggests the pattern is common enough for regular trading opportunities but not so abundant that it loses selectivity.
+            </div>
+        </section>
+
+        <section>
+            <h2>Step 3: Pattern Length — How Long Are the Consecutive Sequences?</h2>
+            
+            <div class="stat-grid">
+                <div class="stat-card purple">
+                    <div class="stat-label">3-Bar Patterns</div>
+                    <div class="stat-number purple">1,243</div>
+                    <div class="stat-sublabel">70.8% of all setups</div>
+                </div>
+                
+                <div class="stat-card purple">
+                    <div class="stat-label">4-Bar Patterns</div>
+                    <div class="stat-number purple">378</div>
+                    <div class="stat-sublabel">21.5% of all setups</div>
+                </div>
+                
+                <div class="stat-card purple">
+                    <div class="stat-label">5+ Bar Patterns</div>
+                    <div class="stat-number purple">134</div>
+                    <div class="stat-sublabel">7.6% of all setups</div>
+                </div>
+            </div>
+
+            <h3 style="color: #6b7280; margin-top: 40px; margin-bottom: 20px; font-size: 1.1rem;">Pattern Length Breakdown</h3>
+            
+            <div class="percentage-bar">
+                <div class="bar-segment bar-green" style="width: 70.8%;">
+                    3-Bar: 70.8%
+                </div>
+                <div class="bar-segment bar-red" style="width: 21.5%;">
+                    4-Bar: 21.5%
+                </div>
+                <div class="bar-segment bar-amber" style="width: 5.6%;">
+                    5-Bar: 5.6%
+                </div>
+                <div class="bar-segment bar-gray" style="width: 2.1%;">
+                    6+ Bar: 2.1%
+                </div>
+            </div>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th>Pattern Length</th>
+                        <th>Count</th>
+                        <th>% of Total Setups</th>
+                        <th>Cumulative %</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><span class="highlight-purple">3-bar (minimum)</span></td>
+                        <td>1,243</td>
+                        <td class="highlight-purple">70.8%</td>
+                        <td>70.8%</td>
+                    </tr>
+                    <tr>
+                        <td>4-bar</td>
+                        <td>378</td>
+                        <td>21.5%</td>
+                        <td>92.3%</td>
+                    </tr>
+                    <tr>
+                        <td>5-bar</td>
+                        <td>99</td>
+                        <td>5.6%</td>
+                        <td>98.0%</td>
+                    </tr>
+                    <tr>
+                        <td>6-bar</td>
+                        <td>24</td>
+                        <td>1.4%</td>
+                        <td>99.4%</td>
+                    </tr>
+                    <tr>
+                        <td>7-bar</td>
+                        <td>10</td>
+                        <td>0.6%</td>
+                        <td>99.9%</td>
+                    </tr>
+                    <tr>
+                        <td>8-bar</td>
+                        <td>1</td>
+                        <td>0.1%</td>
+                        <td>100.0%</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <div class="methodology" style="margin-top: 30px;">
+                <strong>Pattern Concentration:</strong> The vast majority of MIG Reversals are 3-bar patterns (70.8%), meaning the minimum micro-gap condition triggers most setups. 4-bar patterns add another 21.5%, bringing the combined 3-4 bar frequency to 92.3%. Patterns of 5+ bars are uncommon (7.6%), suggesting that extended consecutive sequences rarely occur before the reversal signal fires. This concentration in shorter patterns implies quick formation and minimal need to wait for extended runs.
+            </div>
+        </section>
+
+        <section>
+            <h2>Step 4: EMA Position Analysis — Where Are Setups Relative to Trend?</h2>
+            
+            <p style="color: #6b7280; margin-bottom: 30px;">By definition, Bull MIG Reversals require the signal bar's LOW to be below 20 EMA (bears disappointed — "why are bulls so strong down here?"), while Bear MIG Reversals require the signal bar's HIGH to be above 20 EMA (bulls disappointed — "why are bears so strong up here?"). However, the signal bar's CLOSE can be on either side of the EMA. We also track position relative to the 200 EMA for strategic trend context.</p>
+
+            <div class="comparison-grid">
+                <div class="comparison-card green">
+                    <h3>Bull MIG Reversals (n=902)</h3>
+                    
+                    <div class="metric-row">
+                        <span class="metric-label">Close BELOW 20 EMA</span>
+                        <span class="metric-value highlight-green">357 (39.6%)</span>
+                    </div>
+                    <div class="metric-row">
+                        <span class="metric-label">Close ABOVE 20 EMA</span>
+                        <span class="metric-value">545 (60.4%)</span>
+                    </div>
+                    <div style="margin-top: 20px; padding-top: 20px; border-top: 1px solid #e5e7eb;">
+                        <div class="metric-row">
+                            <span class="metric-label">Close BELOW 200 EMA</span>
+                            <span class="metric-value">540 (59.9%)</span>
+                        </div>
+                        <div class="metric-row">
+                            <span class="metric-label">Close ABOVE 200 EMA</span>
+                            <span class="metric-value">343 (38.0%)</span>
+                        </div>
+                        <div class="metric-row">
+                            <span class="metric-label">Close AT 200 EMA</span>
+                            <span class="metric-value">19 (2.1%)</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="comparison-card red">
+                    <h3>Bear MIG Reversals (n=853)</h3>
+                    
+                    <div class="metric-row">
+                        <span class="metric-label">Close ABOVE 20 EMA</span>
+                        <span class="metric-value highlight-red">352 (41.3%)</span>
+                    </div>
+                    <div class="metric-row">
+                        <span class="metric-label">Close BELOW 20 EMA</span>
+                        <span class="metric-value">501 (58.7%)</span>
+                    </div>
+                    <div style="margin-top: 20px; padding-top: 20px; border-top: 1px solid #e5e7eb;">
+                        <div class="metric-row">
+                            <span class="metric-label">Close ABOVE 200 EMA</span>
+                            <span class="metric-value">575 (67.4%)</span>
+                        </div>
+                        <div class="metric-row">
+                            <span class="metric-label">Close BELOW 200 EMA</span>
+                            <span class="metric-value">262 (30.7%)</span>
+                        </div>
+                        <div class="metric-row">
+                            <span class="metric-label">Close AT 200 EMA</span>
+                            <span class="metric-value">16 (1.9%)</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="key-finding">
+                <h4>Close Location Data</h4>
+                <p><strong>Bull MIG Reversals (n=902):</strong> 39.6% close below 20 EMA, 60.4% close above 20 EMA (despite signal bar low being below by definition).</p>
+                <p style="margin-top: 10px;"><strong>Bear MIG Reversals (n=853):</strong> 41.3% close above 20 EMA, 58.7% close below 20 EMA (despite signal bar high being above by definition).</p>
+                <p style="margin-top: 10px;">The signal bar's close location relative to the 20 EMA will be tracked in performance analysis to determine if it impacts win rates.</p>
+            </div>
+
+            <div class="methodology" style="margin-top: 30px;">
+                <strong>Strategic Trend Context (200 EMA):</strong> Bull MIG Reversals show 59.9% below the 200 EMA, suggesting they often occur in downtrends or bearish environments (counter-trend longs — bears disappointed that bulls are showing strength in a downtrend). Bear MIG Reversals show 67.4% above the 200 EMA, occurring primarily in uptrends (counter-trend shorts — bulls disappointed that bears are showing strength in an uptrend). This asymmetry is notable — bear setups trigger more often in bullish environments than bull setups do in bearish environments.
+            </div>
+        </section>
+
+        <section>
+            <h2>Step 5: Session Timing — First 12 Bars vs. Later Session</h2>
+            
+            <div class="stat-grid">
+                <div class="stat-card amber">
+                    <div class="stat-label">First 12 Bars (09:30-10:30)</div>
+                    <div class="stat-number amber">303</div>
+                    <div class="stat-sublabel">17.3% of all setups</div>
+                </div>
+                
+                <div class="stat-card purple">
+                    <div class="stat-label">After First 12 Bars</div>
+                    <div class="stat-number purple">1,452</div>
+                    <div class="stat-sublabel">82.7% of all setups</div>
+                </div>
+            </div>
+
+            <div class="methodology" style="margin-top: 30px;">
+                <strong>Timing Distribution:</strong> The majority of MIG Reversals (82.7%) occur AFTER the first hour of trading (10:30 EST onward), with only 17.3% appearing in the opening hour. This suggests the pattern is more common during mid-session and afternoon trading when trends have established and potential exhaustion/reversal dynamics develop. Opening hour MIG Reversals may warrant separate analysis due to their distinct volatility and gap-related behavior.
+            </div>
+        </section>
+
+        <div class="key-finding" style="background: linear-gradient(135deg, #f5f3ff 0%, #faf5ff 100%); border-left: 4px solid #7c3aed; margin-top: 60px;">
+            <h4>Phase 1 Summary: Setup Frequency Established</h4>
+            <p><strong>Population Characteristics:</strong> 1,755 MIG Reversal setups across 1,017 trading days (1.73 avg per day). Bulls slightly outnumber bears (902 vs 853, 51.4% / 48.6%) but distribution is balanced. Setups occur on 80.8% of trading days, with 1-2 setups per day being most common (68.0%). Pattern length is concentrated in 3-bar setups (70.8%), with 92.3% being 3-4 bar patterns.</p>
+            <p style="margin-top: 10px;"><strong>Close Location Split:</strong> Bull setups: 39.6% close below 20 EMA, 60.4% close above. Bear setups: 41.3% close above 20 EMA, 58.7% close below. This ~40/60 split in close location will be tracked in performance analysis.</p>
+            <p style="margin-top: 10px;"><strong>Next Steps:</strong> With frequency established, the next phase will analyze win rate, MFE/MAE, target hit rates, and time-to-target metrics. The EMA close location split will be a variable to track in win rate analysis.</p>
+        </div>
+
+        <footer>
+            ES 5-Minute MIG Reversal · Frequency Analysis<br>
+            Source: CME E-mini S&P 500 Futures (ES1) · 5-Minute Bars · Jan 2022 — Feb 2026
+        </footer>
+    </div>
+</body>
+</html>
