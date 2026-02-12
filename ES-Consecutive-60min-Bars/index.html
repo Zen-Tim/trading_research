@@ -906,8 +906,13 @@
             </div>
 
             <div class="key-finding">
+                <h4>Bar 2 Entry Quality</h4>
+                <p>Entering at Bar 2's close (10:30 EST) with stops at Bar 2's range provides <span class="highlight-purple">1.20× average reward:risk</span> (median 0.91×) — a significant improvement over pattern-based metrics. Bears offer superior 1.29× multiples versus bulls at 1.12×. Counter-intuitively, <strong>bull bars with LOW IBS (0-30%) provide the best headroom at 1.41×</strong>, while high IBS bulls (70-100%, the majority at 66.7%) offer only 1.04×. Bears show optimal headroom at mid-range IBS (50-70%: 1.56×). State -5 provides exceptional 1.68× headroom (1.23× median), while the dominant State +1 offers 1.07×. This creates a frequency-quality tradeoff: common patterns provide weaker reward:risk than rare setups.</p>
+            </div>
+
+            <div class="key-finding">
                 <h4>Recommended Next Steps</h4>
-                <p>This study establishes <strong>directional correlation</strong>, identifies the highest-probability states, and quantifies practical headroom constraints. The next phase should investigate: (1) <strong>Entry timing optimization</strong> — should positions be entered immediately at 10:30 or wait for pullbacks to improve risk-reward, (2) <strong>Context dependency</strong> — does accuracy or headroom vary based on gap size, prior day type, or volatility regime, (3) <strong>Time-to-target analysis</strong> — when during the day do these patterns typically resolve to the daily extreme, and (4) <strong>MFE/MAE validation</strong> — what are realistic profit targets and stop distances given the headroom constraints identified.</p>
+                <p>This study establishes <strong>directional correlation</strong>, identifies the highest-probability states, quantifies headroom constraints, and validates Bar 2 entry quality with specific IBS and state-level variations. The next phase should investigate: (1) <strong>Entry timing optimization</strong> — comparing immediate entry at 10:30 versus waiting for pullbacks to Bar 2's midpoint or low to improve risk-reward, (2) <strong>Context dependency</strong> — whether accuracy or headroom varies by gap size, prior day type, or volatility regime, (3) <strong>Time-to-target analysis</strong> — when during the day these patterns typically resolve to daily extremes, and (4) <strong>MFE/MAE validation</strong> — realistic profit targets and maximum adverse excursion given the 1.20× Bar 2 headroom baseline.</p>
             </div>
         </div>
 
@@ -1154,6 +1159,299 @@
             <div class="key-finding" style="margin-top: 50px;">
                 <h4>Practical Implications</h4>
                 <p>The headroom analysis reveals a critical execution constraint: while 82.2% directional accuracy exists, the first two hours consume 68.8% of the daily range on average, leaving only 40.8% as headroom (0.66× pattern size). This ratio worsens for large opening patterns — when the first 2 hours exceed 75% of daily ABR (33.7% of cases), headroom drops to just 0.47×. Conversely, smaller patterns (0-50% of ABR, 25.2% of cases) leave 0.88× headroom, nearly equal to pattern size. This suggests a filtering criterion: prioritize patterns where the 2-bar range is <50% of daily ABR to maximize headroom-to-pattern ratios. State-level variations exist, with bear states generally providing superior headroom multiples despite larger pattern consumption.</p>
+            </div>
+        </section>
+
+
+        <section>
+            <h2>Step 6: Bar 2 Entry Analysis — Reward:Risk from the Setup Bar</h2>
+            
+            <p style="color: #6b7280; margin-bottom: 30px;">The previous headroom analysis measured runway relative to the full 2-bar pattern. This section focuses specifically on Bar 2 (the setup bar that completes at 10:30 EST) to answer: <strong>"If I enter at the close of Bar 2 with a stop 1 tick beyond Bar 2's range, what's my average reward:risk ratio?"</strong> We also investigate whether Bar 2's IBS (close location within the bar) predicts headroom quality.</p>
+
+            <div class="stat-grid">
+                <div class="stat-card purple">
+                    <div class="stat-label">Avg Bar 2 Range</div>
+                    <div class="stat-number purple">18.8 pts</div>
+                    <div class="stat-sublabel">38.2% of Daily ABR</div>
+                </div>
+                
+                <div class="stat-card purple">
+                    <div class="stat-label">Avg Headroom from Bar 2 Close</div>
+                    <div class="stat-number purple">19.9 pts</div>
+                    <div class="stat-sublabel">Same as previous section</div>
+                </div>
+                
+                <div class="stat-card purple">
+                    <div class="stat-label">Bar 2 Headroom Multiple</div>
+                    <div class="stat-number purple">1.20×</div>
+                    <div class="stat-sublabel">Median: 0.91× Bar 2 range</div>
+                </div>
+                
+                <div class="stat-card green">
+                    <div class="stat-label">Risk:Reward Implication</div>
+                    <div class="stat-number green">1:1.2</div>
+                    <div class="stat-sublabel">Average potential (1:0.91 median)</div>
+                </div>
+            </div>
+
+            <div class="methodology" style="margin-top: 30px;">
+                <strong>Bar 2 Entry Framework:</strong> Bar 2 averages 18.8 points in range (38.2% of daily ABR) and leaves 19.9 points of headroom to the daily extreme. This creates a 1.20× headroom multiple — meaning the average distance to the daily high/low is 1.2 times the range of Bar 2 itself. The median multiple of 0.91× indicates a slightly negative skew, with half of all cases offering less than 1:1 reward:risk when using Bar 2's range as the stop distance. This represents a significant improvement over the pattern-based multiple of 0.66× because we're measuring against a single bar's range rather than the combined 2-bar pattern.
+            </div>
+
+            <h3 style="color: #6b7280; margin-top: 50px; margin-bottom: 20px; font-size: 1.1rem;">Bull vs Bear Entry Quality</h3>
+
+            <div class="comparison-grid">
+                <div class="comparison-card green">
+                    <h3>Bull Patterns (n=567)</h3>
+                    
+                    <div class="metric-row">
+                        <span class="metric-label">Avg Bar 2 Range</span>
+                        <span class="metric-value">16.1 pts (33.7% ABR)</span>
+                    </div>
+                    <div class="metric-row">
+                        <span class="metric-label">Avg Bar 2 IBS</span>
+                        <span class="metric-value">75.3%</span>
+                    </div>
+                    <div class="metric-row">
+                        <span class="metric-label">Avg Headroom</span>
+                        <span class="metric-value">16.0 pts</span>
+                    </div>
+                    <div class="metric-row">
+                        <span class="metric-label">Bar 2 Multiple</span>
+                        <span class="metric-value highlight-green">1.12× (0.91×)</span>
+                    </div>
+                </div>
+
+                <div class="comparison-card red">
+                    <h3>Bear Patterns (n=464)</h3>
+                    
+                    <div class="metric-row">
+                        <span class="metric-label">Avg Bar 2 Range</span>
+                        <span class="metric-value">22.1 pts (43.8% ABR)</span>
+                    </div>
+                    <div class="metric-row">
+                        <span class="metric-label">Avg Bar 2 IBS</span>
+                        <span class="metric-value">31.6%</span>
+                    </div>
+                    <div class="metric-row">
+                        <span class="metric-label">Avg Headroom</span>
+                        <span class="metric-value">24.7 pts</span>
+                    </div>
+                    <div class="metric-row">
+                        <span class="metric-label">Bar 2 Multiple</span>
+                        <span class="metric-value highlight-red">1.29× (0.91×)</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="methodology" style="margin-top: 30px;">
+                <strong>Bear Superiority Confirmed:</strong> Bear patterns provide superior entry quality with a 1.29× Bar 2 headroom multiple versus 1.12× for bulls. Bear Bar 2's average 22.1 points in range (larger than bulls at 16.1 points) but leave 24.7 points of headroom — exceeding their own range. Bull Bar 2's leave 16.0 points headroom, slightly less than their 16.1 point average range. Both show identical median multiples of 0.91×, but bears have a better mean due to occasional large continuation days. Bull Bar 2's close with 75.3% IBS (strong closes), while bear Bar 2's close with 31.6% IBS (weak closes within the bar), as expected for directional patterns.
+            </div>
+
+            <h3 style="color: #6b7280; margin-top: 50px; margin-bottom: 20px; font-size: 1.1rem;">IBS Impact on Headroom — Bull Patterns (Counter-Intuitive Finding)</h3>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th>Bar 2 IBS Range</th>
+                        <th>Count</th>
+                        <th>% of Bulls</th>
+                        <th>Avg IBS</th>
+                        <th>Avg Headroom (pts)</th>
+                        <th>Headroom Multiple</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>0-30% (Weak Close)</td>
+                        <td>13</td>
+                        <td>2.3%</td>
+                        <td>20.8%</td>
+                        <td>17.29</td>
+                        <td class="highlight-green">1.41× (1.47×)</td>
+                    </tr>
+                    <tr>
+                        <td>30-50%</td>
+                        <td>51</td>
+                        <td>9.0%</td>
+                        <td>42.6%</td>
+                        <td>15.47</td>
+                        <td class="highlight-green">1.31× (1.03×)</td>
+                    </tr>
+                    <tr>
+                        <td>50-70%</td>
+                        <td>125</td>
+                        <td>22.0%</td>
+                        <td>60.9%</td>
+                        <td>16.53</td>
+                        <td class="highlight-green">1.26× (1.06×)</td>
+                    </tr>
+                    <tr>
+                        <td>70-100% (Strong Close)</td>
+                        <td>378</td>
+                        <td>66.7%</td>
+                        <td>86.4%</td>
+                        <td>15.82</td>
+                        <td>1.04× (0.84×)</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <div class="methodology" style="margin-top: 30px;">
+                <strong>Inverse IBS Relationship (Bulls):</strong> Paradoxically, bull bars with LOW IBS (weak closes, 0-30%) provide the BEST headroom multiple at 1.41×, while bull bars with HIGH IBS (strong closes, 70-100%) provide the WORST at 1.04×. This inverse relationship suggests that when Bull Bar 2 closes weak within its range but the day still finishes bullish, there was substantial upside remaining. Conversely, when Bull Bar 2 closes very strong (near its high), much of the daily move has already been captured. The majority of bull patterns (66.7%) occur with high IBS, but these offer sub-1× median headroom (0.84×), creating a selection challenge.
+            </div>
+
+            <h3 style="color: #6b7280; margin-top: 50px; margin-bottom: 20px; font-size: 1.1rem;">IBS Impact on Headroom — Bear Patterns (U-Shaped Relationship)</h3>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th>Bar 2 IBS Range</th>
+                        <th>Count</th>
+                        <th>% of Bears</th>
+                        <th>Avg IBS</th>
+                        <th>Avg Headroom (pts)</th>
+                        <th>Headroom Multiple</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>0-30% (Strong Close)</td>
+                        <td>244</td>
+                        <td>52.6%</td>
+                        <td>16.2%</td>
+                        <td>24.86</td>
+                        <td>1.20× (0.88×)</td>
+                    </tr>
+                    <tr>
+                        <td>30-50%</td>
+                        <td>127</td>
+                        <td>27.4%</td>
+                        <td>39.4%</td>
+                        <td>22.37</td>
+                        <td>1.33× (0.98×)</td>
+                    </tr>
+                    <tr>
+                        <td>50-70%</td>
+                        <td>63</td>
+                        <td>13.6%</td>
+                        <td>58.6%</td>
+                        <td>27.18</td>
+                        <td class="highlight-red">1.56× (1.04×)</td>
+                    </tr>
+                    <tr>
+                        <td>70-100% (Weak Close)</td>
+                        <td>26</td>
+                        <td>5.6%</td>
+                        <td>77.7%</td>
+                        <td>25.74</td>
+                        <td class="highlight-red">1.46× (0.92×)</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <div class="methodology" style="margin-top: 30px;">
+                <strong>U-Shaped IBS Relationship (Bears):</strong> Bear patterns show a different dynamic. Mid-range IBS (50-70%) provides the BEST headroom multiple at 1.56×, exceeding both strong closes (0-30% IBS: 1.20×) and weak closes (70-100% IBS: 1.46×). This suggests that bear bars with some buying pressure but still closing bearish leave the most room for continued downside. The majority of bear patterns (52.6%) occur with strong closes (0-30% IBS), showing conviction selling, but these offer only 1.20× headroom. Mid-range IBS bears (13.6% of cases) are rarer but provide superior entry quality.
+            </div>
+
+            <h3 style="color: #6b7280; margin-top: 50px; margin-bottom: 20px; font-size: 1.1rem;">Bar 2 Headroom by State</h3>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th>State</th>
+                        <th>Count</th>
+                        <th>Bar 2 Range</th>
+                        <th>Bar 2 IBS</th>
+                        <th>Headroom (pts)</th>
+                        <th>Bar 2 Multiple</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="highlight-green">+1</td>
+                        <td>392</td>
+                        <td>16.8 pts</td>
+                        <td>78.8%</td>
+                        <td>15.8 pts</td>
+                        <td>1.07× (0.91×)</td>
+                    </tr>
+                    <tr>
+                        <td class="highlight-green">+2</td>
+                        <td>97</td>
+                        <td>14.6 pts</td>
+                        <td>58.7%</td>
+                        <td>16.5 pts</td>
+                        <td>1.26× (0.97×)</td>
+                    </tr>
+                    <tr>
+                        <td>+5</td>
+                        <td>58</td>
+                        <td>13.6 pts</td>
+                        <td>75.3%</td>
+                        <td>17.5 pts</td>
+                        <td class="highlight-green">1.35× (0.93×)</td>
+                    </tr>
+                    <tr>
+                        <td class="highlight-red">-1</td>
+                        <td>268</td>
+                        <td>25.0 pts</td>
+                        <td>25.2%</td>
+                        <td>25.9 pts</td>
+                        <td>1.18× (0.85×)</td>
+                    </tr>
+                    <tr>
+                        <td class="highlight-red">-2</td>
+                        <td>111</td>
+                        <td>17.5 pts</td>
+                        <td>50.5%</td>
+                        <td>22.1 pts</td>
+                        <td class="highlight-red">1.41× (0.93×)</td>
+                    </tr>
+                    <tr>
+                        <td>-5</td>
+                        <td>61</td>
+                        <td>16.7 pts</td>
+                        <td>27.0%</td>
+                        <td>25.3 pts</td>
+                        <td class="highlight-red">1.68× (1.23×)</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <div class="stat-grid" style="margin-top: 40px;">
+                <div class="stat-card red">
+                    <div class="stat-label">Best Bar 2 Entry</div>
+                    <div class="stat-number red">State -5</div>
+                    <div class="stat-sublabel">1.68× multiple (1.23× median)</div>
+                </div>
+                
+                <div class="stat-card red">
+                    <div class="stat-label">Second Best Entry</div>
+                    <div class="stat-number red">State -2</div>
+                    <div class="stat-sublabel">1.41× multiple (0.93× median)</div>
+                </div>
+                
+                <div class="stat-card green">
+                    <div class="stat-label">Best Bull Entry</div>
+                    <div class="stat-number green">State +5</div>
+                    <div class="stat-sublabel">1.35× multiple (0.93× median)</div>
+                </div>
+                
+                <div class="stat-card purple">
+                    <div class="stat-label">Most Common State</div>
+                    <div class="stat-number purple">State +1</div>
+                    <div class="stat-sublabel">1.07× multiple (0.91× median)</div>
+                </div>
+            </div>
+
+            <div class="methodology" style="margin-top: 30px;">
+                <strong>State-Level Entry Quality:</strong> State -5 (bear inside bar continuation) provides the best Bar 2 entry quality at 1.68× headroom multiple with a strong 1.23× median — the only state exceeding 1:1 at the median. State -2 (lower high, lower low, close above prior low) offers 1.41× mean headroom. Among bulls, State +5 (inside bar) provides the best entry at 1.35×, while the dominant State +1 offers only 1.07× despite its 85.4% directional accuracy. This reinforces a critical tradeoff: frequency vs quality. The most common patterns (States ±1) provide weaker reward:risk ratios than rarer states (±5).
+            </div>
+
+            <div class="key-finding" style="margin-top: 50px;">
+                <h4>Bar 2 Entry Framework Summary</h4>
+                <p>Entering at the close of Bar 2 (10:30 EST) with a stop at Bar 2's range provides an average 1.20× reward:risk ratio (median 0.91×). This represents practical implementability for trend continuation trades. However, significant variations exist: <strong>(1) Bear patterns (1.29×) outperform bulls (1.12×)</strong>, <strong>(2) Bull bars with LOW IBS paradoxically offer better headroom (1.41×) than high IBS (1.04×)</strong>, while bear bars show optimal headroom at mid-range IBS (50-70%: 1.56×), and <strong>(3) State selection matters critically</strong> — State -5 provides 1.68× headroom versus State +1's 1.07×. The data suggests that rare, high-quality setups (States ±5, low IBS bulls, mid IBS bears) offer superior entry characteristics despite lower frequency.</p>
             </div>
         </section>
 
