@@ -901,10 +901,262 @@
             </div>
 
             <div class="key-finding">
+                <h4>Headroom Constraints</h4>
+                <p>The first two hours consume an average of <span class="highlight-purple">68.8%</span> of the daily ABR by 10:30 EST, leaving 40.8% as headroom (0.66× pattern size). An inverse relationship exists: small patterns (<50% ABR) leave 0.88× headroom, while large patterns (>75% ABR) leave only 0.47× headroom. Bear patterns show superior headroom multiples (0.74×) despite consuming more range, while bulls average 0.59×. State -5 offers the best headroom at 0.91×, nearly equal to pattern size. This validates a critical execution filter: prioritize patterns consuming <50-75% of daily ABR to maximize practical runway.</p>
+            </div>
+
+            <div class="key-finding">
                 <h4>Recommended Next Steps</h4>
-                <p>This study establishes <strong>directional correlation</strong> and identifies the highest-probability states. The next phase should investigate: (1) <strong>Magnitude analysis</strong> — does the pattern predict daily range size or just direction, (2) <strong>Timing within the day</strong> — when do these patterns typically resolve (early session vs late session), (3) <strong>Context dependency</strong> — does accuracy vary based on prior day conditions, gap size, or volatility regime, and (4) <strong>Combination patterns</strong> — do certain state sequences across multiple days provide even stronger signals.</p>
+                <p>This study establishes <strong>directional correlation</strong>, identifies the highest-probability states, and quantifies practical headroom constraints. The next phase should investigate: (1) <strong>Entry timing optimization</strong> — should positions be entered immediately at 10:30 or wait for pullbacks to improve risk-reward, (2) <strong>Context dependency</strong> — does accuracy or headroom vary based on gap size, prior day type, or volatility regime, (3) <strong>Time-to-target analysis</strong> — when during the day do these patterns typically resolve to the daily extreme, and (4) <strong>MFE/MAE validation</strong> — what are realistic profit targets and stop distances given the headroom constraints identified.</p>
             </div>
         </div>
+
+        <section>
+            <h2>Step 5: Headroom Analysis — How Much Room is Left After the Pattern?</h2>
+            
+            <p style="color: #6b7280; margin-bottom: 30px;">Directional correlation is only useful if there's practical "headroom" remaining to capitalize on. We measure headroom as the distance from the close of Bar 2 (10:30 EST, when the pattern completes) to the daily extreme in the predicted direction. For bull patterns, headroom = Daily High - Close of Bar 2. For bear patterns, headroom = Close of Bar 2 - Daily Low.</p>
+
+            <div class="stat-grid">
+                <div class="stat-card purple">
+                    <div class="stat-label">Avg Pattern Size</div>
+                    <div class="stat-number purple">68.8%</div>
+                    <div class="stat-sublabel">Of Daily ABR consumed by 10:30</div>
+                </div>
+                
+                <div class="stat-card purple">
+                    <div class="stat-label">Avg Headroom</div>
+                    <div class="stat-number purple">40.8%</div>
+                    <div class="stat-sublabel">Of Daily ABR remaining</div>
+                </div>
+                
+                <div class="stat-card purple">
+                    <div class="stat-label">Headroom Multiple</div>
+                    <div class="stat-number purple">0.66×</div>
+                    <div class="stat-sublabel">Median: 0.51× pattern size</div>
+                </div>
+                
+                <div class="stat-card purple">
+                    <div class="stat-label">Pattern Exceeded Daily Extreme</div>
+                    <div class="stat-number purple">0</div>
+                    <div class="stat-sublabel">0.0% of cases by 10:30</div>
+                </div>
+            </div>
+
+            <div class="methodology" style="margin-top: 30px;">
+                <strong>Headroom Definition:</strong> The first two 60-minute bars consume an average of 68.8% of the daily average bar range by 10:30 EST. This leaves 40.8% of the daily ABR as "headroom" — the remaining distance to the daily extreme in the predicted direction. The headroom multiple of 0.66× means that on average, the remaining upside/downside is about two-thirds the size of the initial 2-bar pattern. Critically, in zero cases did the pattern exceed the daily extreme by 10:30, confirming there is always some headroom remaining.
+            </div>
+
+            <h3 style="color: #6b7280; margin-top: 50px; margin-bottom: 20px; font-size: 1.1rem;">Bull vs Bear Headroom Comparison</h3>
+
+            <div class="comparison-grid">
+                <div class="comparison-card green">
+                    <h3>Bull Patterns (n=567)</h3>
+                    
+                    <div class="metric-row">
+                        <span class="metric-label">Avg Pattern Size</span>
+                        <span class="metric-value">30.7 pts (63.7% ABR)</span>
+                    </div>
+                    <div class="metric-row">
+                        <span class="metric-label">Avg Headroom</span>
+                        <span class="metric-value highlight-green">16.0 pts (34.1% ABR)</span>
+                    </div>
+                    <div class="metric-row">
+                        <span class="metric-label">Headroom Multiple</span>
+                        <span class="metric-value">0.59× (median: 0.47×)</span>
+                    </div>
+                </div>
+
+                <div class="comparison-card red">
+                    <h3>Bear Patterns (n=464)</h3>
+                    
+                    <div class="metric-row">
+                        <span class="metric-label">Avg Pattern Size</span>
+                        <span class="metric-value">37.8 pts (75.0% ABR)</span>
+                    </div>
+                    <div class="metric-row">
+                        <span class="metric-label">Avg Headroom</span>
+                        <span class="metric-value highlight-red">24.7 pts (48.8% ABR)</span>
+                    </div>
+                    <div class="metric-row">
+                        <span class="metric-label">Headroom Multiple</span>
+                        <span class="metric-value">0.74× (median: 0.54×)</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="methodology" style="margin-top: 30px;">
+                <strong>Bull vs Bear Asymmetry:</strong> Bear patterns consume significantly more of the daily range (75.0% vs 63.7%) by 10:30, but paradoxically leave MORE headroom (48.8% vs 34.1% of ABR). This suggests bear days have larger total ranges and more volatile continuation after the pattern completes. Bull patterns are more efficient — consuming less but also leaving less room. The headroom multiple for bears (0.74×) exceeds bulls (0.59×), indicating better runway for bear continuation despite the pattern already being larger.
+            </div>
+
+            <h3 style="color: #6b7280; margin-top: 50px; margin-bottom: 20px; font-size: 1.1rem;">Pattern Size vs Headroom — Inverse Relationship</h3>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th>Pattern Size Bucket</th>
+                        <th>Count</th>
+                        <th>% of Total</th>
+                        <th>Avg Pattern % ABR</th>
+                        <th>Avg Headroom (pts)</th>
+                        <th>Avg Headroom % ABR</th>
+                        <th>Headroom Multiple</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>0-25% of ABR</td>
+                        <td>8</td>
+                        <td>0.8%</td>
+                        <td>19.0%</td>
+                        <td>20.97</td>
+                        <td>95.9%</td>
+                        <td class="highlight-green">1.18×</td>
+                    </tr>
+                    <tr>
+                        <td>25-50% of ABR</td>
+                        <td>252</td>
+                        <td>24.4%</td>
+                        <td>39.9%</td>
+                        <td>19.02</td>
+                        <td>66.2%</td>
+                        <td class="highlight-green">0.88×</td>
+                    </tr>
+                    <tr>
+                        <td>50-75% of ABR</td>
+                        <td>420</td>
+                        <td>40.7%</td>
+                        <td>61.8%</td>
+                        <td>19.91</td>
+                        <td>47.1%</td>
+                        <td>0.66×</td>
+                    </tr>
+                    <tr>
+                        <td>75-100% of ABR</td>
+                        <td>227</td>
+                        <td>22.0%</td>
+                        <td>87.1%</td>
+                        <td>20.33</td>
+                        <td>28.9%</td>
+                        <td>0.50×</td>
+                    </tr>
+                    <tr>
+                        <td>100%+ of ABR</td>
+                        <td>121</td>
+                        <td>11.7%</td>
+                        <td>135.1%</td>
+                        <td>21.52</td>
+                        <td>20.0%</td>
+                        <td>0.43×</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <div class="stat-grid" style="margin-top: 40px;">
+                <div class="stat-card green">
+                    <div class="stat-label">Small Patterns (0-50% ABR)</div>
+                    <div class="stat-number green">0.88×</div>
+                    <div class="stat-sublabel">260 cases · 25.2% of total</div>
+                </div>
+                
+                <div class="stat-card purple">
+                    <div class="stat-label">Medium Patterns (50-75% ABR)</div>
+                    <div class="stat-number purple">0.66×</div>
+                    <div class="stat-sublabel">420 cases · 40.7% of total</div>
+                </div>
+                
+                <div class="stat-card red">
+                    <div class="stat-label">Large Patterns (75%+ ABR)</div>
+                    <div class="stat-number red">0.47×</div>
+                    <div class="stat-sublabel">348 cases · 33.7% of total</div>
+                </div>
+            </div>
+
+            <div class="methodology" style="margin-top: 30px;">
+                <strong>Critical Insight — Size vs Headroom Tradeoff:</strong> An inverse relationship exists between pattern size and headroom multiple. Small patterns (0-50% of ABR) leave 0.88× headroom — nearly equal to pattern size. Medium patterns (50-75% ABR) leave 0.66× headroom. Large patterns (75%+ ABR) leave only 0.47× headroom — less than half the pattern size. When the first 2 hours consume >100% of the daily ABR, only 0.43× headroom remains. This validates the concern: large opening patterns, while directionally predictive, offer limited practical runway for execution.
+            </div>
+
+            <h3 style="color: #6b7280; margin-top: 50px; margin-bottom: 20px; font-size: 1.1rem;">Headroom by High-Frequency States</h3>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th>State</th>
+                        <th>Count</th>
+                        <th>Avg Pattern Size</th>
+                        <th>Pattern % ABR</th>
+                        <th>Avg Headroom</th>
+                        <th>Headroom % ABR</th>
+                        <th>Headroom Multiple</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="highlight-green">+1</td>
+                        <td>392</td>
+                        <td>32.6 pts</td>
+                        <td>67.3%</td>
+                        <td>15.8 pts</td>
+                        <td>33.7%</td>
+                        <td>0.54× (0.45×)</td>
+                    </tr>
+                    <tr>
+                        <td class="highlight-green">+2</td>
+                        <td>97</td>
+                        <td>28.0 pts</td>
+                        <td>60.1%</td>
+                        <td>16.5 pts</td>
+                        <td>35.9%</td>
+                        <td>0.67× (0.45×)</td>
+                    </tr>
+                    <tr>
+                        <td>+5</td>
+                        <td>58</td>
+                        <td>26.7 pts</td>
+                        <td>52.5%</td>
+                        <td>17.5 pts</td>
+                        <td>35.9%</td>
+                        <td class="highlight-green">0.75× (0.60×)</td>
+                    </tr>
+                    <tr>
+                        <td class="highlight-red">-1</td>
+                        <td>268</td>
+                        <td>43.5 pts</td>
+                        <td>83.4%</td>
+                        <td>25.9 pts</td>
+                        <td>49.2%</td>
+                        <td>0.67× (0.50×)</td>
+                    </tr>
+                    <tr>
+                        <td class="highlight-red">-2</td>
+                        <td>111</td>
+                        <td>30.3 pts</td>
+                        <td>66.4%</td>
+                        <td>22.1 pts</td>
+                        <td>48.8%</td>
+                        <td>0.79× (0.58×)</td>
+                    </tr>
+                    <tr>
+                        <td>-5</td>
+                        <td>61</td>
+                        <td>30.0 pts</td>
+                        <td>62.2%</td>
+                        <td>25.3 pts</td>
+                        <td>50.3%</td>
+                        <td class="highlight-red">0.91× (0.76×)</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <div class="methodology" style="margin-top: 30px;">
+                <strong>State-Level Headroom Variation:</strong> State -5 (bear inside bar continuation) offers the best headroom multiple at 0.91×, nearly equal to pattern size, with 50.3% of daily ABR still remaining. State +5 (bull inside bar) also performs well at 0.75× headroom. The dominant State +1 (85.4% accurate) shows only 0.54× headroom — directionally strong but with limited runway. State -1 (86.6% accurate) shows 0.67× headroom despite consuming 83.4% of daily ABR, again highlighting bear patterns' tendency toward larger total ranges. Median values (shown in parentheses) are consistently lower than means, indicating right-skewed distributions with occasional large headroom outliers.
+            </div>
+
+            <div class="key-finding" style="margin-top: 50px;">
+                <h4>Practical Implications</h4>
+                <p>The headroom analysis reveals a critical execution constraint: while 82.2% directional accuracy exists, the first two hours consume 68.8% of the daily range on average, leaving only 40.8% as headroom (0.66× pattern size). This ratio worsens for large opening patterns — when the first 2 hours exceed 75% of daily ABR (33.7% of cases), headroom drops to just 0.47×. Conversely, smaller patterns (0-50% of ABR, 25.2% of cases) leave 0.88× headroom, nearly equal to pattern size. This suggests a filtering criterion: prioritize patterns where the 2-bar range is <50% of daily ABR to maximize headroom-to-pattern ratios. State-level variations exist, with bear states generally providing superior headroom multiples despite larger pattern consumption.</p>
+            </div>
+        </section>
+
 
         <footer>
             ES 60-Minute Consecutive Opening Bars · Daily Predictability Study<br>
