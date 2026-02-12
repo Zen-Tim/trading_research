@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ES 5-Minute MIG Reversal — Bear Setup Analysis</title>
+    <title>ES 5-Minute MIG Reversal &mdash; Bear Setup Analysis</title>
     <style>
         * {
             margin: 0;
@@ -330,9 +330,9 @@
 </head>
 <body>
     <div class="container">
-        <div class="meta">◆ Quantitative Research</div>
+        <div class="meta">&#9830; Quantitative Research</div>
         
-        <h1>ES 5-Minute MIG Reversal — Bear Setup Analysis</h1>
+        <h1>ES 5-Minute MIG Reversal &mdash; Bear Setup Analysis</h1>
         
         <p class="subtitle">Bear MIG Reversal performance: win rates, target hit analysis, and EMA position comparison</p>
 
@@ -355,7 +355,7 @@
                 <div class="data-item">
                     <div class="data-label">Date Range</div>
                     <div class="data-value">4 Years</div>
-                    <div class="data-subvalue">Jan 2022 — Feb 2026</div>
+                    <div class="data-subvalue">Jan 2022 &mdash; Feb 2026</div>
                 </div>
                 
                 <div class="data-item">
@@ -370,12 +370,12 @@
             </div>
 
             <div class="methodology" style="margin-top: 15px; background: #fef3c7; border-left: 3px solid #f59e0b;">
-                <strong style="color: #92400e;">Average Bars Tracked:</strong> <span style="color: #78350f;">This measures how many 5-minute bars elapse from entry until the trade resolves (target hit, stop hit, or EOD). At 41.9 bars average, most bear setups take approximately 3.5 hours (210 minutes) to reach their outcome. This is important for understanding holding time requirements and intraday capital commitment.</span>
+                <strong style="color: #92400e;">Time to Resolution:</strong> <span style="color: #78350f;">This measures how many 5-minute bars elapse from entry until the trade resolves (target hit, stop hit, or EOD). At 6.5 bars average (32 minutes), bear setups resolve significantly faster than the previous calculation suggested. Time varies by target: 0.5R resolves in 5.1 bars (25 min), 1R in 9.7 bars (49 min), 1.5R in 15.1 bars (75 min), and 2R in 19.8 bars (99 min). This is important for understanding holding time requirements and intraday capital commitment.</span>
             </div>
         </div>
 
         <section>
-            <h2>Step 1: Overall Performance — All Bear MIG Reversals (n=844)</h2>
+            <h2>Step 1: Overall Performance &mdash; All Bear MIG Reversals (n=844)</h2>
             
             <div class="stat-grid">
                 <div class="stat-card purple">
@@ -397,9 +397,9 @@
                 </div>
                 
                 <div class="stat-card purple">
-                    <div class="stat-label">Avg Bars Tracked</div>
-                    <div class="stat-number purple">41.9</div>
-                    <div class="stat-sublabel">~210 minutes from entry to resolution</div>
+                    <div class="stat-label">Avg Bars to Resolution</div>
+                    <div class="stat-number purple">6.5</div>
+                    <div class="stat-sublabel">Median: 4 bars (20 min)</div>
                 </div>
             </div>
 
@@ -453,7 +453,7 @@
         </section>
 
         <section>
-            <h2>Step 2: Optimal Target Selection — Expectancy Analysis</h2>
+            <h2>Step 2: Optimal Target Selection &mdash; Expectancy Analysis</h2>
             
             <p style="color: #6b7280; margin-bottom: 30px;">Expectancy calculated using actual R-multiples for all outcomes. Trades hitting target generate their full R-multiple. Trades hitting stop generate -1R. EOD positions are closed at 2nd-last bar with actual R-multiple based on final price.</p>
 
@@ -520,7 +520,7 @@
         </section>
 
         <section>
-            <h2>Step 3: Filter Optimization — Close Below EMA20 + 3-Bar Patterns</h2>
+            <h2>Step 3: Filter Optimization &mdash; Close Below EMA20 + 3-Bar Patterns</h2>
             
             <p style="color: #6b7280; margin-bottom: 30px;">Unlike bulls, bear setups show strongest performance when closing BELOW the 20 EMA (bear continuation, not disappointment). We test whether this filter combined with 3-bar patterns improves performance. This represents 40.8% of all bear setups (344 of 844).</p>
 
@@ -631,12 +631,12 @@
             </div>
 
             <div class="methodology" style="margin-top: 30px;">
-                <strong>Critical Insight:</strong> The filter reduces setup frequency from 844 to 344 (59% reduction) while dramatically improving edge quality at 1R and beyond. Unlike the bull "disappointment" filter, bear edge comes from CONTINUATION below trend, not reversal above it. Traders should use this filter for bears targeting 1R+ and accept the 41% lower frequency in exchange for 2-3× better expectancy.</p>
+                <strong>Critical Insight:</strong> The filter reduces setup frequency from 844 to 344 (59% reduction) while dramatically improving edge quality at 1R and beyond. Unlike the bull "disappointment" filter, bear edge comes from CONTINUATION below trend, not reversal above it. Traders should use this filter for bears targeting 1R+ and accept the 41% lower frequency in exchange for 2-3&times; better expectancy.</p>
             </div>
         </section>
 
         <section>
-            <h2>Step 4: Close Above vs Below EMA20 — Testing the Disappointment Hypothesis</h2>
+            <h2>Step 4: Close Above vs Below EMA20 &mdash; Testing the Disappointment Hypothesis</h2>
             
             <p style="color: #6b7280; margin-bottom: 30px;">For bears, the "disappointment" setup should be when bears are strong ABOVE the 20 EMA (bulls disappointed). We compare Close Above vs Close Below to see if the pattern holds as it did for bulls.</p>
 
@@ -724,7 +724,7 @@
                     
                     <div class="metric-row">
                         <span class="metric-label">2R Expectancy</span>
-                        <span class="metric-value highlight-purple">+0.127R (4× better)</span>
+                        <span class="metric-value highlight-purple">+0.127R (4&times; better)</span>
                     </div>
                     <div class="metric-row">
                         <span class="metric-label">1R Expectancy</span>
@@ -746,12 +746,12 @@
             </div>
 
             <div class="methodology" style="margin-top: 30px;">
-                <strong>Counterintuitive Finding — "Disappointment" Doesn't Work for Bears:</strong> Unlike bulls, bear setups that close BELOW the 20 EMA dramatically outperform those closing ABOVE at longer targets. At 2R, "Close Below" produces +0.127R versus -0.040R for "Close Above" — a complete reversal of the bull pattern. At 0.5R only does "Close Above" show advantage (+0.033R vs -0.001R). This suggests bears strong BELOW trend (not disappointment) have better follow-through at meaningful targets, while "disappointment" bears (above trend) are quick scalps only.
+                <strong>Counterintuitive Finding &mdash; "Disappointment" Doesn't Work for Bears:</strong> Unlike bulls, bear setups that close BELOW the 20 EMA dramatically outperform those closing ABOVE at longer targets. At 2R, "Close Below" produces +0.127R versus -0.040R for "Close Above" &mdash; a complete reversal of the bull pattern. At 0.5R only does "Close Above" show advantage (+0.033R vs -0.001R). This suggests bears strong BELOW trend (not disappointment) have better follow-through at meaningful targets, while "disappointment" bears (above trend) are quick scalps only.
             </div>
 
             <div class="key-finding" style="margin-top: 30px;">
                 <h4>The "Disappointment" Hypothesis FAILS for Bears</h4>
-                <p>The data contradicts the "disappointment" concept for bear setups. While bull patterns showed 6-10× better performance when closing BELOW EMA20 (bears disappointed), <strong>bear patterns show the opposite</strong>: closing BELOW EMA20 (bears continuing in favorable territory) produces superior results at 1R, 1.5R, and 2R targets. At 2R, the gap is massive: +0.127R (Below) vs -0.040R (Above). The "disappointment" setup for bears (Close Above) only works at 0.5R and shows negative expectancy beyond that. This asymmetry suggests different market dynamics: <strong>bear continuations (Close Below) are more reliable than bear reversals (Close Above)</strong>, the opposite pattern from bulls.</p>
+                <p>The data contradicts the "disappointment" concept for bear setups. While bull patterns showed 6-10&times; better performance when closing BELOW EMA20 (bears disappointed), <strong>bear patterns show the opposite</strong>: closing BELOW EMA20 (bears continuing in favorable territory) produces superior results at 1R, 1.5R, and 2R targets. At 2R, the gap is massive: +0.127R (Below) vs -0.040R (Above). The "disappointment" setup for bears (Close Above) only works at 0.5R and shows negative expectancy beyond that. This asymmetry suggests different market dynamics: <strong>bear continuations (Close Below) are more reliable than bear reversals (Close Above)</strong>, the opposite pattern from bulls.</p>
             </div>
         </section>
 
@@ -760,17 +760,17 @@
 
             <div class="key-finding">
                 <h4>Primary Finding: 2R Target Optimal, But Much Weaker Than Bulls</h4>
-                <p>Across all 844 bear MIG reversals, the <strong>2R profit target produces the highest expectancy at +0.059R per trade</strong>, with 40.3% win rate and 59.7% loss rate. All tested targets show positive expectancy: 0.5R (+0.013R), 1R (+0.028R), 1.5R (+0.055R), and 2R (+0.059R). However, bear expectancy is consistently lower than bulls — at 2R, bears produce +0.059R versus bulls' +0.101R (only 58% of bull performance). Bears show stronger average MFE (1.68R vs 1.25R for bulls) but worse MAE (-1.44R vs -0.82R), suggesting more volatile price action with larger drawdowns before resolution.</p>
+                <p>Across all 844 bear MIG reversals, the <strong>2R profit target produces the highest expectancy at +0.059R per trade</strong>, with 40.3% win rate and 59.7% loss rate. All tested targets show positive expectancy: 0.5R (+0.013R), 1R (+0.028R), 1.5R (+0.055R), and 2R (+0.059R). However, bear expectancy is consistently lower than bulls &mdash; at 2R, bears produce +0.059R versus bulls' +0.101R (only 58% of bull performance). Bears show stronger average MFE (1.68R vs 1.25R for bulls) but worse MAE (-1.44R vs -0.82R), suggesting more volatile price action with larger drawdowns before resolution.</p>
             </div>
 
             <div class="key-finding">
                 <h4>Filter Performance: Close Below Doubles Expectancy at 2R</h4>
-                <p>The "Close Below EMA20 + 3-Bar" filter (n=344, 40.8% of bears) produces <strong>dramatic improvements at longer targets</strong>. At 2R: expectancy more than doubles from +0.059R to <strong>+0.152R</strong> (+0.093R improvement), with win rate improving from 40.3% to 43.6%. At 1.5R: expectancy more than doubles from +0.055R to <strong>+0.138R</strong> (+0.083R improvement). At 1R: expectancy increases from +0.028R to <strong>+0.074R</strong> (+0.046R improvement). The filter only weakens 0.5R (-0.002R). This is the OPPOSITE pattern from bulls — for bears, "Close Below" is continuation with trend (not disappointment), which provides superior follow-through. The filter reduces frequency 59% but creates 2-3× better expectancy at meaningful targets.</p>
+                <p>The "Close Below EMA20 + 3-Bar" filter (n=344, 40.8% of bears) produces <strong>dramatic improvements at longer targets</strong>. At 2R: expectancy more than doubles from +0.059R to <strong>+0.152R</strong> (+0.093R improvement), with win rate improving from 40.3% to 43.6%. At 1.5R: expectancy more than doubles from +0.055R to <strong>+0.138R</strong> (+0.083R improvement). At 1R: expectancy increases from +0.028R to <strong>+0.074R</strong> (+0.046R improvement). The filter only weakens 0.5R (-0.002R). This is the OPPOSITE pattern from bulls &mdash; for bears, "Close Below" is continuation with trend (not disappointment), which provides superior follow-through. The filter reduces frequency 59% but creates 2-3&times; better expectancy at meaningful targets.</p>
             </div>
 
             <div class="key-finding">
                 <h4>Disappointment Hypothesis FAILS: Close Below Dominates at 2R</h4>
-                <p>Unlike bulls, bear patterns show <strong>opposite behavior</strong> regarding EMA position. Close BELOW EMA20 (bears continuing in favorable territory) dramatically outperforms Close ABOVE at longer targets. At 2R: Close Below produces +0.127R versus -0.040R for Close Above (3.2× better). At 1.5R: +0.090R versus +0.003R (30× better). Only at 0.5R does Close Above show advantage (+0.033R vs -0.001R). This contradicts the "disappointment" thesis that worked for bulls. <strong>Bear continuations (below trend) are more reliable than bear reversals (above trend)</strong>, suggesting fundamentally different market dynamics between bull and bear setups. The best bear filter is "Close Below + 3-Bar" which produces +0.152R at 2R.</p>
+                <p>Unlike bulls, bear patterns show <strong>opposite behavior</strong> regarding EMA position. Close BELOW EMA20 (bears continuing in favorable territory) dramatically outperforms Close ABOVE at longer targets. At 2R: Close Below produces +0.127R versus -0.040R for Close Above (3.2&times; better). At 1.5R: +0.090R versus +0.003R (30&times; better). Only at 0.5R does Close Above show advantage (+0.033R vs -0.001R). This contradicts the "disappointment" thesis that worked for bulls. <strong>Bear continuations (below trend) are more reliable than bear reversals (above trend)</strong>, suggesting fundamentally different market dynamics between bull and bear setups. The best bear filter is "Close Below + 3-Bar" which produces +0.152R at 2R.</p>
             </div>
 
             <div class="key-finding">
@@ -786,8 +786,8 @@
         </div>
 
         <footer>
-            ES 5-Minute MIG Reversal · Trade Setup Analysis · Bear Patterns<br>
-            Source: CME E-mini S&P 500 Futures (ES1) · 5-Minute Bars · Jan 2022 — Feb 2026
+            ES 5-Minute MIG Reversal &middot; Trade Setup Analysis &middot; Bear Patterns<br>
+            Source: CME E-mini S&P 500 Futures (ES1) &middot; 5-Minute Bars &middot; Jan 2022 &mdash; Feb 2026
         </footer>
     </div>
 </body>
