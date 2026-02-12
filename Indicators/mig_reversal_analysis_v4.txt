@@ -1,0 +1,211 @@
+//@version=5
+indicator(title="MIG Reversal Analysis v4", overlay=true, max_lines_count=500, max_labels_count=500)
+
+// ============================================
+// INPUTS
+// ============================================
+emaLength = input.int(20, title="EMA Length", minval=1)
+ema200Length = input.int(200, title="EMA 200 Length", minval=1)
+avgRangeBars = input.int(8, title="Avg Range Lookback", minval=1)
+showEMA = input.bool(true, title="Show EMA Line")
+showEMA200 = input.bool(true, title="Show EMA 200")
+showArrows = input.bool(true, title="Show Setup Arrows")
+showBoxes = input.bool(true, title="Show Gap Boxes")
+arrowSizeInput = input.string(title="Arrow Size", defval="small", options=["tiny", "small", "normal", "large", "huge"])
+
+// Map arrow size
+arrowSize = arrowSizeInput == "tiny" ? size.tiny : arrowSizeInput == "small" ? size.small : arrowSizeInput == "normal" ? size.normal : arrowSizeInput == "large" ? size.large : size.huge
+
+// ============================================
+// SESSION DETECTION & BAR COUNTING
+// ============================================
+isNewSession = ta.change(time("D")) != 0
+var int barNumberOfDay = 0
+if isNewSession
+    barNumberOfDay := 1
+else
+    barNumberOfDay += 1
+
+firstTwelveBars = barNumberOfDay <= 12 ? 1 : 0
+
+// ============================================
+// BASIC CALCULATIONS
+// ============================================
+// EMAs
+ema20 = ta.ema(close, emaLength)
+ema200 = ta.ema(close, ema200Length)
+
+plot(showEMA ? ema20 : na, title="EMA 20", color=color.blue, linewidth=2)
+plot(showEMA200 ? ema200 : na, title="EMA 200", color=color.orange, linewidth=2)
+
+// Average Bar Range
+barRange = high - low
+avgBarRange = ta.sma(barRange, avgRangeBars)
+
+// Bar Type Classification
+isBullBar = close > open
+isBearBar = close < open
+barType = isBullBar ? 1 : isBearBar ? -1 : 0
+
+// ============================================
+// CLOSE POSITION vs EMAs (EVERY BAR)
+// ============================================
+closeVsEMA20 = close > ema20 ? 1 : close < ema20 ? -1 : 0
+closeVsEMA200 = close > ema200 ? 1 : close < ema200 ? -1 : 0
+
+// ============================================
+// CONSECUTIVE BAR COUNTING
+// ============================================
+var int consecutiveBullBars = 0
+var int consecutiveBearBars = 0
+
+if barType == 1  // Bull bar
+    consecutiveBullBars := consecutiveBullBars + 1
+    consecutiveBearBars := 0
+else if barType == -1  // Bear bar
+    consecutiveBearBars := consecutiveBearBars + 1
+    consecutiveBullBars := 0
+else  // Doji
+    consecutiveBullBars := 0
+    consecutiveBearBars := 0
+
+// Reset on new session
+if isNewSession
+    consecutiveBullBars := barType == 1 ? 1 : 0
+    consecutiveBearBars := barType == -1 ? 1 : 0
+
+// ============================================
+// MICRO-GAP DETECTION
+// ============================================
+// Bull Micro-Gap: low[0] > high[2] with bars [2,1,0] all bull
+bullMicroGap = consecutiveBullBars >= 3 and low > high[2] ? 1 : 0
+
+// Bear Micro-Gap: high[0] < low[2] with bars [2,1,0] all bear
+bearMicroGap = consecutiveBearBars >= 3 and high < low[2] ? 1 : 0
+
+// Gap Size calculation
+gapSize = bullMicroGap == 1 ? low - high[2] : bearMicroGap == 1 ? low[2] - high : 0.0
+
+// Gap Size as % of Average Bar Range
+gapSizePct = avgBarRange > 0 ? (gapSize / avgBarRange) * 100 : 0.0
+
+// ============================================
+// COUNT MICRO-GAPS IN PATTERN
+// ============================================
+int microGapCount = 0
+
+// Count bull micro-gaps
+if consecutiveBullBars >= 3
+    for i = 0 to consecutiveBullBars - 3
+        if low[i] > high[i+2]
+            microGapCount += 1
+
+// Count bear micro-gaps
+if consecutiveBearBars >= 3
+    for i = 0 to consecutiveBearBars - 3
+        if high[i] < low[i+2]
+            microGapCount += 1
+
+// ============================================
+// SETUP SIGNAL DETECTION
+// ============================================
+// Bull MIG Reversal: Bull micro-gap BELOW EMA
+bullMIGReversal = bullMicroGap == 1 and low < ema20
+
+// Bear MIG Reversal: Bear micro-gap ABOVE EMA
+bearMIGReversal = bearMicroGap == 1 and high > ema20
+
+// Setup Signal: +1 bull, -1 bear, 0 none
+setupSignal = bullMIGReversal ? 1 : bearMIGReversal ? -1 : 0
+
+// Pattern Length
+patternLength = setupSignal == 1 ? consecutiveBullBars : setupSignal == -1 ? consecutiveBearBars : 0
+
+// ============================================
+// MIG REVERSAL POSITION vs EMAs (SIGNAL BARS ONLY)
+// ============================================
+migCloseVsEMA20 = setupSignal != 0 ? closeVsEMA20 : 0
+migCloseVsEMA200 = setupSignal != 0 ? closeVsEMA200 : 0
+
+// ============================================
+// ENTRY & STOP CALCULATION
+// ============================================
+float entryPrice = na
+float stopPrice = na
+
+if setupSignal != 0
+    entryPrice := close
+
+// Bull Stop: 1 tick below lowest low in entire consecutive sequence
+if bullMIGReversal
+    sequenceLow = low
+    for i = 1 to consecutiveBullBars - 1
+        sequenceLow := math.min(sequenceLow, low[i])
+    stopPrice := sequenceLow - syminfo.mintick
+
+// Bear Stop: 1 tick above highest high in entire consecutive sequence
+if bearMIGReversal
+    sequenceHigh = high
+    for i = 1 to consecutiveBearBars - 1
+        sequenceHigh := math.max(sequenceHigh, high[i])
+    stopPrice := sequenceHigh + syminfo.mintick
+
+// ============================================
+// RISK CALCULATIONS
+// ============================================
+float riskPoints = na
+float riskAvgRangeMultiple = na
+
+if setupSignal != 0
+    riskPoints := math.abs(entryPrice - stopPrice)
+    riskAvgRangeMultiple := avgBarRange > 0 ? riskPoints / avgBarRange : 0
+
+// ============================================
+// VISUAL MARKERS
+// ============================================
+// Bull MIG Reversal
+if bullMIGReversal and showBoxes
+    box.new(left = bar_index - (consecutiveBullBars - 1), right = bar_index, top = high[2], bottom = low, border_color = color.blue, bgcolor = color.new(color.blue, 85))
+
+if bullMIGReversal and showArrows
+    label.new(x = bar_index, y = low, text = str.tostring(consecutiveBullBars) + "B", style = label.style_label_up, color = color.blue, textcolor = color.white, size = arrowSize)
+
+// Bear MIG Reversal
+if bearMIGReversal and showBoxes
+    box.new(left = bar_index - (consecutiveBearBars - 1), right = bar_index, top = high, bottom = low[2], border_color = color.red, bgcolor = color.new(color.red, 85))
+
+if bearMIGReversal and showArrows
+    label.new(x = bar_index, y = high, text = str.tostring(consecutiveBearBars) + "B", style = label.style_label_down, color = color.red, textcolor = color.white, size = arrowSize)
+
+// ============================================
+// DATA EXPORT PLOTS (all in data window)
+// ============================================
+plot(barNumberOfDay, title="Bar# of Day", display=display.data_window)
+plot(barType, title="Bar Type", display=display.data_window)
+plot(consecutiveBullBars, title="Consecutive Bull Bars", display=display.data_window)
+plot(consecutiveBearBars, title="Consecutive Bear Bars", display=display.data_window)
+plot(ema20, title="EMA20", display=display.data_window)
+plot(ema200, title="EMA200", display=display.data_window)
+plot(avgBarRange, title="Avg Bar Range", display=display.data_window)
+
+// Close Position vs EMAs (every bar)
+plot(closeVsEMA20, title="Close vs EMA20", display=display.data_window)
+plot(closeVsEMA200, title="Close vs EMA200", display=display.data_window)
+
+plot(bullMicroGap, title="Bull MicroGap Flag", display=display.data_window)
+plot(bearMicroGap, title="Bear MicroGap Flag", display=display.data_window)
+plot(gapSize, title="Gap Size", display=display.data_window)
+plot(gapSizePct, title="Gap Size % AvgRange", display=display.data_window)
+plot(microGapCount, title="MicroGap Count", display=display.data_window)
+plot(setupSignal, title="Setup Signal", display=display.data_window)
+plot(patternLength, title="Pattern Length", display=display.data_window)
+plot(firstTwelveBars, title="First 12 Bars Flag", display=display.data_window)
+
+// MIG Reversal Position vs EMAs (signal bars only)
+plot(migCloseVsEMA20, title="MIG Close vs EMA20", display=display.data_window)
+plot(migCloseVsEMA200, title="MIG Close vs EMA200", display=display.data_window)
+
+plot(entryPrice, title="Entry Price", display=display.data_window)
+plot(stopPrice, title="Stop Price", display=display.data_window)
+plot(riskPoints, title="Risk Points", display=display.data_window)
+plot(riskAvgRangeMultiple, title="Risk AvgRange Multiple", display=display.data_window)
