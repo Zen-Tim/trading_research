@@ -1,0 +1,238 @@
+//@version=5
+indicator("Zen 12-State Consecutive Bar Classifier v2", overlay=true)
+
+// ============================================
+// SETTINGS
+// ============================================
+
+// New Day Reset
+enable_new_day = input.bool(true, "Reset on New Day (First Bar = 0)", group="Session Settings")
+
+// Label Display Toggles - REVERSAL
+show_label_0 = input.bool(false, "Show State 0 (Reversal)", group="Reversal Labels")
+
+// Label Display Toggles - BULL STATES
+show_label_p1 = input.bool(false, "Show State +1", group="Bull State Labels")
+show_label_p2 = input.bool(false, "Show State +2", group="Bull State Labels")
+show_label_p3 = input.bool(false, "Show State +3", group="Bull State Labels")
+show_label_p4 = input.bool(false, "Show State +4", group="Bull State Labels")
+show_label_p5 = input.bool(false, "Show State +5", group="Bull State Labels")
+show_label_p6 = input.bool(false, "Show State +6", group="Bull State Labels")
+
+// Label Display Toggles - BEAR STATES
+show_label_n1 = input.bool(false, "Show State -1", group="Bear State Labels")
+show_label_n2 = input.bool(false, "Show State -2", group="Bear State Labels")
+show_label_n3 = input.bool(false, "Show State -3", group="Bear State Labels")
+show_label_n4 = input.bool(false, "Show State -4", group="Bear State Labels")
+show_label_n5 = input.bool(false, "Show State -5", group="Bear State Labels")
+show_label_n6 = input.bool(false, "Show State -6", group="Bear State Labels")
+
+// ============================================
+// SESSION DETECTION
+// ============================================
+
+is_new_day = dayofweek != dayofweek[1]
+is_first_bar_of_session = enable_new_day and is_new_day
+
+// ============================================
+// BAR CLASSIFICATION LOGIC - FIXED
+// ============================================
+
+// STEP 1: Classify current bar by CANDLE COLOR (close vs open)
+is_bull = close > open
+is_bear = close < open
+is_doji = close == open
+
+// STEP 2: Classify prior bar by CANDLE COLOR
+prior_is_bull = close[1] > open[1]
+prior_is_bear = close[1] < open[1]
+prior_is_doji = close[1] == open[1]
+
+// STEP 3: Check for consecutive bars (same color)
+is_consecutive_bull = is_bull and prior_is_bull
+is_consecutive_bear = is_bear and prior_is_bear
+is_reversal = (is_bull and prior_is_bear) or (is_bear and prior_is_bull)
+
+// STEP 4: Range relationships with prior bar
+h1 = high[1]
+l1 = low[1]
+
+h_up = high > h1
+h_down = high < h1
+h_equal = high == h1
+
+l_up = low > l1
+l_down = low < l1
+l_equal = low == l1
+
+// ============================================
+// STATE ASSIGNMENT - FIXED
+// ============================================
+
+var int state = 0
+
+// Force state 0 on first bar of new session
+if is_first_bar_of_session
+    state := 0
+    
+else if is_reversal or is_doji or prior_is_doji
+    state := 0  // Reversal, doji, or prior was doji
+    
+else if is_consecutive_bull  // BULL CONTINUATION (+1 to +6)
+    if h_up and l_up
+        // Both high and low higher - strong bull continuation
+        state := close > h1 ? 1 : 2
+    else if h_up and l_down
+        // High higher, low lower - outside bar
+        state := close > h1 ? 3 : 4
+    else if (h_down or h_equal) and l_up
+        // High lower/equal, low higher - inside bar or consolidation
+        state := 5
+    else if (h_down or h_equal) and (l_down or l_equal)
+        // Both lower/equal - weak continuation
+        state := 6
+        
+else if is_consecutive_bear  // BEAR CONTINUATION (-1 to -6)
+    if h_down and l_down
+        // Both high and low lower - strong bear continuation
+        state := close < l1 ? -1 : -2
+    else if h_up and l_down
+        // High higher, low lower - outside bar
+        state := close < l1 ? -3 : -4
+    else if h_down and (l_up or l_equal)
+        // High lower, low higher/equal - inside bar or consolidation
+        state := -5
+    else if (h_up or h_equal) and (l_up or l_equal)
+        // Both higher/equal - weak continuation
+        state := -6
+else
+    state := 0  // Catch-all for any edge cases
+
+// ============================================
+// DIAGNOSTIC PLOTS (Data Window)
+// ============================================
+
+// Current bar type
+plot(is_bull ? 1 : is_bear ? -1 : 0, "Current Bar Type", 
+     color=color.new(color.blue, 100), display=display.data_window)
+
+// Prior bar type
+plot(prior_is_bull ? 1 : prior_is_bear ? -1 : 0, "Prior Bar Type", 
+     color=color.new(color.orange, 100), display=display.data_window)
+
+// Consecutive flag
+plot(is_consecutive_bull ? 1 : is_consecutive_bear ? -1 : 0, "Is Consecutive", 
+     color=color.new(color.purple, 100), display=display.data_window)
+
+// Range relationships
+plot(h_up ? 1 : h_down ? -1 : 0, "High vs H[1]", 
+     color=color.new(color.green, 100), display=display.data_window)
+     
+plot(l_up ? 1 : l_down ? -1 : 0, "Low vs L[1]", 
+     color=color.new(color.red, 100), display=display.data_window)
+
+// ============================================
+// VISUAL OUTPUT
+// ============================================
+
+// Plot histogram (for data visualization)
+bar_color = state > 0 ? color.green : state < 0 ? color.red : color.gray
+plot(state, "State", color=bar_color, linewidth=3, style=plot.style_histogram)
+
+// ============================================
+// LABELS (Individual toggles)
+// ============================================
+
+// Reversal label
+if state == 0 and show_label_0
+    label.new(bar_index, high, "0", 
+              style=label.style_label_down, 
+              color=color.gray, 
+              textcolor=color.white, 
+              size=size.small)
+
+// Bull state labels
+if state == 1 and show_label_p1
+    label.new(bar_index, high, "+1\nHH HL\nCL>H[1]", 
+              style=label.style_label_down, 
+              color=color.green, 
+              textcolor=color.white, 
+              size=size.small)
+
+if state == 2 and show_label_p2
+    label.new(bar_index, high, "+2\nHH HL\nCL<H[1]", 
+              style=label.style_label_down, 
+              color=color.green, 
+              textcolor=color.white, 
+              size=size.small)
+
+if state == 3 and show_label_p3
+    label.new(bar_index, high, "+3\nHH LL\nCL>H[1]", 
+              style=label.style_label_down, 
+              color=color.green, 
+              textcolor=color.white, 
+              size=size.small)
+
+if state == 4 and show_label_p4
+    label.new(bar_index, high, "+4\nHH LL\nCL<H[1]", 
+              style=label.style_label_down, 
+              color=color.green, 
+              textcolor=color.white, 
+              size=size.small)
+
+if state == 5 and show_label_p5
+    label.new(bar_index, high, "+5\nLH HL\nInside", 
+              style=label.style_label_down, 
+              color=color.green, 
+              textcolor=color.white, 
+              size=size.small)
+
+if state == 6 and show_label_p6
+    label.new(bar_index, high, "+6\nLH LL\nWeak", 
+              style=label.style_label_down, 
+              color=color.green, 
+              textcolor=color.white, 
+              size=size.small)
+
+// Bear state labels
+if state == -1 and show_label_n1
+    label.new(bar_index, low, "-1\nLH LL\nCL<L[1]", 
+              style=label.style_label_up, 
+              color=color.red, 
+              textcolor=color.white, 
+              size=size.small)
+
+if state == -2 and show_label_n2
+    label.new(bar_index, low, "-2\nLH LL\nCL>L[1]", 
+              style=label.style_label_up, 
+              color=color.red, 
+              textcolor=color.white, 
+              size=size.small)
+
+if state == -3 and show_label_n3
+    label.new(bar_index, low, "-3\nHH LL\nCL<L[1]", 
+              style=label.style_label_up, 
+              color=color.red, 
+              textcolor=color.white, 
+              size=size.small)
+
+if state == -4 and show_label_n4
+    label.new(bar_index, low, "-4\nHH LL\nCL>L[1]", 
+              style=label.style_label_up, 
+              color=color.red, 
+              textcolor=color.white, 
+              size=size.small)
+
+if state == -5 and show_label_n5
+    label.new(bar_index, low, "-5\nLH HL\nInside", 
+              style=label.style_label_up, 
+              color=color.red, 
+              textcolor=color.white, 
+              size=size.small)
+
+if state == -6 and show_label_n6
+    label.new(bar_index, low, "-6\nHH HL\nWeak", 
+              style=label.style_label_up, 
+              color=color.red, 
+              textcolor=color.white, 
+              size=size.small)
