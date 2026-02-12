@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Zen Trading Tech | Research Hub</title>
+<title>Zen Trading Tech | Global Research Hub</title>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
 <style>
   :root {
@@ -13,63 +13,59 @@
   html { scroll-behavior: smooth; }
   body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text-main); margin: 0; padding: 0; display: flex; justify-content: center; }
   
-  .container { display: flex; width: 100%; max-width: 1300px; padding: 60px 32px; gap: 40px; position: relative; }
+  .container { display: flex; width: 100%; max-width: 1400px; padding: 60px 20px; gap: 30px; position: relative; }
   
   .toc-sidebar {
-    position: sticky; top: 60px; height: fit-content; width: 200px;
+    position: sticky; top: 60px; height: fit-content; width: 160px;
     flex-shrink: 0; padding-top: 100px;
   }
   .toc-title { font-family: 'JetBrains Mono', monospace; font-size: 10px; text-transform: uppercase; color: var(--text-sub); margin-bottom: 16px; letter-spacing: 0.1em; }
-  .toc-link { 
-    display: block; font-size: 13px; font-weight: 500; color: var(--text-main); 
-    text-decoration: none; margin-bottom: 12px; transition: color 0.2s;
-  }
+  .toc-link { display: block; font-size: 12px; font-weight: 500; color: var(--text-main); text-decoration: none; margin-bottom: 12px; }
   .toc-link:hover { color: var(--accent); }
 
-  .content-main { flex-grow: 1; max-width: 1100px; }
+  .content-main { flex-grow: 1; min-width: 0; }
   .biz-header { margin-bottom: 48px; text-align: center; }
   .biz-name { font-family: 'JetBrains Mono', monospace; font-size: 14px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.15em; color: var(--accent); margin-bottom: 8px; display: block; }
-  h1 { font-size: 42px; font-weight: 700; letter-spacing: -0.02em; margin: 0; }
+  h1 { font-size: 36px; font-weight: 700; letter-spacing: -0.02em; margin: 0; }
 
-  .hub-row { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; margin-bottom: 12px; align-items: center; }
+  /* Grid Layout - 3 Columns */
+  .hub-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; margin-bottom: 12px; align-items: center; }
   .column-header-row { margin-bottom: 32px; border-bottom: 2px solid var(--text-main); padding-bottom: 12px; }
-  .column-title { font-family: 'JetBrains Mono', monospace; font-size: 14px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; }
+  .column-title { font-family: 'JetBrains Mono', monospace; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; text-align: center; }
 
   .category-row { margin-top: 48px; margin-bottom: 16px; scroll-margin-top: 60px; }
   .category-label {
-    font-family: 'JetBrains Mono', monospace; font-size: 11px; font-weight: 700;
+    font-family: 'JetBrains Mono', monospace; font-size: 10px; font-weight: 700;
     text-transform: uppercase; color: var(--accent); letter-spacing: 0.05em;
     display: flex; align-items: center; gap: 8px;
   }
   .category-label::after { content: ""; flex: 1; height: 1px; background: var(--border); }
 
   .report-card { 
-    background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 18px;
+    background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 14px;
     text-decoration: none; display: flex; align-items: center; justify-content: space-between;
-    transition: all 0.2s ease; height: 64px; box-sizing: border-box;
+    transition: all 0.2s ease; height: 60px; box-sizing: border-box;
   }
-  .report-card:hover { transform: translateX(4px); border-color: var(--accent); box-shadow: 0 4px 12px rgba(0,0,0,0.03); }
-  .report-title { font-size: 14px; font-weight: 600; color: var(--text-main); }
-  .report-date { font-size: 10px; color: var(--text-sub); margin-top: 2px; display: block; }
-  .arrow { color: var(--accent); font-weight: 700; font-size: 16px; opacity: 0.5; }
+  .report-card:hover { transform: translateY(-2px); border-color: var(--accent); box-shadow: 0 4px 12px rgba(0,0,0,0.03); }
+  .report-title { font-size: 12px; font-weight: 600; color: var(--text-main); line-height: 1.2; }
+  .report-date { font-size: 9px; color: var(--text-sub); margin-top: 2px; display: block; }
+  .arrow { color: var(--accent); font-weight: 700; font-size: 14px; opacity: 0.4; }
 
   .spacer { 
-    height: 64px; border: 1px dashed var(--border); border-radius: 10px; opacity: 0.4; 
+    height: 60px; border: 1px dashed var(--border); border-radius: 8px; opacity: 0.4; 
     display: flex; align-items: center; justify-content: center; 
-    font-size: 10px; color: var(--text-sub); font-family: 'JetBrains Mono', monospace; 
-    text-transform: uppercase; text-align: center; padding: 0 10px; box-sizing: border-box;
+    font-size: 9px; color: var(--text-sub); font-family: 'JetBrains Mono', monospace; 
+    text-transform: uppercase; text-align: center; padding: 0 5px; box-sizing: border-box;
   }
 
-  @media (max-width: 1000px) { 
-    .toc-sidebar { display: none; }
-    .hub-row { grid-template-columns: 1fr; gap: 12px; } 
-    .category-row .category-label:nth-child(2) { display: none; }
+  @media (max-width: 1100px) { 
+    .container { overflow-x: auto; padding-bottom: 100px; }
+    .content-main { min-width: 1000px; } 
   }
 </style>
 </head>
 <body>
   <div class="container">
-    
     <nav class="toc-sidebar">
       <div class="toc-title">Navigation</div>
       <a href="#weekly" class="toc-link">Weekly Analysis</a>
@@ -81,72 +77,77 @@
     <div class="content-main">
       <div class="biz-header">
         <span class="biz-name">Zen Trading Tech</span>
-        <h1>Research Reports</h1>
+        <h1>Global Research Hub</h1>
       </div>
 
       <div class="hub-row column-header-row">
         <div class="column-title">E-Mini S&P 500 (ES)</div>
         <div class="column-title">FDAX (DAX)</div>
+        <div class="column-title">Hang Seng (HSI)</div>
       </div>
 
       <div class="hub-row category-row" id="weekly">
-        <div class="category-label">Weekly Analysis</div>
-        <div class="category-label">Weekly Analysis</div>
+        <div class="category-label">Weekly</div>
+        <div class="category-label">Weekly</div>
+        <div class="category-label">Weekly</div>
       </div>
       <div class="hub-row">
         <a href="./ES-Weekly-Gap-Analysis/" class="report-card"><div><span class="report-title">Weekly Gap Analysis</span><span class="report-date">Feb 2026</span></div><div class="arrow">→</div></a>
         <a href="./FDAX-Weekly-Gap-Analysis/" class="report-card"><div><span class="report-title">Weekly Gap Analysis</span><span class="report-date">Feb 2026</span></div><div class="arrow">→</div></a>
+        <div class="spacer">HSI Weekly Gap Pending</div>
       </div>
 
       <div class="hub-row category-row" id="daily">
-        <div class="category-label">Daily Bar Analysis</div>
-        <div class="category-label">Daily Bar Analysis</div>
+        <div class="category-label">Daily Bar</div>
+        <div class="category-label">Daily Bar</div>
+        <div class="category-label">Daily Bar</div>
       </div>
       <div class="hub-row">
         <a href="./ES-Daily-Bar-Analysis/" class="report-card"><div><span class="report-title">Daily Bar Analysis</span><span class="report-date">Feb 2026</span></div><div class="arrow">→</div></a>
         <a href="./FDAX-Daily-Bar-Analysis/" class="report-card"><div><span class="report-title">Daily Bar Analysis</span><span class="report-date">Feb 2026</span></div><div class="arrow">→</div></a>
+        <div class="spacer">HSI Daily Bar Pending</div>
       </div>
       <div class="hub-row">
-        <a href="./ES-HOD-LOD-Analysis/" class="report-card"><div><span class="report-title">High/Low of Day Analysis</span><span class="report-date">Feb 2026</span></div><div class="arrow">→</div></a>
-        <a href="./FDAX-HOD-LOD-Analysis/" class="report-card"><div><span class="report-title">High/Low of Day Analysis</span><span class="report-date">Feb 2026</span></div><div class="arrow">→</div></a>
+        <a href="./ES-HOD-LOD-Analysis/" class="report-card"><div><span class="report-title">High/Low of Day</span><span class="report-date">Feb 2026</span></div><div class="arrow">→</div></a>
+        <a href="./FDAX-HOD-LOD-Analysis/" class="report-card"><div><span class="report-title">High/Low of Day</span><span class="report-date">Feb 2026</span></div><div class="arrow">→</div></a>
+        <div class="spacer">HSI HOD/LOD Pending</div>
       </div>
       <div class="hub-row">
-        <a href="./ES-Inside-Outside-Bar-Analysis/" class="report-card"><div><span class="report-title">Inside/Outside Bar Analysis</span><span class="report-date">Feb 2026</span></div><div class="arrow">→</div></a>
-        <a href="./FDAX-Inside-Outside-Bar-Analysis/" class="report-card"><div><span class="report-title">Inside/Outside Bar Analysis</span><span class="report-date">Feb 2026</span></div><div class="arrow">→</div></a>
+        <a href="./ES-Inside-Outside-Bar-Analysis/" class="report-card"><div><span class="report-title">Inside/Outside Bar</span><span class="report-date">Feb 2026</span></div><div class="arrow">→</div></a>
+        <a href="./FDAX-Inside-Outside-Bar-Analysis/" class="report-card"><div><span class="report-title">Inside/Outside Bar</span><span class="report-date">Feb 2026</span></div><div class="arrow">→</div></a>
+        <div class="spacer">HSI Inside/Outside Pending</div>
       </div>
 
       <div class="hub-row category-row" id="opening">
-        <div class="category-label">Opening Analysis</div>
-        <div class="category-label">Opening Analysis</div>
+        <div class="category-label">Opening</div>
+        <div class="category-label">Opening</div>
+        <div class="category-label">Opening</div>
       </div>
       <div class="hub-row">
         <a href="./ES-Opening-Gap-Closure/" class="report-card"><div><span class="report-title">Opening Gap Closure</span><span class="report-date">Feb 2026</span></div><div class="arrow">→</div></a>
         <a href="./FDAX-Opening-Gap-Closure/" class="report-card"><div><span class="report-title">Opening Gap Closure</span><span class="report-date">Feb 2026</span></div><div class="arrow">→</div></a>
+        <div class="spacer">HSI Opening Gap Pending</div>
       </div>
       <div class="hub-row">
-        <a href="./ES-Pre-Market-Breakout/" class="report-card"><div><span class="report-title">Pre-Market Range Breakout</span><span class="report-date">Feb 2026</span></div><div class="arrow">→</div></a>
-        <a href="./FDAX-Pre-Market-Breakout/" class="report-card"><div><span class="report-title">Pre-Market Range Breakout</span><span class="report-date">Feb 2026</span></div><div class="arrow">→</div></a>
+        <a href="./ES-Pre-Market-Breakout/" class="report-card"><div><span class="report-title">Pre-Market Breakout</span><span class="report-date">Feb 2026</span></div><div class="arrow">→</div></a>
+        <a href="./FDAX-Pre-Market-Breakout/" class="report-card"><div><span class="report-title">Pre-Market Breakout</span><span class="report-date">Feb 2026</span></div><div class="arrow">→</div></a>
+        <div class="spacer">HSI Pre-Market Pending</div>
       </div>
       <div class="hub-row">
-        <a href="./ES-Open-Out-of-Range-Analysis/" class="report-card"><div><span class="report-title">Open Out of Range Analysis</span><span class="report-date">Feb 2026</span></div><div class="arrow">→</div></a>
-        <a href="./FDAX-Open-Out-of-Range-Analysis/" class="report-card"><div><span class="report-title">Open Out of Range Analysis</span><span class="report-date">Feb 2026</span></div><div class="arrow">→</div></a>
-      </div>
-      <div class="hub-row">
-        <a href="./ES-Open-Inside-Range-Analysis/" class="report-card"><div><span class="report-title">Open Inside Yesterday's Range</span><span class="report-date">Feb 2026</span></div><div class="arrow">→</div></a>
-        <a href="./FDAX-Open-Inside-Range-Analysis/" class="report-card"><div><span class="report-title">Open Inside Yesterday's Range</span><span class="report-date">Feb 2026</span></div><div class="arrow">→</div></a>
-      </div>
-      <div class="hub-row">
-        <a href="./ES-Yesterday-Measuring-Gap-Analysis/" class="report-card"><div><span class="report-title">Yesterday Measuring Gap Analysis</span><span class="report-date">Feb 2026</span></div><div class="arrow">→</div></a>
-        <a href="./FDAX-Yesterday-Measuring-Gap-Analysis/" class="report-card"><div><span class="report-title">Yesterday Measuring Gap Analysis</span><span class="report-date">Feb 2026</span></div><div class="arrow">→</div></a>
+        <a href="./ES-Open-Outside-Range-Analysis/" class="report-card"><div><span class="report-title">Open Outside Range</span><span class="report-date">Feb 2026</span></div><div class="arrow">→</div></a>
+        <div class="spacer">FDAX Open Outside Range Pending</div>
+        <div class="spacer">HSI Open Outside Range Pending</div>
       </div>
 
       <div class="hub-row category-row" id="intraday">
-        <div class="category-label">Intraday Analysis</div>
-        <div class="category-label">Intraday Analysis</div>
+        <div class="category-label">Intraday</div>
+        <div class="category-label">Intraday</div>
+        <div class="category-label">Intraday</div>
       </div>
       <div class="hub-row">
-        <a href="./ES-Consecutive-60min-Bars/" class="report-card"><div><span class="report-title">Consecutive 60min Bars</span><span class="report-date">Feb 2026</span></div><div class="arrow">→</div></a>
-        <a href="./FDAX-Consecutive-60min-Bars/" class="report-card"><div><span class="report-title">Consecutive 60min Bars</span><span class="report-date">Feb 2026</span></div><div class="arrow">→</div></a>
+        <a href="./ES-Consecutive-60min-Bars/" class="report-card"><div><span class="report-title">Consecutive 60m Bars</span><span class="report-date">Feb 2026</span></div><div class="arrow">→</div></a>
+        <a href="./FDAX-Consecutive-60min-Bars/" class="report-card"><div><span class="report-title">Consecutive 60m Bars</span><span class="report-date">Feb 2026</span></div><div class="arrow">→</div></a>
+        <a href="./HSI-Consecutive-60min-Bars/" class="report-card"><div><span class="report-title">Consecutive 60m Bars</span><span class="report-date">Feb 2026</span></div><div class="arrow">→</div></a>
       </div>
     </div>
   </div>
