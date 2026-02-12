@@ -1,0 +1,794 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ES 5-Minute MIG Reversal — Bear Setup Analysis</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: #f9fafb;
+            color: #1f2937;
+            line-height: 1.6;
+            padding: 40px 20px;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        .meta {
+            color: #ef4444;
+            font-size: 0.9rem;
+            font-weight: 500;
+            margin-bottom: 15px;
+            letter-spacing: 0.5px;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: #111827;
+            margin-bottom: 20px;
+            line-height: 1.2;
+        }
+
+        .subtitle {
+            font-size: 1.1rem;
+            color: #6b7280;
+            margin-bottom: 40px;
+        }
+
+        .data-universe {
+            background: #ffffff;
+            border-radius: 12px;
+            padding: 30px;
+            margin-bottom: 50px;
+            border: 1px solid #e5e7eb;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        .data-universe h3 {
+            color: #111827;
+            font-size: 1.3rem;
+            margin-bottom: 20px;
+        }
+
+        .data-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 25px;
+        }
+
+        .data-item {
+            background: #f9fafb;
+            padding: 20px;
+            border-radius: 8px;
+            border-left: 3px solid #ef4444;
+        }
+
+        .data-label {
+            color: #6b7280;
+            font-size: 0.85rem;
+            margin-bottom: 8px;
+        }
+
+        .data-value {
+            color: #111827;
+            font-size: 1.8rem;
+            font-weight: 700;
+        }
+
+        .data-subvalue {
+            color: #9ca3af;
+            font-size: 0.9rem;
+            margin-top: 5px;
+        }
+
+        .methodology {
+            background: #f0f9ff;
+            padding: 20px 25px;
+            border-radius: 8px;
+            border-left: 3px solid #3b82f6;
+            margin-top: 20px;
+        }
+
+        .methodology strong {
+            color: #2563eb;
+        }
+
+        section {
+            margin-bottom: 60px;
+        }
+
+        h2 {
+            color: #111827;
+            font-size: 1.8rem;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #e5e7eb;
+        }
+
+        .stat-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 20px;
+            margin: 30px 0;
+        }
+
+        .stat-card {
+            background: #ffffff;
+            padding: 25px;
+            border-radius: 10px;
+            border: 1px solid #e5e7eb;
+            text-align: center;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        .stat-card.green {
+            border-left: 4px solid #10b981;
+        }
+
+        .stat-card.red {
+            border-left: 4px solid #ef4444;
+        }
+
+        .stat-card.purple {
+            border-left: 4px solid #7c3aed;
+        }
+
+        .stat-card.amber {
+            border-left: 4px solid #d97706;
+        }
+
+        .stat-number {
+            font-size: 3rem;
+            font-weight: 700;
+            margin: 15px 0;
+        }
+
+        .stat-number.green {
+            color: #059669;
+        }
+
+        .stat-number.red {
+            color: #dc2626;
+        }
+
+        .stat-number.purple {
+            color: #7c3aed;
+        }
+
+        .stat-number.amber {
+            color: #d97706;
+        }
+
+        .stat-label {
+            color: #6b7280;
+            font-size: 0.95rem;
+        }
+
+        .stat-sublabel {
+            color: #9ca3af;
+            font-size: 0.85rem;
+            margin-top: 8px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 25px 0;
+            background: #ffffff;
+            border-radius: 8px;
+            overflow: hidden;
+            border: 1px solid #e5e7eb;
+        }
+
+        thead {
+            background: #f9fafb;
+        }
+
+        th {
+            color: #6b7280;
+            font-weight: 600;
+            padding: 15px;
+            text-align: left;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        td {
+            padding: 15px;
+            border-top: 1px solid #e5e7eb;
+            color: #1f2937;
+        }
+
+        tr:hover {
+            background: #f9fafb;
+        }
+
+        .highlight-green {
+            color: #059669;
+            font-weight: 600;
+        }
+
+        .highlight-red {
+            color: #dc2626;
+            font-weight: 600;
+        }
+
+        .highlight-purple {
+            color: #7c3aed;
+            font-weight: 600;
+        }
+
+        .highlight-amber {
+            color: #d97706;
+            font-weight: 600;
+        }
+
+        .comparison-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin: 30px 0;
+        }
+
+        .comparison-card {
+            background: #ffffff;
+            padding: 30px;
+            border-radius: 10px;
+            border: 1px solid #e5e7eb;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        .comparison-card h3 {
+            color: #111827;
+            font-size: 1.4rem;
+            margin-bottom: 20px;
+        }
+
+        .comparison-card.red {
+            border-top: 4px solid #ef4444;
+        }
+
+        .comparison-card.purple {
+            border-top: 4px solid #7c3aed;
+        }
+
+        .metric-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 12px 0;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .metric-row:last-child {
+            border-bottom: none;
+        }
+
+        .metric-label {
+            color: #6b7280;
+        }
+
+        .metric-value {
+            color: #111827;
+            font-weight: 600;
+        }
+
+        .key-finding {
+            background: #ffffff;
+            padding: 25px;
+            border-radius: 8px;
+            margin: 20px 0;
+            border-left: 4px solid #ef4444;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        .key-finding h4 {
+            color: #ef4444;
+            margin-bottom: 12px;
+            font-size: 1.1rem;
+        }
+
+        .key-finding p {
+            color: #1f2937;
+            line-height: 1.7;
+        }
+
+        .executive-summary {
+            background: linear-gradient(135deg, #fef2f2 0%, #fef8f8 100%);
+            border-radius: 12px;
+            padding: 40px;
+            margin-top: 60px;
+            border: 1px solid #fecaca;
+        }
+
+        .executive-summary h2 {
+            color: #991b1b;
+            border-bottom: 2px solid #fca5a5;
+        }
+
+        footer {
+            text-align: center;
+            color: #9ca3af;
+            font-size: 0.85rem;
+            margin-top: 80px;
+            padding-top: 30px;
+            border-top: 1px solid #e5e7eb;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="meta">◆ Quantitative Research</div>
+        
+        <h1>ES 5-Minute MIG Reversal — Bear Setup Analysis</h1>
+        
+        <p class="subtitle">Bear MIG Reversal performance: win rates, target hit analysis, and EMA position comparison</p>
+
+        <div class="data-universe">
+            <h3>Analysis Universe</h3>
+            
+            <div class="data-grid">
+                <div class="data-item">
+                    <div class="data-label">Bear Setups Analyzed</div>
+                    <div class="data-value">844</div>
+                    <div class="data-subvalue">9 skipped (EOD timing)</div>
+                </div>
+                
+                <div class="data-item">
+                    <div class="data-label">Timeframe</div>
+                    <div class="data-value">5-Min</div>
+                    <div class="data-subvalue">Intraday ES futures</div>
+                </div>
+                
+                <div class="data-item">
+                    <div class="data-label">Date Range</div>
+                    <div class="data-value">4 Years</div>
+                    <div class="data-subvalue">Jan 2022 — Feb 2026</div>
+                </div>
+                
+                <div class="data-item">
+                    <div class="data-label">Trading Days</div>
+                    <div class="data-value">1,017</div>
+                    <div class="data-subvalue">0.83 setups per day</div>
+                </div>
+            </div>
+
+            <div class="methodology">
+                <strong>Trade Logic:</strong> Bear MIG Reversals are entered at the close of the signal bar (when 3+ consecutive bear bars create a micro-gap and the signal bar's high is above 20 EMA). Stop is placed 1 tick above the highest high of the entire consecutive sequence. Trade is tracked until: (1) Stop hit, (2) Profit target hit, or (3) End of day (closed 2nd last bar, actual R-multiple calculated). Each setup is measured against multiple R-multiple targets (0.5R, 1R, 1.5R, 2R) to determine optimal profit-taking levels.
+            </div>
+
+            <div class="methodology" style="margin-top: 15px; background: #fef3c7; border-left: 3px solid #f59e0b;">
+                <strong style="color: #92400e;">Average Bars Tracked:</strong> <span style="color: #78350f;">This measures how many 5-minute bars elapse from entry until the trade resolves (target hit, stop hit, or EOD). At 41.9 bars average, most bear setups take approximately 3.5 hours (210 minutes) to reach their outcome. This is important for understanding holding time requirements and intraday capital commitment.</span>
+            </div>
+        </div>
+
+        <section>
+            <h2>Step 1: Overall Performance — All Bear MIG Reversals (n=844)</h2>
+            
+            <div class="stat-grid">
+                <div class="stat-card purple">
+                    <div class="stat-label">Average Risk</div>
+                    <div class="stat-number purple">13.8</div>
+                    <div class="stat-sublabel">points per setup</div>
+                </div>
+                
+                <div class="stat-card red">
+                    <div class="stat-label">Average MFE</div>
+                    <div class="stat-number red">1.68R</div>
+                    <div class="stat-sublabel">Max favorable excursion</div>
+                </div>
+                
+                <div class="stat-card amber">
+                    <div class="stat-label">Average MAE</div>
+                    <div class="stat-number amber">-1.44R</div>
+                    <div class="stat-sublabel">Max adverse excursion</div>
+                </div>
+                
+                <div class="stat-card purple">
+                    <div class="stat-label">Avg Bars Tracked</div>
+                    <div class="stat-number purple">41.9</div>
+                    <div class="stat-sublabel">~210 minutes from entry to resolution</div>
+                </div>
+            </div>
+
+            <h3 style="color: #6b7280; margin-top: 40px; margin-bottom: 20px; font-size: 1.1rem;">Win/Loss Outcomes by Target Level</h3>
+            
+            <table>
+                <thead>
+                    <tr>
+                        <th>Target</th>
+                        <th>Wins</th>
+                        <th>Losses</th>
+                        <th>Win Rate</th>
+                        <th>Loss Rate</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><span class="highlight-red">0.5R</span></td>
+                        <td>554</td>
+                        <td>290</td>
+                        <td class="highlight-green">65.6%</td>
+                        <td>34.4%</td>
+                    </tr>
+                    <tr>
+                        <td><span class="highlight-red">1.0R</span></td>
+                        <td>428</td>
+                        <td>416</td>
+                        <td class="highlight-green">50.7%</td>
+                        <td>49.3%</td>
+                    </tr>
+                    <tr>
+                        <td>1.5R</td>
+                        <td>371</td>
+                        <td>473</td>
+                        <td>44.0%</td>
+                        <td>56.0%</td>
+                    </tr>
+                    <tr>
+                        <td>2.0R</td>
+                        <td>340</td>
+                        <td>504</td>
+                        <td>40.3%</td>
+                        <td>59.7%</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <div class="methodology" style="margin-top: 30px;">
+                <strong>Performance Insight:</strong> Bear setups show 65.6% win rate at 0.5R, declining to 50.7% at 1R and 44.0% at 1.5R. Win rates are similar to bulls, but bears show stronger MFE (1.68R vs bulls' 1.25R), indicating better directional follow-through on winning trades. A "win" counts any positive R-multiple outcome (target hit OR profitable EOD close), while "loss" includes stop hits AND unprofitable EOD closes.
+            </div>
+        </section>
+
+        <section>
+            <h2>Step 2: Optimal Target Selection — Expectancy Analysis</h2>
+            
+            <p style="color: #6b7280; margin-bottom: 30px;">Expectancy calculated using actual R-multiples for all outcomes. Trades hitting target generate their full R-multiple. Trades hitting stop generate -1R. EOD positions are closed at 2nd-last bar with actual R-multiple based on final price.</p>
+
+            <div class="stat-grid">
+                <div class="stat-card green">
+                    <div class="stat-label">Best Expectancy</div>
+                    <div class="stat-number green">2.0R</div>
+                    <div class="stat-sublabel">+0.059R per trade</div>
+                </div>
+                
+                <div class="stat-card purple">
+                    <div class="stat-label">All Targets Positive</div>
+                    <div class="stat-number purple">0.5-2R</div>
+                    <div class="stat-sublabel">Range: +0.013R to +0.059R</div>
+                </div>
+                
+                <div class="stat-card green">
+                    <div class="stat-label">Highest Win Rate</div>
+                    <div class="stat-number green">65.6%</div>
+                    <div class="stat-sublabel">At 0.5R target</div>
+                </div>
+            </div>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th>Target</th>
+                        <th>Win Rate</th>
+                        <th>Loss Rate</th>
+                        <th>Expectancy</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>0.5R</td>
+                        <td>65.6%</td>
+                        <td>34.4%</td>
+                        <td>+0.013R</td>
+                    </tr>
+                    <tr>
+                        <td>1.0R</td>
+                        <td>50.7%</td>
+                        <td>49.3%</td>
+                        <td>+0.028R</td>
+                    </tr>
+                    <tr>
+                        <td>1.5R</td>
+                        <td>44.0%</td>
+                        <td>56.0%</td>
+                        <td>+0.055R</td>
+                    </tr>
+                    <tr>
+                        <td><span class="highlight-red">2.0R</span></td>
+                        <td>40.3%</td>
+                        <td>59.7%</td>
+                        <td class="highlight-green">+0.059R</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <div class="methodology" style="margin-top: 30px;">
+                <strong>Expectancy Analysis:</strong> All bear targets show positive expectancy, with the 2R target producing the highest at +0.059R per trade. Unlike bulls (where 2R showed +0.101R), bear expectancy is lower across all targets. The pattern is consistent: expectancy increases from 0.5R (+0.013R) to 2R (+0.059R), suggesting bears benefit from larger targets due to stronger MFE. However, bear expectancy is roughly 58% of bull expectancy at the 2R level.
+            </div>
+        </section>
+
+        <section>
+            <h2>Step 3: Filter Optimization — Close Below EMA20 + 3-Bar Patterns</h2>
+            
+            <p style="color: #6b7280; margin-bottom: 30px;">Unlike bulls, bear setups show strongest performance when closing BELOW the 20 EMA (bear continuation, not disappointment). We test whether this filter combined with 3-bar patterns improves performance. This represents 40.8% of all bear setups (344 of 844).</p>
+
+            <div class="comparison-grid">
+                <div class="comparison-card purple">
+                    <h3>All Bear Setups (n=844)</h3>
+                    
+                    <div class="metric-row">
+                        <span class="metric-label">Best Expectancy</span>
+                        <span class="metric-value">+0.059R @ 2R</span>
+                    </div>
+                    <div class="metric-row">
+                        <span class="metric-label">2R Win Rate</span>
+                        <span class="metric-value">40.3%</span>
+                    </div>
+                    <div class="metric-row">
+                        <span class="metric-label">1R Expectancy</span>
+                        <span class="metric-value">+0.028R</span>
+                    </div>
+                    <div class="metric-row">
+                        <span class="metric-label">Avg MFE</span>
+                        <span class="metric-value">1.68R</span>
+                    </div>
+                    <div class="metric-row">
+                        <span class="metric-label">Avg MAE</span>
+                        <span class="metric-value">-1.44R</span>
+                    </div>
+                </div>
+
+                <div class="comparison-card green">
+                    <h3>Filtered: Close Below + 3-Bar (n=344)</h3>
+                    
+                    <div class="metric-row">
+                        <span class="metric-label">Best Expectancy</span>
+                        <span class="metric-value highlight-green">+0.152R @ 2R</span>
+                    </div>
+                    <div class="metric-row">
+                        <span class="metric-label">2R Win Rate</span>
+                        <span class="metric-value highlight-green">43.6% (+3.3%)</span>
+                    </div>
+                    <div class="metric-row">
+                        <span class="metric-label">1R Expectancy</span>
+                        <span class="metric-value highlight-green">+0.074R (+0.046R)</span>
+                    </div>
+                    <div class="metric-row">
+                        <span class="metric-label">Avg MFE</span>
+                        <span class="metric-value highlight-green">1.70R (+0.02R)</span>
+                    </div>
+                    <div class="metric-row">
+                        <span class="metric-label">Avg MAE</span>
+                        <span class="metric-value">-1.32R (+0.12R better)</span>
+                    </div>
+                </div>
+            </div>
+
+            <h3 style="color: #6b7280; margin-top: 40px; margin-bottom: 20px; font-size: 1.1rem;">Target-Level Performance Comparison</h3>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th>Target</th>
+                        <th>All: Win Rate</th>
+                        <th>Filtered: Win Rate</th>
+                        <th>Improvement</th>
+                        <th>All Expectancy</th>
+                        <th>Filtered Expectancy</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>0.5R</td>
+                        <td>65.6%</td>
+                        <td>64.5%</td>
+                        <td>-1.1%</td>
+                        <td>+0.013R</td>
+                        <td class="highlight-red">-0.002R</td>
+                    </tr>
+                    <tr>
+                        <td>1.0R</td>
+                        <td>50.7%</td>
+                        <td class="highlight-green">52.9%</td>
+                        <td class="highlight-green">+2.2%</td>
+                        <td>+0.028R</td>
+                        <td class="highlight-green">+0.074R</td>
+                    </tr>
+                    <tr>
+                        <td>1.5R</td>
+                        <td>44.0%</td>
+                        <td class="highlight-green">47.4%</td>
+                        <td class="highlight-green">+3.4%</td>
+                        <td>+0.055R</td>
+                        <td class="highlight-green">+0.138R</td>
+                    </tr>
+                    <tr>
+                        <td><span class="highlight-green">2.0R</span></td>
+                        <td>40.3%</td>
+                        <td class="highlight-green">43.6%</td>
+                        <td class="highlight-green">+3.3%</td>
+                        <td>+0.059R</td>
+                        <td class="highlight-green">+0.152R</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <div class="key-finding">
+                <h4>Filter Performance: More Than Doubles Expectancy at 2R</h4>
+                <p>The "Close Below EMA20 + 3-Bar" filter produces <strong>substantial improvements at longer targets</strong>. At 2R, expectancy more than doubles from +0.059R to <strong>+0.152R</strong> (+0.093R improvement), with win rate improving from 40.3% to 43.6%. At 1R, expectancy increases from +0.028R to <strong>+0.074R</strong> (+0.046R improvement), with win rate up +2.2%. At 1.5R, expectancy more than doubles from +0.055R to <strong>+0.138R</strong> (+0.083R improvement). The filter slightly weakens 0.5R performance (-0.002R expectancy), but this is acceptable given the dramatic improvements at meaningful targets. This is the OPPOSITE pattern from bulls, where "Close Below" represented disappointment. For bears, "Close Below" is continuation with the trend.</p>
+            </div>
+
+            <div class="methodology" style="margin-top: 30px;">
+                <strong>Critical Insight:</strong> The filter reduces setup frequency from 844 to 344 (59% reduction) while dramatically improving edge quality at 1R and beyond. Unlike the bull "disappointment" filter, bear edge comes from CONTINUATION below trend, not reversal above it. Traders should use this filter for bears targeting 1R+ and accept the 41% lower frequency in exchange for 2-3× better expectancy.</p>
+            </div>
+        </section>
+
+        <section>
+            <h2>Step 4: Close Above vs Below EMA20 — Testing the Disappointment Hypothesis</h2>
+            
+            <p style="color: #6b7280; margin-bottom: 30px;">For bears, the "disappointment" setup should be when bears are strong ABOVE the 20 EMA (bulls disappointed). We compare Close Above vs Close Below to see if the pattern holds as it did for bulls.</p>
+
+            <div class="stat-grid">
+                <div class="stat-card red">
+                    <div class="stat-label">Close Above EMA20</div>
+                    <div class="stat-number red">346</div>
+                    <div class="stat-sublabel">41.0% of all bear setups</div>
+                </div>
+                
+                <div class="stat-card purple">
+                    <div class="stat-label">Close Below EMA20</div>
+                    <div class="stat-number purple">498</div>
+                    <div class="stat-sublabel">59.0% of all bear setups</div>
+                </div>
+            </div>
+
+            <h3 style="color: #6b7280; margin-top: 40px; margin-bottom: 20px; font-size: 1.1rem;">Expectancy Comparison: Close Above vs Below</h3>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th>Target</th>
+                        <th>Close ABOVE EMA20</th>
+                        <th>Close BELOW EMA20</th>
+                        <th>Winner</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>0.5R</td>
+                        <td class="highlight-green">+0.033R</td>
+                        <td class="highlight-red">-0.001R</td>
+                        <td>Above (+0.035R better)</td>
+                    </tr>
+                    <tr>
+                        <td>1.0R</td>
+                        <td class="highlight-red">-0.008R</td>
+                        <td class="highlight-green">+0.054R</td>
+                        <td class="highlight-green">Below (+0.062R better)</td>
+                    </tr>
+                    <tr>
+                        <td>1.5R</td>
+                        <td>+0.003R</td>
+                        <td class="highlight-green">+0.090R</td>
+                        <td class="highlight-green">Below (+0.087R better)</td>
+                    </tr>
+                    <tr>
+                        <td><strong>2.0R</strong></td>
+                        <td class="highlight-red">-0.040R</td>
+                        <td class="highlight-green">+0.127R</td>
+                        <td class="highlight-green">Below (+0.168R better)</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <div class="comparison-grid">
+                <div class="comparison-card red">
+                    <h3>Close ABOVE EMA20 (n=346)</h3>
+                    
+                    <div class="metric-row">
+                        <span class="metric-label">2R Expectancy</span>
+                        <span class="metric-value">-0.040R (negative)</span>
+                    </div>
+                    <div class="metric-row">
+                        <span class="metric-label">1R Expectancy</span>
+                        <span class="metric-value">-0.008R (negative)</span>
+                    </div>
+                    <div class="metric-row">
+                        <span class="metric-label">0.5R Expectancy</span>
+                        <span class="metric-value highlight-red">+0.033R (best)</span>
+                    </div>
+                    <div class="metric-row">
+                        <span class="metric-label">Avg MFE</span>
+                        <span class="metric-value highlight-red">1.787R (+0.189R)</span>
+                    </div>
+                    <div class="metric-row">
+                        <span class="metric-label">Avg MAE</span>
+                        <span class="metric-value">-1.760R</span>
+                    </div>
+                </div>
+
+                <div class="comparison-card purple">
+                    <h3>Close BELOW EMA20 (n=498)</h3>
+                    
+                    <div class="metric-row">
+                        <span class="metric-label">2R Expectancy</span>
+                        <span class="metric-value highlight-purple">+0.127R (4× better)</span>
+                    </div>
+                    <div class="metric-row">
+                        <span class="metric-label">1R Expectancy</span>
+                        <span class="metric-value highlight-purple">+0.054R (positive)</span>
+                    </div>
+                    <div class="metric-row">
+                        <span class="metric-label">0.5R Expectancy</span>
+                        <span class="metric-value">-0.001R (breakeven)</span>
+                    </div>
+                    <div class="metric-row">
+                        <span class="metric-label">Avg MFE</span>
+                        <span class="metric-value">1.597R</span>
+                    </div>
+                    <div class="metric-row">
+                        <span class="metric-label">Avg MAE</span>
+                        <span class="metric-value">-1.237R (+0.523R better)</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="methodology" style="margin-top: 30px;">
+                <strong>Counterintuitive Finding — "Disappointment" Doesn't Work for Bears:</strong> Unlike bulls, bear setups that close BELOW the 20 EMA dramatically outperform those closing ABOVE at longer targets. At 2R, "Close Below" produces +0.127R versus -0.040R for "Close Above" — a complete reversal of the bull pattern. At 0.5R only does "Close Above" show advantage (+0.033R vs -0.001R). This suggests bears strong BELOW trend (not disappointment) have better follow-through at meaningful targets, while "disappointment" bears (above trend) are quick scalps only.
+            </div>
+
+            <div class="key-finding" style="margin-top: 30px;">
+                <h4>The "Disappointment" Hypothesis FAILS for Bears</h4>
+                <p>The data contradicts the "disappointment" concept for bear setups. While bull patterns showed 6-10× better performance when closing BELOW EMA20 (bears disappointed), <strong>bear patterns show the opposite</strong>: closing BELOW EMA20 (bears continuing in favorable territory) produces superior results at 1R, 1.5R, and 2R targets. At 2R, the gap is massive: +0.127R (Below) vs -0.040R (Above). The "disappointment" setup for bears (Close Above) only works at 0.5R and shows negative expectancy beyond that. This asymmetry suggests different market dynamics: <strong>bear continuations (Close Below) are more reliable than bear reversals (Close Above)</strong>, the opposite pattern from bulls.</p>
+            </div>
+        </section>
+
+        <div class="executive-summary">
+            <h2>Executive Summary: Key Findings</h2>
+
+            <div class="key-finding">
+                <h4>Primary Finding: 2R Target Optimal, But Much Weaker Than Bulls</h4>
+                <p>Across all 844 bear MIG reversals, the <strong>2R profit target produces the highest expectancy at +0.059R per trade</strong>, with 40.3% win rate and 59.7% loss rate. All tested targets show positive expectancy: 0.5R (+0.013R), 1R (+0.028R), 1.5R (+0.055R), and 2R (+0.059R). However, bear expectancy is consistently lower than bulls — at 2R, bears produce +0.059R versus bulls' +0.101R (only 58% of bull performance). Bears show stronger average MFE (1.68R vs 1.25R for bulls) but worse MAE (-1.44R vs -0.82R), suggesting more volatile price action with larger drawdowns before resolution.</p>
+            </div>
+
+            <div class="key-finding">
+                <h4>Filter Performance: Close Below Doubles Expectancy at 2R</h4>
+                <p>The "Close Below EMA20 + 3-Bar" filter (n=344, 40.8% of bears) produces <strong>dramatic improvements at longer targets</strong>. At 2R: expectancy more than doubles from +0.059R to <strong>+0.152R</strong> (+0.093R improvement), with win rate improving from 40.3% to 43.6%. At 1.5R: expectancy more than doubles from +0.055R to <strong>+0.138R</strong> (+0.083R improvement). At 1R: expectancy increases from +0.028R to <strong>+0.074R</strong> (+0.046R improvement). The filter only weakens 0.5R (-0.002R). This is the OPPOSITE pattern from bulls — for bears, "Close Below" is continuation with trend (not disappointment), which provides superior follow-through. The filter reduces frequency 59% but creates 2-3× better expectancy at meaningful targets.</p>
+            </div>
+
+            <div class="key-finding">
+                <h4>Disappointment Hypothesis FAILS: Close Below Dominates at 2R</h4>
+                <p>Unlike bulls, bear patterns show <strong>opposite behavior</strong> regarding EMA position. Close BELOW EMA20 (bears continuing in favorable territory) dramatically outperforms Close ABOVE at longer targets. At 2R: Close Below produces +0.127R versus -0.040R for Close Above (3.2× better). At 1.5R: +0.090R versus +0.003R (30× better). Only at 0.5R does Close Above show advantage (+0.033R vs -0.001R). This contradicts the "disappointment" thesis that worked for bulls. <strong>Bear continuations (below trend) are more reliable than bear reversals (above trend)</strong>, suggesting fundamentally different market dynamics between bull and bear setups. The best bear filter is "Close Below + 3-Bar" which produces +0.152R at 2R.</p>
+            </div>
+
+            <div class="key-finding">
+                <h4>Target Selection Strategy</h4>
+                <p><strong>For maximum expectancy:</strong> Use "Close Below EMA20 + 3-Bar" filter with 2R target for +0.152R expectancy (best performance) and 43.6% win rate. At 1.5R, this filter produces +0.138R with 47.4% win rate. Avoid "Close Above" bears at targets beyond 0.5R (negative expectancy at 1R and 2R). Unfiltered bears work but show only +0.059R at 2R.</p>
+                <p style="margin-top: 10px;"><strong>Key Insight:</strong> Bears are NOT mirror images of bulls. The disappointment pattern that drives bull edge does not apply to bears. For bears, continuation below trend (Close Below EMA20) provides the strongest edge at meaningful targets, while reversal setups (Close Above) are quick scalps only. This is the OPPOSITE of bulls where Close Below represents reversal/disappointment.</p>
+            </div>
+
+            <div class="key-finding">
+                <h4>Recommended Next Steps</h4>
+                <p>This analysis reveals critical asymmetries between bull and bear MIG reversals. Next phase should investigate: (1) <strong>Why bear continuations outperform bear reversals</strong> while bulls show the opposite pattern, (2) <strong>Alternative bear filters</strong> focused on "Close Below + large MFE" rather than applying bull logic, (3) <strong>Combined bull/bear strategies</strong> using different filters for each direction (Bulls: Close Below filter, Bears: Close Below or unfiltered), and (4) <strong>Entry timing for bears</strong> to reduce the -1.44R average MAE exposure, particularly for Close Above setups that show extreme -1.76R MAE.</p>
+            </div>
+        </div>
+
+        <footer>
+            ES 5-Minute MIG Reversal · Trade Setup Analysis · Bear Patterns<br>
+            Source: CME E-mini S&P 500 Futures (ES1) · 5-Minute Bars · Jan 2022 — Feb 2026
+        </footer>
+    </div>
+</body>
+</html>
