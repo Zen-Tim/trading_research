@@ -1,0 +1,504 @@
+// This source code is subject to the terms of the Mozilla Public License 2.0 at https://mozilla.org/MPL/2.0/
+// © Zen_Tim_Trades
+
+//@version=5
+indicator("Zen ES Measured Move Targets v2.1", overlay=true, max_lines_count=500, max_labels_count=500)
+
+// ============================================================================
+// INPUTS
+// ============================================================================
+
+// --- Display Mode ---
+bool highlightOnly = input.bool(false, "Highlight Only Mode (hide lines/labels)", group="Display Mode",
+     tooltip="Hides all target lines, labels and reference lines. Only shows background highlights when targets are hit.")
+
+// --- Target Toggles ---
+bool show05x       = input.bool(true,  "Show 0.5x Targets",              group="Target Levels")
+bool show1x        = input.bool(true,  "Show 1x Targets",                group="Target Levels")
+bool show2x        = input.bool(true,  "Show 2x Targets",                group="Target Levels")
+bool showBull      = input.bool(true,  "Show Bull Targets",              group="Target Levels")
+bool showBear      = input.bool(true,  "Show Bear Targets",              group="Target Levels")
+
+// --- Highlight Settings ---
+bool highlightYestH = input.bool(false, "Highlight Yesterday High Touches", group="Highlights",
+     tooltip="Background highlight when price touches yesterday's RTH high")
+bool highlightYestL = input.bool(false, "Highlight Yesterday Low Touches",  group="Highlights",
+     tooltip="Background highlight when price touches yesterday's RTH low")
+bool highlight05x   = input.bool(false, "Highlight 0.5x Touches",          group="Highlights")
+bool highlight1x    = input.bool(true,  "Highlight 1x Touches",            group="Highlights")
+bool highlight2x    = input.bool(true,  "Highlight 2x Touches",            group="Highlights")
+
+// --- Reference Lines ---
+bool showYestHL    = input.bool(true,  "Show Yesterday High/Low",        group="Reference Lines")
+
+// --- Labels & Table ---
+bool showLabels    = input.bool(true,  "Show Target Labels",             group="Display")
+bool showTable     = input.bool(true,  "Show Info Table",                group="Display")
+
+// --- Line Settings ---
+int  lineExtend    = input.int(80,     "Line Extension (bars)",          group="Line Settings", minval=5, maxval=500)
+int  lineWidth     = input.int(1,      "Line Width",                     group="Line Settings", minval=1, maxval=4)
+
+// --- Colors (Bull) ---
+color colBull05x   = input.color(color.new(#059669, 70), "Bull 0.5x",   group="Bull Colors")
+color colBull1x    = input.color(color.new(#059669, 50), "Bull 1x",     group="Bull Colors")
+color colBull2x    = input.color(color.new(#059669, 30), "Bull 2x",     group="Bull Colors")
+
+// --- Colors (Bear) ---
+color colBear05x   = input.color(color.new(#B91C1C, 70), "Bear 0.5x",   group="Bear Colors")
+color colBear1x    = input.color(color.new(#B91C1C, 50), "Bear 1x",     group="Bear Colors")
+color colBear2x    = input.color(color.new(#B91C1C, 30), "Bear 2x",     group="Bear Colors")
+
+// --- Colors (Reference) ---
+color colYestHigh  = input.color(color.new(color.gray, 50), "Yesterday High", group="Reference Colors")
+color colYestLow   = input.color(color.new(color.gray, 50), "Yesterday Low",  group="Reference Colors")
+
+// ============================================================================
+// RTH SESSION DETECTION
+// ============================================================================
+// CRITICAL TIMEZONE NOTES:
+//   - ES trades on CME (Chicago) = Central Time
+//   - TradingView's time() uses EXCHANGE timezone for session strings
+//   - RTH = 9:30 AM – 4:15 PM Eastern = 8:30 AM – 3:15 PM Central
+//   - Session string: "0830-1515" in Central Time
+//   - The last 5-min bar is 15:10–15:15 CT (16:10–16:15 ET) — MUST be included
+//   - Days 23456 = Mon–Fri (TradingView uses 1=Sunday convention)
+//   - RTH duration = 6h 45m = 405 minutes = 81 bars on 5-min chart
+
+rthSession = time(timeframe.period, "0830-1515:23456")
+inRTH      = not na(rthSession)
+newRTH     = inRTH and (not inRTH[1] or (inRTH[1] and ta.change(time("D")) != 0))
+
+// ============================================================================
+// RTH BAR COUNT
+// ============================================================================
+
+var int rthBarCount = 0
+
+if newRTH
+    rthBarCount := 1
+else if inRTH
+    rthBarCount += 1
+else
+    rthBarCount := 0
+
+// ============================================================================
+// RTH HIGH / LOW TRACKING + YESTERDAY'S VALUES
+// ============================================================================
+
+var float rthHigh = na
+var float rthLow  = na
+
+var float yesterdayHigh  = na
+var float yesterdayLow   = na
+var float yesterdayRange = na
+
+if newRTH
+    yesterdayHigh  := rthHigh
+    yesterdayLow   := rthLow
+    yesterdayRange := not na(rthHigh) and not na(rthLow) ? rthHigh - rthLow : na
+    rthHigh := high
+    rthLow  := low
+else if inRTH
+    rthHigh := math.max(nz(rthHigh, high), high)
+    rthLow  := math.min(nz(rthLow, low), low)
+
+// ============================================================================
+// MEASURED MOVE TARGET CALCULATIONS
+// ============================================================================
+
+var float bull05x = na
+var float bull1x  = na
+var float bull2x  = na
+var float bear05x = na
+var float bear1x  = na
+var float bear2x  = na
+
+if newRTH and not na(yesterdayRange) and yesterdayRange > 0
+    bull05x := yesterdayHigh + (0.5 * yesterdayRange)
+    bull1x  := yesterdayHigh + (1.0 * yesterdayRange)
+    bull2x  := yesterdayHigh + (2.0 * yesterdayRange)
+    bear05x := yesterdayLow  - (0.5 * yesterdayRange)
+    bear1x  := yesterdayLow  - (1.0 * yesterdayRange)
+    bear2x  := yesterdayLow  - (2.0 * yesterdayRange)
+
+// ============================================================================
+// YESTERDAY HIGH / LOW TOUCH TRACKING
+// ============================================================================
+// A bar "touches" yesterday's high if its range includes that price.
+// Same logic for yesterday's low.
+
+bool yesterdayH_touch = inRTH and not na(yesterdayHigh) and high >= yesterdayHigh and low <= yesterdayHigh
+bool yesterdayL_touch = inRTH and not na(yesterdayLow)  and high >= yesterdayLow  and low <= yesterdayLow
+
+var int   yestH_firstHitBar  = na
+var int   yestH_barsAtTarget = 0
+var int   yestL_firstHitBar  = na
+var int   yestL_barsAtTarget = 0
+
+if newRTH
+    yestH_firstHitBar  := na
+    yestH_barsAtTarget := 0
+    yestL_firstHitBar  := na
+    yestL_barsAtTarget := 0
+
+if yesterdayH_touch
+    if na(yestH_firstHitBar)
+        yestH_firstHitBar := rthBarCount
+    yestH_barsAtTarget += 1
+
+if yesterdayL_touch
+    if na(yestL_firstHitBar)
+        yestL_firstHitBar := rthBarCount
+    yestL_barsAtTarget += 1
+
+int yestH_barsSinceHit = not na(yestH_firstHitBar) ? rthBarCount - yestH_firstHitBar : na
+int yestL_barsSinceHit = not na(yestL_firstHitBar) ? rthBarCount - yestL_firstHitBar : na
+
+// ============================================================================
+// MEASURED MOVE FIRST HIT TRACKING & BARS-AT-TARGET
+// ============================================================================
+
+// --- Bull 0.5x ---
+var int   bull05x_firstHitBar  = na
+var int   bull05x_barsAtTarget = 0
+bool      bull05x_touch        = inRTH and not na(bull05x) and high >= bull05x
+
+if newRTH
+    bull05x_firstHitBar  := na
+    bull05x_barsAtTarget := 0
+
+if bull05x_touch
+    if na(bull05x_firstHitBar)
+        bull05x_firstHitBar := rthBarCount
+    bull05x_barsAtTarget += 1
+
+int bull05x_barsSinceHit = not na(bull05x_firstHitBar) ? rthBarCount - bull05x_firstHitBar : na
+
+// --- Bull 1x ---
+var int   bull1x_firstHitBar  = na
+var int   bull1x_barsAtTarget = 0
+bool      bull1x_touch        = inRTH and not na(bull1x) and high >= bull1x
+
+if newRTH
+    bull1x_firstHitBar  := na
+    bull1x_barsAtTarget := 0
+
+if bull1x_touch
+    if na(bull1x_firstHitBar)
+        bull1x_firstHitBar := rthBarCount
+    bull1x_barsAtTarget += 1
+
+int bull1x_barsSinceHit = not na(bull1x_firstHitBar) ? rthBarCount - bull1x_firstHitBar : na
+
+// --- Bull 2x ---
+var int   bull2x_firstHitBar  = na
+var int   bull2x_barsAtTarget = 0
+bool      bull2x_touch        = inRTH and not na(bull2x) and high >= bull2x
+
+if newRTH
+    bull2x_firstHitBar  := na
+    bull2x_barsAtTarget := 0
+
+if bull2x_touch
+    if na(bull2x_firstHitBar)
+        bull2x_firstHitBar := rthBarCount
+    bull2x_barsAtTarget += 1
+
+int bull2x_barsSinceHit = not na(bull2x_firstHitBar) ? rthBarCount - bull2x_firstHitBar : na
+
+// --- Bear 0.5x ---
+var int   bear05x_firstHitBar  = na
+var int   bear05x_barsAtTarget = 0
+bool      bear05x_touch        = inRTH and not na(bear05x) and low <= bear05x
+
+if newRTH
+    bear05x_firstHitBar  := na
+    bear05x_barsAtTarget := 0
+
+if bear05x_touch
+    if na(bear05x_firstHitBar)
+        bear05x_firstHitBar := rthBarCount
+    bear05x_barsAtTarget += 1
+
+int bear05x_barsSinceHit = not na(bear05x_firstHitBar) ? rthBarCount - bear05x_firstHitBar : na
+
+// --- Bear 1x ---
+var int   bear1x_firstHitBar  = na
+var int   bear1x_barsAtTarget = 0
+bool      bear1x_touch        = inRTH and not na(bear1x) and low <= bear1x
+
+if newRTH
+    bear1x_firstHitBar  := na
+    bear1x_barsAtTarget := 0
+
+if bear1x_touch
+    if na(bear1x_firstHitBar)
+        bear1x_firstHitBar := rthBarCount
+    bear1x_barsAtTarget += 1
+
+int bear1x_barsSinceHit = not na(bear1x_firstHitBar) ? rthBarCount - bear1x_firstHitBar : na
+
+// --- Bear 2x ---
+var int   bear2x_firstHitBar  = na
+var int   bear2x_barsAtTarget = 0
+bool      bear2x_touch        = inRTH and not na(bear2x) and low <= bear2x
+
+if newRTH
+    bear2x_firstHitBar  := na
+    bear2x_barsAtTarget := 0
+
+if bear2x_touch
+    if na(bear2x_firstHitBar)
+        bear2x_firstHitBar := rthBarCount
+    bear2x_barsAtTarget += 1
+
+int bear2x_barsSinceHit = not na(bear2x_firstHitBar) ? rthBarCount - bear2x_firstHitBar : na
+
+// ============================================================================
+// LINE & LABEL DRAWING
+// ============================================================================
+
+bool drawLines = not highlightOnly
+
+drawTarget(bool condition, float price, color col, string txt, int barStart) =>
+    if condition and not na(price) and drawLines
+        ln = line.new(barStart, price, barStart + lineExtend, price, 
+             color=col, width=lineWidth, style=line.style_solid)
+        if showLabels
+            label.new(barStart + lineExtend, price, txt + "  " + str.tostring(price, format.mintick),
+                 color=color.new(color.white, 100), textcolor=col, 
+                 style=label.style_label_left, size=size.small)
+
+if newRTH and not na(yesterdayRange) and yesterdayRange > 0
+    bi = bar_index
+
+    // --- Bull Targets ---
+    if showBull and show05x
+        drawTarget(true, bull05x, colBull05x, "Bull 0.5x", bi)
+    if showBull and show1x
+        drawTarget(true, bull1x,  colBull1x,  "Bull 1x",   bi)
+    if showBull and show2x
+        drawTarget(true, bull2x,  colBull2x,  "Bull 2x",   bi)
+
+    // --- Bear Targets ---
+    if showBear and show05x
+        drawTarget(true, bear05x, colBear05x, "Bear 0.5x", bi)
+    if showBear and show1x
+        drawTarget(true, bear1x,  colBear1x,  "Bear 1x",   bi)
+    if showBear and show2x
+        drawTarget(true, bear2x,  colBear2x,  "Bear 2x",   bi)
+
+    // --- Yesterday's High / Low Reference ---
+    if showYestHL and drawLines
+        line.new(bi, yesterdayHigh, bi + lineExtend, yesterdayHigh,
+             color=colYestHigh, width=1, style=line.style_dotted)
+        line.new(bi, yesterdayLow,  bi + lineExtend, yesterdayLow,
+             color=colYestLow,  width=1, style=line.style_dotted)
+        if showLabels
+            label.new(bi + lineExtend, yesterdayHigh, "Yest H  " + str.tostring(yesterdayHigh, format.mintick),
+                 color=color.new(color.white, 100), textcolor=colYestHigh,
+                 style=label.style_label_left, size=size.tiny)
+            label.new(bi + lineExtend, yesterdayLow, "Yest L  " + str.tostring(yesterdayLow, format.mintick),
+                 color=color.new(color.white, 100), textcolor=colYestLow,
+                 style=label.style_label_left, size=size.tiny)
+
+// ============================================================================
+// BACKGROUND HIGHLIGHTS
+// ============================================================================
+// Yesterday's High/Low use a distinct purple/blue so they stand apart from MM targets
+
+bgcolor(highlightYestH and yesterdayH_touch ? color.new(#8B5CF6, 82) : na, title="Yest High Touch")
+bgcolor(highlightYestL and yesterdayL_touch ? color.new(#F59E0B, 82) : na, title="Yest Low Touch")
+
+bgcolor(highlight05x and bull05x_touch ? color.new(#059669, 88) : na, title="Bull 0.5x Touch")
+bgcolor(highlight1x  and bull1x_touch  ? color.new(#059669, 85) : na, title="Bull 1x Touch")
+bgcolor(highlight2x  and bull2x_touch  ? color.new(#059669, 80) : na, title="Bull 2x Touch")
+
+bgcolor(highlight05x and bear05x_touch ? color.new(#B91C1C, 88) : na, title="Bear 0.5x Touch")
+bgcolor(highlight1x  and bear1x_touch  ? color.new(#B91C1C, 85) : na, title="Bear 1x Touch")
+bgcolor(highlight2x  and bear2x_touch  ? color.new(#B91C1C, 80) : na, title="Bear 2x Touch")
+
+// ============================================================================
+// INFO TABLE (TOP RIGHT)
+// ============================================================================
+
+if showTable and barstate.islast
+    var table infoTbl = table.new(position.top_right, 4, 14, 
+         bgcolor=color.new(#1F2937, 5), border_color=color.new(#374151, 30), border_width=1)
+
+    // --- Header Row ---
+    table.cell(infoTbl, 0, 0, "Level",     text_color=color.gray, text_size=size.small, text_halign=text.align_left)
+    table.cell(infoTbl, 1, 0, "Price",     text_color=color.gray, text_size=size.small, text_halign=text.align_right)
+    table.cell(infoTbl, 2, 0, "1st Hit",   text_color=color.gray, text_size=size.small, text_halign=text.align_center)
+    table.cell(infoTbl, 3, 0, "# Bars",    text_color=color.gray, text_size=size.small, text_halign=text.align_center)
+
+    // --- Yesterday High ---
+    table.cell(infoTbl, 0, 1, "Yest High", text_color=#8B5CF6, text_size=size.small, text_halign=text.align_left)
+    table.cell(infoTbl, 1, 1, not na(yesterdayHigh) ? str.tostring(yesterdayHigh, format.mintick) : "—",
+         text_color=#8B5CF6, text_size=size.small, text_halign=text.align_right)
+    table.cell(infoTbl, 2, 1, not na(yestH_firstHitBar) ? "Bar " + str.tostring(yestH_firstHitBar) : "—",
+         text_color=not na(yestH_firstHitBar) ? #8B5CF6 : color.gray, text_size=size.small, text_halign=text.align_center)
+    table.cell(infoTbl, 3, 1, str.tostring(yestH_barsAtTarget),
+         text_color=yestH_barsAtTarget > 0 ? #8B5CF6 : color.gray, text_size=size.small, text_halign=text.align_center)
+
+    // --- Yesterday Low ---
+    table.cell(infoTbl, 0, 2, "Yest Low", text_color=#F59E0B, text_size=size.small, text_halign=text.align_left)
+    table.cell(infoTbl, 1, 2, not na(yesterdayLow) ? str.tostring(yesterdayLow, format.mintick) : "—",
+         text_color=#F59E0B, text_size=size.small, text_halign=text.align_right)
+    table.cell(infoTbl, 2, 2, not na(yestL_firstHitBar) ? "Bar " + str.tostring(yestL_firstHitBar) : "—",
+         text_color=not na(yestL_firstHitBar) ? #F59E0B : color.gray, text_size=size.small, text_halign=text.align_center)
+    table.cell(infoTbl, 3, 2, str.tostring(yestL_barsAtTarget),
+         text_color=yestL_barsAtTarget > 0 ? #F59E0B : color.gray, text_size=size.small, text_halign=text.align_center)
+
+    // --- Bull 0.5x ---
+    table.cell(infoTbl, 0, 3, "Bull 0.5x", text_color=colBull05x, text_size=size.small, text_halign=text.align_left)
+    table.cell(infoTbl, 1, 3, not na(bull05x) ? str.tostring(bull05x, format.mintick) : "—", 
+         text_color=colBull05x, text_size=size.small, text_halign=text.align_right)
+    table.cell(infoTbl, 2, 3, not na(bull05x_firstHitBar) ? "Bar " + str.tostring(bull05x_firstHitBar) : "—",
+         text_color=not na(bull05x_firstHitBar) ? color.green : color.gray, text_size=size.small, text_halign=text.align_center)
+    table.cell(infoTbl, 3, 3, str.tostring(bull05x_barsAtTarget),
+         text_color=bull05x_barsAtTarget > 0 ? color.green : color.gray, text_size=size.small, text_halign=text.align_center)
+
+    // --- Bull 1x ---
+    table.cell(infoTbl, 0, 4, "Bull 1x", text_color=colBull1x, text_size=size.small, text_halign=text.align_left)
+    table.cell(infoTbl, 1, 4, not na(bull1x) ? str.tostring(bull1x, format.mintick) : "—",
+         text_color=colBull1x, text_size=size.small, text_halign=text.align_right)
+    table.cell(infoTbl, 2, 4, not na(bull1x_firstHitBar) ? "Bar " + str.tostring(bull1x_firstHitBar) : "—",
+         text_color=not na(bull1x_firstHitBar) ? color.green : color.gray, text_size=size.small, text_halign=text.align_center)
+    table.cell(infoTbl, 3, 4, str.tostring(bull1x_barsAtTarget),
+         text_color=bull1x_barsAtTarget > 0 ? color.green : color.gray, text_size=size.small, text_halign=text.align_center)
+
+    // --- Bull 2x ---
+    table.cell(infoTbl, 0, 5, "Bull 2x", text_color=colBull2x, text_size=size.small, text_halign=text.align_left)
+    table.cell(infoTbl, 1, 5, not na(bull2x) ? str.tostring(bull2x, format.mintick) : "—",
+         text_color=colBull2x, text_size=size.small, text_halign=text.align_right)
+    table.cell(infoTbl, 2, 5, not na(bull2x_firstHitBar) ? "Bar " + str.tostring(bull2x_firstHitBar) : "—",
+         text_color=not na(bull2x_firstHitBar) ? color.green : color.gray, text_size=size.small, text_halign=text.align_center)
+    table.cell(infoTbl, 3, 5, str.tostring(bull2x_barsAtTarget),
+         text_color=bull2x_barsAtTarget > 0 ? color.green : color.gray, text_size=size.small, text_halign=text.align_center)
+
+    // --- Bear 0.5x ---
+    table.cell(infoTbl, 0, 6, "Bear 0.5x", text_color=colBear05x, text_size=size.small, text_halign=text.align_left)
+    table.cell(infoTbl, 1, 6, not na(bear05x) ? str.tostring(bear05x, format.mintick) : "—",
+         text_color=colBear05x, text_size=size.small, text_halign=text.align_right)
+    table.cell(infoTbl, 2, 6, not na(bear05x_firstHitBar) ? "Bar " + str.tostring(bear05x_firstHitBar) : "—",
+         text_color=not na(bear05x_firstHitBar) ? color.red : color.gray, text_size=size.small, text_halign=text.align_center)
+    table.cell(infoTbl, 3, 6, str.tostring(bear05x_barsAtTarget),
+         text_color=bear05x_barsAtTarget > 0 ? color.red : color.gray, text_size=size.small, text_halign=text.align_center)
+
+    // --- Bear 1x ---
+    table.cell(infoTbl, 0, 7, "Bear 1x", text_color=colBear1x, text_size=size.small, text_halign=text.align_left)
+    table.cell(infoTbl, 1, 7, not na(bear1x) ? str.tostring(bear1x, format.mintick) : "—",
+         text_color=colBear1x, text_size=size.small, text_halign=text.align_right)
+    table.cell(infoTbl, 2, 7, not na(bear1x_firstHitBar) ? "Bar " + str.tostring(bear1x_firstHitBar) : "—",
+         text_color=not na(bear1x_firstHitBar) ? color.red : color.gray, text_size=size.small, text_halign=text.align_center)
+    table.cell(infoTbl, 3, 7, str.tostring(bear1x_barsAtTarget),
+         text_color=bear1x_barsAtTarget > 0 ? color.red : color.gray, text_size=size.small, text_halign=text.align_center)
+
+    // --- Bear 2x ---
+    table.cell(infoTbl, 0, 8, "Bear 2x", text_color=colBear2x, text_size=size.small, text_halign=text.align_left)
+    table.cell(infoTbl, 1, 8, not na(bear2x) ? str.tostring(bear2x, format.mintick) : "—",
+         text_color=colBear2x, text_size=size.small, text_halign=text.align_right)
+    table.cell(infoTbl, 2, 8, not na(bear2x_firstHitBar) ? "Bar " + str.tostring(bear2x_firstHitBar) : "—",
+         text_color=not na(bear2x_firstHitBar) ? color.red : color.gray, text_size=size.small, text_halign=text.align_center)
+    table.cell(infoTbl, 3, 8, str.tostring(bear2x_barsAtTarget),
+         text_color=bear2x_barsAtTarget > 0 ? color.red : color.gray, text_size=size.small, text_halign=text.align_center)
+
+    // --- Spacer ---
+    table.cell(infoTbl, 0, 9, "", text_size=size.tiny)
+    table.cell(infoTbl, 1, 9, "", text_size=size.tiny)
+    table.cell(infoTbl, 2, 9, "", text_size=size.tiny)
+    table.cell(infoTbl, 3, 9, "", text_size=size.tiny)
+
+    // --- RTH Bar # ---
+    table.cell(infoTbl, 0, 10, "RTH Bar #", text_color=color.gray, text_size=size.small, text_halign=text.align_left)
+    table.cell(infoTbl, 1, 10, inRTH ? str.tostring(rthBarCount) + " / 81" : "—",
+         text_color=inRTH ? color.white : color.gray, text_size=size.small, text_halign=text.align_right)
+    table.cell(infoTbl, 2, 10, "", text_size=size.small)
+    table.cell(infoTbl, 3, 10, "", text_size=size.small)
+
+    // --- Yesterday's Range ---
+    table.cell(infoTbl, 0, 11, "Yest Range", text_color=color.gray, text_size=size.small, text_halign=text.align_left)
+    table.cell(infoTbl, 1, 11, not na(yesterdayRange) ? str.tostring(yesterdayRange, format.mintick) : "—",
+         text_color=color.white, text_size=size.small, text_halign=text.align_right)
+    table.cell(infoTbl, 2, 11, "", text_size=size.small)
+    table.cell(infoTbl, 3, 11, "", text_size=size.small)
+
+    // --- Yesterday's High / Low ---
+    table.cell(infoTbl, 0, 12, "Yest H / L", text_color=color.gray, text_size=size.small, text_halign=text.align_left)
+    table.cell(infoTbl, 1, 12, not na(yesterdayHigh) ? str.tostring(yesterdayHigh, format.mintick) + " / " + str.tostring(yesterdayLow, format.mintick) : "—",
+         text_color=color.white, text_size=size.small, text_halign=text.align_right)
+    table.cell(infoTbl, 2, 12, "", text_size=size.small)
+    table.cell(infoTbl, 3, 12, "", text_size=size.small)
+
+    // --- Mode indicator ---
+    table.cell(infoTbl, 0, 13, highlightOnly ? "HIGHLIGHT ONLY" : "", 
+         text_color=color.yellow, text_size=size.tiny, text_halign=text.align_left)
+    table.cell(infoTbl, 1, 13, "", text_size=size.tiny)
+    table.cell(infoTbl, 2, 13, "", text_size=size.tiny)
+    table.cell(infoTbl, 3, 13, "", text_size=size.tiny)
+
+// ============================================================================
+// DATA WINDOW EXPORTS
+// ============================================================================
+
+// --- Session & Bar Count ---
+plot(inRTH ? 1 : 0,     "In RTH",          display=display.data_window)
+plot(rthBarCount,        "RTH Bar #",       display=display.data_window)
+
+// --- Yesterday's Reference ---
+plot(yesterdayHigh,      "Yesterday High",  display=display.data_window)
+plot(yesterdayLow,       "Yesterday Low",   display=display.data_window)
+plot(yesterdayRange,     "Yesterday Range", display=display.data_window)
+
+// --- Target Levels ---
+plot(bull05x,            "Bull 0.5x",       display=display.data_window)
+plot(bull1x,             "Bull 1x",         display=display.data_window)
+plot(bull2x,             "Bull 2x",         display=display.data_window)
+plot(bear05x,            "Bear 0.5x",       display=display.data_window)
+plot(bear1x,             "Bear 1x",         display=display.data_window)
+plot(bear2x,             "Bear 2x",         display=display.data_window)
+
+// --- Yesterday High/Low Touch Tracking ---
+plot(yesterdayH_touch ? 1 : 0,  "Yest High Touch",          display=display.data_window)
+plot(yestH_firstHitBar,         "Yest High 1st Hit Bar",    display=display.data_window)
+plot(yestH_barsAtTarget,        "Yest High Bars@Target",    display=display.data_window)
+plot(yestH_barsSinceHit,        "Yest High Bars Since Hit", display=display.data_window)
+
+plot(yesterdayL_touch ? 1 : 0,  "Yest Low Touch",           display=display.data_window)
+plot(yestL_firstHitBar,         "Yest Low 1st Hit Bar",     display=display.data_window)
+plot(yestL_barsAtTarget,        "Yest Low Bars@Target",     display=display.data_window)
+plot(yestL_barsSinceHit,        "Yest Low Bars Since Hit",  display=display.data_window)
+
+// --- MM Touch Flags (1/0 per bar) ---
+plot(bull05x_touch ? 1 : 0, "Bull 0.5x Touch", display=display.data_window)
+plot(bull1x_touch  ? 1 : 0, "Bull 1x Touch",   display=display.data_window)
+plot(bull2x_touch  ? 1 : 0, "Bull 2x Touch",   display=display.data_window)
+plot(bear05x_touch ? 1 : 0, "Bear 0.5x Touch", display=display.data_window)
+plot(bear1x_touch  ? 1 : 0, "Bear 1x Touch",   display=display.data_window)
+plot(bear2x_touch  ? 1 : 0, "Bear 2x Touch",   display=display.data_window)
+
+// --- First Hit Bar ---
+plot(bull05x_firstHitBar,  "Bull 0.5x 1st Hit Bar", display=display.data_window)
+plot(bull1x_firstHitBar,   "Bull 1x 1st Hit Bar",   display=display.data_window)
+plot(bull2x_firstHitBar,   "Bull 2x 1st Hit Bar",   display=display.data_window)
+plot(bear05x_firstHitBar,  "Bear 0.5x 1st Hit Bar", display=display.data_window)
+plot(bear1x_firstHitBar,   "Bear 1x 1st Hit Bar",   display=display.data_window)
+plot(bear2x_firstHitBar,   "Bear 2x 1st Hit Bar",   display=display.data_window)
+
+// --- Bars at Target ---
+plot(bull05x_barsAtTarget, "Bull 0.5x Bars@Target", display=display.data_window)
+plot(bull1x_barsAtTarget,  "Bull 1x Bars@Target",   display=display.data_window)
+plot(bull2x_barsAtTarget,  "Bull 2x Bars@Target",   display=display.data_window)
+plot(bear05x_barsAtTarget, "Bear 0.5x Bars@Target", display=display.data_window)
+plot(bear1x_barsAtTarget,  "Bear 1x Bars@Target",   display=display.data_window)
+plot(bear2x_barsAtTarget,  "Bear 2x Bars@Target",   display=display.data_window)
+
+// --- Bars Since Hit ---
+plot(bull05x_barsSinceHit, "Bull 0.5x Bars Since Hit", display=display.data_window)
+plot(bull1x_barsSinceHit,  "Bull 1x Bars Since Hit",   display=display.data_window)
+plot(bull2x_barsSinceHit,  "Bull 2x Bars Since Hit",   display=display.data_window)
+plot(bear05x_barsSinceHit, "Bear 0.5x Bars Since Hit", display=display.data_window)
+plot(bear1x_barsSinceHit,  "Bear 1x Bars Since Hit",   display=display.data_window)
+plot(bear2x_barsSinceHit,  "Bear 2x Bars Since Hit",   display=display.data_window)
