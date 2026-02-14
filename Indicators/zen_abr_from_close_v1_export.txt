@@ -1,0 +1,253 @@
+//@version=5
+indicator("Zen ABR from Close v1 [Data Export]", overlay=true, max_lines_count=500)
+
+// ============================================================================
+// INPUTS
+// ============================================================================
+
+lookbackPeriod = input.int(8, "ABR Lookback Period", minval=1)
+emaLength      = input.int(21, "EMA Length", minval=1)
+
+// Visual target toggles
+matchDirection = input.bool(false, "Match Bar Direction", tooltip="Only show bull targets after bull bars, bear targets after bear bars. Doji bars show nothing.", group="Visual")
+show_bull_05   = input.bool(true,  "Bull 0.5× ABR", group="Bull Targets")
+show_bull_10   = input.bool(true,  "Bull 1.0× ABR", group="Bull Targets")
+show_bull_15   = input.bool(false, "Bull 1.5× ABR", group="Bull Targets")
+show_bull_20   = input.bool(false, "Bull 2.0× ABR", group="Bull Targets")
+show_bear_05   = input.bool(true,  "Bear 0.5× ABR", group="Bear Targets")
+show_bear_10   = input.bool(true,  "Bear 1.0× ABR", group="Bear Targets")
+show_bear_15   = input.bool(false, "Bear 1.5× ABR", group="Bear Targets")
+show_bear_20   = input.bool(false, "Bear 2.0× ABR", group="Bear Targets")
+
+// ============================================================================
+// AVERAGE BAR RANGE (ABR)
+// ============================================================================
+
+current_range        = high - low
+averageBarRange      = ta.sma(current_range, lookbackPeriod)
+priorAverageBarRange = averageBarRange[1]
+
+// ============================================================================
+// BAR CLASSIFICATION (Bull/Bear/Doji)
+// ============================================================================
+
+current_bbd = close > open ? 1 : close < open ? -1 : 0
+prior_bbd   = close[1] > open[1] ? 1 : close[1] < open[1] ? -1 : 0
+
+// ============================================================================
+// RANGES & MULTIPLES
+// ============================================================================
+
+prior_range      = high[1] - low[1]
+currentRangeXABR = averageBarRange > 0 ? current_range / averageBarRange : 0
+priorRangeXABR   = priorAverageBarRange > 0 ? prior_range / priorAverageBarRange : 0
+
+// ============================================================================
+// INTERNAL BAR STRENGTH (IBS)
+// ============================================================================
+
+current_ibs = current_range > 0 ? (close - low) / current_range : 0.5
+prior_ibs   = prior_range > 0 ? (close[1] - low[1]) / prior_range : 0.5
+
+// ============================================================================
+// BAR TYPE (1-6 CLASSIFICATION)
+// ============================================================================
+
+// 1 = BL NOL (Bull No Overlap: low > high[1])
+// 2 = BR NOL (Bear No Overlap: high < low[1])
+// 3 = Outside Bar (high >= high[1] AND low <= low[1])
+// 4 = Inside Bar (high <= high[1] AND low >= low[1])
+// 5 = Higher (high > high[1], doesn't meet other criteria)
+// 6 = Lower (low < low[1], doesn't meet other criteria)
+
+barType = low > high[1] ? 1 :
+     high < low[1] ? 2 :
+     (high >= high[1] and low <= low[1]) ? 3 :
+     (high <= high[1] and low >= low[1]) ? 4 :
+     high > high[1] ? 5 :
+     low < low[1] ? 6 : 0
+
+priorBarType = low[1] > high[2] ? 1 :
+     high[1] < low[2] ? 2 :
+     (high[1] >= high[2] and low[1] <= low[2]) ? 3 :
+     (high[1] <= high[2] and low[1] >= low[2]) ? 4 :
+     high[1] > high[2] ? 5 :
+     low[1] < low[2] ? 6 : 0
+
+// ============================================================================
+// GAP OPEN
+// ============================================================================
+
+gapOpen       = open < close[1] ? -1 : open > close[1] ? 1 : 0
+opengappoints = math.abs(open - close[1])
+opengappcabr  = averageBarRange > 0 ? (opengappoints / averageBarRange) * 100 : 0
+
+// ============================================================================
+// MEASURING GAPS
+// ============================================================================
+
+// Current bar vs prior bar
+bullish_gap = low > high[1]
+bearish_gap = high < low[1]
+measuring_gap = bullish_gap ? 1 : bearish_gap ? -1 : 0
+mg_bull_price = bullish_gap ? high[1] : na
+mg_bear_price = bearish_gap ? low[1] : na
+
+// Prior bar vs bar[2]
+prior_bullish_gap = low[1] > high[2]
+prior_bearish_gap = high[1] < low[2]
+prior_measuring_gap = prior_bullish_gap ? 1 : prior_bearish_gap ? -1 : 0
+prior_mg_bull_price = prior_bullish_gap ? high[2] : na
+prior_mg_bear_price = prior_bearish_gap ? low[2] : na
+
+// ============================================================================
+// EMA
+// ============================================================================
+
+emaValue = ta.ema(close, emaLength)
+
+// ============================================================================
+// ABR-FROM-CLOSE MEASURED MOVE TARGETS
+// ============================================================================
+
+float priorClose = close[1]
+
+// Bull targets (above prior close, using ABR as yardstick)
+float bull_05_target = priorClose + (0.5 * averageBarRange)
+float bull_10_target = priorClose + (1.0 * averageBarRange)
+float bull_15_target = priorClose + (1.5 * averageBarRange)
+float bull_20_target = priorClose + (2.0 * averageBarRange)
+
+// Bear targets (below prior close, using ABR as yardstick)
+float bear_05_target = priorClose - (0.5 * averageBarRange)
+float bear_10_target = priorClose - (1.0 * averageBarRange)
+float bear_15_target = priorClose - (1.5 * averageBarRange)
+float bear_20_target = priorClose - (2.0 * averageBarRange)
+
+// ============================================================================
+// HIT DETECTION
+// ============================================================================
+
+bull_05_hit = high >= bull_05_target
+bull_10_hit = high >= bull_10_target
+bull_15_hit = high >= bull_15_target
+bull_20_hit = high >= bull_20_target
+
+bear_05_hit = low <= bear_05_target
+bear_10_hit = low <= bear_10_target
+bear_15_hit = low <= bear_15_target
+bear_20_hit = low <= bear_20_target
+
+// ============================================================================
+// VISUAL TARGET LINES
+// ============================================================================
+
+bool priorBull = close[1] > open[1]
+bool priorBear = close[1] < open[1]
+bool showBull  = matchDirection ? priorBull : true
+bool showBear  = matchDirection ? priorBear : true
+
+// Blue for bull (lighter = closer, darker = bigger)
+color bull_05_col = color.new(#93C5FD, 40)
+color bull_10_col = color.new(#3B82F6, 20)
+color bull_15_col = color.new(#1D4ED8, 10)
+color bull_20_col = color.new(#1E3A8A, 0)
+
+// Red for bear (lighter = closer, darker = bigger)
+color bear_05_col = color.new(#FCA5A5, 40)
+color bear_10_col = color.new(#EF4444, 20)
+color bear_15_col = color.new(#DC2626, 10)
+color bear_20_col = color.new(#7F1D1D, 0)
+
+if showBull and show_bull_05
+    line.new(bar_index, bull_05_target, bar_index + 2, bull_05_target, color=bull_05_col, width=1)
+if showBull and show_bull_10
+    line.new(bar_index, bull_10_target, bar_index + 2, bull_10_target, color=bull_10_col, width=1)
+if showBull and show_bull_15
+    line.new(bar_index, bull_15_target, bar_index + 2, bull_15_target, color=bull_15_col, width=1)
+if showBull and show_bull_20
+    line.new(bar_index, bull_20_target, bar_index + 2, bull_20_target, color=bull_20_col, width=1)
+
+if showBear and show_bear_05
+    line.new(bar_index, bear_05_target, bar_index + 2, bear_05_target, color=bear_05_col, width=1)
+if showBear and show_bear_10
+    line.new(bar_index, bear_10_target, bar_index + 2, bear_10_target, color=bear_10_col, width=1)
+if showBear and show_bear_15
+    line.new(bar_index, bear_15_target, bar_index + 2, bear_15_target, color=bear_15_col, width=1)
+if showBear and show_bear_20
+    line.new(bar_index, bear_20_target, bar_index + 2, bear_20_target, color=bear_20_col, width=1)
+
+// ============================================================================
+// HIT MARKERS
+// ============================================================================
+
+plotshape(bull_05_hit, "Bull 0.5x ABR", shape.circle, location.abovebar, color.new(color.blue, 60), size=size.tiny)
+plotshape(bull_10_hit, "Bull 1x ABR", shape.circle, location.abovebar, color.blue, size=size.small)
+plotshape(bull_20_hit, "Bull 2x ABR", shape.circle, location.abovebar, color.new(color.blue, 0), size=size.normal)
+
+plotshape(bear_05_hit, "Bear 0.5x ABR", shape.circle, location.belowbar, color.new(color.red, 60), size=size.tiny)
+plotshape(bear_10_hit, "Bear 1x ABR", shape.circle, location.belowbar, color.red, size=size.small)
+plotshape(bear_20_hit, "Bear 2x ABR", shape.circle, location.belowbar, color.new(color.red, 0), size=size.normal)
+
+// ============================================================================
+// DATA WINDOW EXPORTS (for CSV/Excel)
+// ============================================================================
+
+// === ABR-FROM-CLOSE HIT FLAGS ===
+plot(bull_05_hit ? 1 : 0, "Bull 0.5x Hit", display=display.data_window)
+plot(bull_10_hit ? 1 : 0, "Bull 1x Hit", display=display.data_window)
+plot(bull_15_hit ? 1 : 0, "Bull 1.5x Hit", display=display.data_window)
+plot(bull_20_hit ? 1 : 0, "Bull 2x Hit", display=display.data_window)
+
+plot(bear_05_hit ? 1 : 0, "Bear 0.5x Hit", display=display.data_window)
+plot(bear_10_hit ? 1 : 0, "Bear 1x Hit", display=display.data_window)
+plot(bear_15_hit ? 1 : 0, "Bear 1.5x Hit", display=display.data_window)
+plot(bear_20_hit ? 1 : 0, "Bear 2x Hit", display=display.data_window)
+
+// === ABR-FROM-CLOSE TARGET LEVELS ===
+plot(bull_05_target, "Bull 0.5x Target", display=display.data_window)
+plot(bull_10_target, "Bull 1x Target", display=display.data_window)
+plot(bull_15_target, "Bull 1.5x Target", display=display.data_window)
+plot(bull_20_target, "Bull 2x Target", display=display.data_window)
+
+plot(bear_05_target, "Bear 0.5x Target", display=display.data_window)
+plot(bear_10_target, "Bear 1x Target", display=display.data_window)
+plot(bear_15_target, "Bear 1.5x Target", display=display.data_window)
+plot(bear_20_target, "Bear 2x Target", display=display.data_window)
+
+// === BAR CLASSIFICATION ===
+plot(current_bbd, "Bull/Bear/Doji", display=display.data_window)
+plot(prior_bbd, "Prior Bull/Bear/Doji", display=display.data_window)
+
+// === RANGES ===
+plot(current_range, "Current Range", display=display.data_window)
+plot(prior_range, "Prior Range", display=display.data_window)
+plot(averageBarRange, "ABR", display=display.data_window)
+plot(priorAverageBarRange, "Prior ABR", display=display.data_window)
+plot(currentRangeXABR, "Current Range X ABR", display=display.data_window)
+plot(priorRangeXABR, "Prior Range X ABR", display=display.data_window)
+
+// === INTERNAL BAR STRENGTH ===
+plot(current_ibs, "IBS", display=display.data_window)
+plot(prior_ibs, "Prior IBS", display=display.data_window)
+
+// === BAR TYPE (1-6) ===
+plot(barType, "Bar Type", display=display.data_window)
+plot(priorBarType, "Prior Bar Type", display=display.data_window)
+
+// === GAP OPEN ===
+plot(gapOpen, "Gap Open", display=display.data_window)
+plot(opengappoints, "Open Gap Points", display=display.data_window)
+plot(opengappcabr, "Open Gap % ABR", display=display.data_window)
+
+// === MEASURING GAPS ===
+plot(measuring_gap, "Measuring Gap", display=display.data_window)
+plot(mg_bull_price, "Measuring Gap Bull Price", display=display.data_window)
+plot(mg_bear_price, "Measuring Gap Bear Price", display=display.data_window)
+
+plot(prior_measuring_gap, "Prior Measuring Gap", display=display.data_window)
+plot(prior_mg_bull_price, "Prior MG Bull Price", display=display.data_window)
+plot(prior_mg_bear_price, "Prior MG Bear Price", display=display.data_window)
+
+// === EMA ===
+plot(emaValue, "EMA", display=display.data_window)
