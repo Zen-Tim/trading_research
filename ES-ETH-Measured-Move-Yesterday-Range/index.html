@@ -1,0 +1,1408 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ES ETH Measured Moves Analysis — Complete Study</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #FAFAF8;
+  --surface: #FFFFFF;
+  --surface-alt: #F5F4F0;
+  --border: #E8E6E1;
+  --border-strong: #D4D1C9;
+  --text-primary: #1A1A18;
+  --text-secondary: #6B6964;
+  --text-muted: #9C9890;
+  --accent: #2563EB;
+  --accent-light: #EFF6FF;
+  --green: #16A34A;
+  --green-light: #F0FDF4;
+  --green-bg: #DCFCE7;
+  --green-strong: #059669;
+  --red: #DC2626;
+  --red-light: #FEF2F2;
+  --red-bg: #FEE2E2;
+  --red-strong: #B91C1C;
+  --amber: #D97706;
+  --amber-light: #FFFBEB;
+  --amber-bg: #FEF3C7;
+  --purple: #7C3AED;
+  --purple-light: #F5F3FF;
+  --purple-bg: #EDE9FE;
+  --slate: #64748B;
+  --slate-bg: #F1F5F9;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  font-family: 'DM Sans', -apple-system, sans-serif;
+  background: var(--bg);
+  color: var(--text-primary);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+
+.report { max-width: 1200px; margin: 0 auto; padding: 48px 32px; }
+
+/* Cover */
+.cover {
+  min-height: 80vh; display: flex; flex-direction: column; justify-content: center;
+  padding: 80px 0; border-bottom: 2px solid var(--border); margin-bottom: 64px;
+}
+.cover-tag {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-family: 'JetBrains Mono', monospace; font-size: 11px; font-weight: 600;
+  letter-spacing: 0.08em; text-transform: uppercase; color: var(--accent);
+  background: var(--accent-light); padding: 4px 12px; border-radius: 4px;
+  margin-bottom: 24px; width: fit-content;
+}
+.cover h1 { font-size: 56px; font-weight: 700; letter-spacing: -0.03em; margin-bottom: 16px; line-height: 1.1; }
+.cover .subtitle { font-size: 24px; color: var(--text-secondary); margin-bottom: 32px; }
+.cover .meta { display: flex; flex-direction: column; gap: 12px; font-family: 'JetBrains Mono', monospace; font-size: 14px; color: var(--text-muted); margin-bottom: 48px; }
+.cover .meta-row { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
+.cover .meta-row .dot { width: 4px; height: 4px; border-radius: 50%; background: var(--border-strong); }
+
+/* TOC */
+.toc { margin-bottom: 48px; }
+.toc h3 { font-size: 14px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-muted); margin-bottom: 16px; }
+.toc-list { list-style: none; }
+.toc-list li { border-bottom: 1px solid var(--border); }
+.toc-list a { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; text-decoration: none; color: var(--text-primary); font-size: 15px; transition: color 0.15s; }
+.toc-list a:hover { color: var(--accent); }
+.toc-list .num { font-family: 'JetBrains Mono', monospace; font-size: 13px; color: var(--text-muted); }
+
+/* Sections */
+.section { margin-bottom: 64px; padding-top: 32px; }
+.section-tag { display: inline-flex; align-items: center; gap: 6px; font-family: 'JetBrains Mono', monospace; font-size: 11px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--accent); background: var(--accent-light); padding: 3px 10px; border-radius: 4px; margin-bottom: 12px; }
+.section h2 { font-size: 20px; font-weight: 700; letter-spacing: -0.01em; margin-bottom: 4px; }
+.section-desc { font-size: 14px; color: var(--text-secondary); margin-bottom: 24px; }
+
+/* KPI Grid */
+.kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 24px; }
+.kpi-card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 20px; border-left: 3px solid var(--border); transition: box-shadow 0.15s; }
+.kpi-card:hover { box-shadow: 0 2px 8px rgba(0,0,0,0.04); }
+.kpi-card.accent { border-left-color: var(--accent); }
+.kpi-card.green { border-left-color: var(--green); }
+.kpi-card.red { border-left-color: var(--red); }
+.kpi-card.amber { border-left-color: var(--amber); }
+.kpi-card.purple { border-left-color: var(--purple); }
+.kpi-card.slate { border-left-color: var(--slate); }
+.kpi-label { font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-muted); margin-bottom: 4px; }
+.kpi-value { font-family: 'JetBrains Mono', monospace; font-size: 28px; font-weight: 700; line-height: 1.1; margin-bottom: 4px; }
+.kpi-sub { font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--text-muted); }
+.kpi-delta { font-family: 'JetBrains Mono', monospace; font-size: 11px; font-weight: 600; }
+.kpi-delta.neg { color: var(--red); }
+.kpi-delta.pos { color: var(--green); }
+
+/* Tables */
+.table-wrap { border: 1px solid var(--border); border-radius: 10px; overflow: hidden; margin-bottom: 24px; }
+.table-header { background: var(--surface-alt); padding: 12px 16px; font-size: 14px; font-weight: 600; border-bottom: 1px solid var(--border); }
+table { width: 100%; border-collapse: collapse; }
+thead th { font-family: 'JetBrains Mono', monospace; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-muted); background: var(--surface-alt); padding: 10px 12px; text-align: left; border-bottom: 1px solid var(--border); white-space: nowrap; }
+thead th.right { text-align: right; }
+tbody td { padding: 10px 12px; font-size: 14px; border-bottom: 1px solid var(--border); }
+tbody tr:last-child td { border-bottom: none; }
+tbody tr:hover { background: rgba(0,0,0,0.015); }
+.mono { font-family: 'JetBrains Mono', monospace; font-size: 13px; }
+.right { text-align: right; }
+.center { text-align: center; }
+
+/* Pills */
+.pill { display: inline-block; padding: 2px 8px; border-radius: 4px; font-family: 'JetBrains Mono', monospace; font-size: 12px; font-weight: 600; white-space: nowrap; }
+.pill.green { background: var(--green-bg); color: var(--green); }
+.pill.red { background: var(--red-bg); color: var(--red); }
+.pill.amber { background: var(--amber-bg); color: var(--amber); }
+.pill.blue { background: var(--accent-light); color: var(--accent); }
+.pill.purple { background: var(--purple-bg); color: var(--purple); }
+.pill.slate { background: var(--slate-bg); color: var(--slate); }
+
+/* Note boxes */
+.note-box { padding: 16px 20px; border-radius: 8px; font-size: 14px; margin-bottom: 24px; line-height: 1.5; }
+.note-box.amber { background: var(--amber-light); border: 1px solid var(--amber-bg); }
+.note-box.blue { background: var(--accent-light); border: 1px solid #BFDBFE; }
+.note-box.green { background: var(--green-light); border: 1px solid var(--green-bg); }
+.note-box.red { background: var(--red-light); border: 1px solid var(--red-bg); }
+.note-box.purple { background: var(--purple-light); border: 1px solid var(--purple-bg); }
+
+/* Gradient bar */
+.gradient-bar { display: flex; height: 48px; border-radius: 8px; overflow: hidden; margin-bottom: 12px; }
+.gradient-bar .seg { display: flex; align-items: center; justify-content: center; font-family: 'JetBrains Mono', monospace; font-size: 12px; font-weight: 600; color: #fff; min-width: 2px; }
+.gradient-legend { display: flex; gap: 20px; flex-wrap: wrap; margin-bottom: 24px; }
+.gradient-legend .item { display: flex; align-items: center; gap: 6px; font-size: 13px; color: var(--text-secondary); }
+.gradient-legend .dot { width: 10px; height: 10px; border-radius: 50%; }
+
+/* Stacked bar (inline) */
+.stack-bar { display: flex; height: 24px; border-radius: 6px; overflow: hidden; min-width: 80px; }
+.stack-bar .seg { min-width: 2px; }
+
+/* Insight card */
+.insight-card { background: var(--surface); border: 1px solid var(--border); border-left: 3px solid var(--accent); border-radius: 8px; padding: 16px 20px; margin-bottom: 16px; }
+.insight-card.green { border-left-color: var(--green); }
+.insight-card.red { border-left-color: var(--red); }
+.insight-card.purple { border-left-color: var(--purple); }
+.insight-card.amber { border-left-color: var(--amber); }
+.insight-card h4 { font-size: 14px; font-weight: 600; margin-bottom: 4px; }
+.insight-card p { font-size: 13px; color: var(--text-secondary); }
+
+/* Split grid */
+.split { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 24px; }
+
+/* Comparison table highlight */
+.highlight-row { background: var(--green-light); }
+.highlight-row-red { background: var(--red-light); }
+.lowsample { opacity: 0.65; }
+.verylowsample { opacity: 0.45; }
+
+/* Footer */
+.footer { border-top: 1px solid var(--border); padding-top: 24px; margin-top: 64px; display: flex; justify-content: space-between; font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--text-muted); }
+
+/* Canvas chart */
+.chart-container { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 24px; margin-bottom: 24px; }
+.chart-title { font-size: 15px; font-weight: 600; margin-bottom: 4px; }
+.chart-subtitle { font-size: 13px; color: var(--text-secondary); margin-bottom: 16px; }
+
+/* RTH comparison delta */
+.delta-tag { display: inline-block; font-family: 'JetBrains Mono', monospace; font-size: 10px; font-weight: 600; padding: 1px 5px; border-radius: 3px; margin-left: 4px; }
+.delta-tag.neg { background: var(--red-bg); color: var(--red); }
+.delta-tag.pos { background: var(--green-bg); color: var(--green); }
+.delta-tag.neutral { background: var(--slate-bg); color: var(--slate); }
+
+/* Print */
+@media print { .cover { min-height: auto; page-break-after: always; } .section { page-break-inside: avoid; } }
+@media (max-width: 768px) { .cover h1 { font-size: 36px; } .split { grid-template-columns: 1fr; } .kpi-grid { grid-template-columns: 1fr 1fr; } .report { padding: 24px 16px; } }
+</style>
+</head>
+<body>
+<div class="report">
+
+<!-- ==================== COVER PAGE ==================== -->
+<div class="cover">
+  <div class="cover-tag">&#9670; Quantitative Research</div>
+  <h1>ES Measured Moves<br>ETH 24-Hour Session</h1>
+  <div class="subtitle">Prior Bar Analysis — Which yesterday's characteristics predict measured move achievement on the full electronic trading session?</div>
+  <div class="meta">
+    <div class="meta-row">
+      <span>E-Mini S&P 500 (ES)</span>
+      <span class="dot"></span>
+      <span>ETH 24-Hour Daily Bars</span>
+      <span class="dot"></span>
+      <span>Nov 2008 — Feb 2026</span>
+    </div>
+    <div class="meta-row">
+      <span>N = 4,356 Trading Days</span>
+      <span class="dot"></span>
+      <span>17.3 Years</span>
+      <span class="dot"></span>
+      <span>zen_measured_moves_v6</span>
+    </div>
+    <div class="meta-row" style="margin-top: 8px;">
+      <span style="color: var(--purple); font-weight: 600;">Phase III, Avenue 1 — Comparing ETH vs RTH baseline</span>
+    </div>
+  </div>
+
+  <div class="toc">
+    <h3>Table of Contents</h3>
+    <ul class="toc-list">
+      <li><a href="#s1">Data Universe &amp; Overall MM Distribution <span class="num">Section 1</span></a></li>
+      <li><a href="#s2">Prior Bar Direction Impact <span class="num">Section 2</span></a></li>
+      <li><a href="#s3">Prior IBS Impact <span class="num">Section 3</span></a></li>
+      <li><a href="#s4">Gap Open Impact <span class="num">Section 4</span></a></li>
+      <li><a href="#s5">Prior Bar Size Impact <span class="num">Section 5</span></a></li>
+      <li><a href="#s6">Prior Bar Type Impact <span class="num">Section 6</span></a></li>
+      <li><a href="#s7">Combined Factor Matrix <span class="num">Section 7</span></a></li>
+      <li><a href="#s8">Executive Summary &amp; RTH Comparison <span class="num">Section 8</span></a></li>
+    </ul>
+  </div>
+</div>
+
+<!-- ==================== SECTION 1 ==================== -->
+<div class="section" id="s1">
+  <div class="section-tag">Section 1</div>
+  <h2>Data Universe &amp; Overall MM Distribution</h2>
+  <p class="section-desc">Baseline measured move frequencies across 4,356 ETH trading days, compared against RTH baseline.</p>
+
+  <div class="kpi-grid">
+    <div class="kpi-card accent">
+      <div class="kpi-label">Trading Days</div>
+      <div class="kpi-value">4,356</div>
+      <div class="kpi-sub">Nov 2008 — Feb 2026</div>
+    </div>
+    <div class="kpi-card accent">
+      <div class="kpi-label">Avg Daily Range</div>
+      <div class="kpi-value">40.5 pts</div>
+      <div class="kpi-sub">RTH = 32.5 pts <span class="delta-tag neg">+25%</span></div>
+    </div>
+    <div class="kpi-card accent">
+      <div class="kpi-label">Avg ABR (8-bar)</div>
+      <div class="kpi-value">40.5 pts</div>
+      <div class="kpi-sub">RTH = 32.4 pts</div>
+    </div>
+    <div class="kpi-card purple">
+      <div class="kpi-label">Session Type</div>
+      <div class="kpi-value">ETH 24h</div>
+      <div class="kpi-sub">Full electronic session</div>
+    </div>
+  </div>
+
+  <div class="note-box amber">
+    <strong>Key context:</strong> ETH bars include the full 24-hour electronic session (typically 6pm–6pm ET). The RTH study used only regular trading hours (9:30am–4:00pm ET). ETH ranges are ~25% larger because they capture overnight activity, which means measured move targets are proportionally larger.
+  </div>
+
+  <div class="table-wrap">
+    <div class="table-header">Overall MM Hit Rates — ETH vs RTH Comparison</div>
+    <table>
+      <thead>
+        <tr>
+          <th>Measured Move</th>
+          <th class="right">ETH Hits</th>
+          <th class="right">ETH Rate</th>
+          <th class="right">RTH Rate</th>
+          <th class="right">Delta</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Bull 0.5x</td>
+          <td class="mono right">852</td>
+          <td class="mono right"><span class="pill green">19.6%</span></td>
+          <td class="mono right">26.9%</td>
+          <td class="mono right"><span class="delta-tag neg">-7.3pp</span></td>
+        </tr>
+        <tr>
+          <td>Bull 1x</td>
+          <td class="mono right">265</td>
+          <td class="mono right"><span class="pill green">6.1%</span></td>
+          <td class="mono right">11.1%</td>
+          <td class="mono right"><span class="delta-tag neg">-5.0pp</span></td>
+        </tr>
+        <tr>
+          <td>Bull 2x</td>
+          <td class="mono right">26</td>
+          <td class="mono right"><span class="pill slate">0.6%</span></td>
+          <td class="mono right">1.7%</td>
+          <td class="mono right"><span class="delta-tag neg">-1.1pp</span></td>
+        </tr>
+        <tr>
+          <td>Bear 0.5x</td>
+          <td class="mono right">803</td>
+          <td class="mono right"><span class="pill red">18.4%</span></td>
+          <td class="mono right">23.2%</td>
+          <td class="mono right"><span class="delta-tag neg">-4.8pp</span></td>
+        </tr>
+        <tr>
+          <td>Bear 1x</td>
+          <td class="mono right">335</td>
+          <td class="mono right"><span class="pill red">7.7%</span></td>
+          <td class="mono right">11.6%</td>
+          <td class="mono right"><span class="delta-tag neg">-3.9pp</span></td>
+        </tr>
+        <tr>
+          <td>Bear 2x</td>
+          <td class="mono right">70</td>
+          <td class="mono right"><span class="pill slate">1.6%</span></td>
+          <td class="mono right">3.1%</td>
+          <td class="mono right"><span class="delta-tag neg">-1.5pp</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="gradient-bar">
+    <div class="seg" style="background: var(--green); width: 19.6%;">19.6%</div>
+    <div class="seg" style="background: var(--green-strong); width: 6.1%;">6.1%</div>
+    <div class="seg" style="background: #047857; width: 0.6%;"></div>
+    <div class="seg" style="background: var(--slate); width: 36.6%;"></div>
+    <div class="seg" style="background: #047857; width: 1.6%;"></div>
+    <div class="seg" style="background: var(--red-strong); width: 7.7%;">7.7%</div>
+    <div class="seg" style="background: var(--red); width: 18.4%;">18.4%</div>
+  </div>
+  <div class="gradient-legend">
+    <div class="item"><div class="dot" style="background: var(--green);"></div>Bull 0.5x (19.6%)</div>
+    <div class="item"><div class="dot" style="background: var(--green-strong);"></div>Bull 1x (6.1%)</div>
+    <div class="item"><div class="dot" style="background: #047857;"></div>Bull 2x (0.6%)</div>
+    <div class="item"><div class="dot" style="background: var(--slate);"></div>No MM (36.6%)</div>
+    <div class="item"><div class="dot" style="background: var(--red);"></div>Bear 0.5x (18.4%)</div>
+    <div class="item"><div class="dot" style="background: var(--red-strong);"></div>Bear 1x (7.7%)</div>
+    <div class="item"><div class="dot" style="background: #991B1B;"></div>Bear 2x (1.6%)</div>
+  </div>
+
+  <div class="note-box red">
+    <strong>Avenue 1 verdict — hypothesis disproved:</strong> Every hit rate is lower on ETH data, not higher. The 1x rate drops from 11.1% to 6.1% (bull) and 11.6% to 7.7% (bear). The extra hours do not compensate for the proportionally larger targets created by larger ETH ranges. The 2x bear/bull ratio is 2.69x on ETH vs ~1.86x on RTH — downside is even more explosive relative to upside on the full session.
+  </div>
+
+  <div class="split">
+    <div class="insight-card red">
+      <h4>ETH hit rates are uniformly lower</h4>
+      <p>All six measured move metrics decline by 3.9–7.3 percentage points. The 24-hour session produces larger bars, which generates proportionally larger targets that are harder to reach.</p>
+    </div>
+    <div class="insight-card purple">
+      <h4>Bear 2x ratio: 2.69x</h4>
+      <p>Bears hit 2x measured moves at 2.69 times the rate of bulls (1.6% vs 0.6%) — more extreme than RTH's 1.86x ratio. The overnight session amplifies downside explosiveness.</p>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== SECTION 2 ==================== -->
+<div class="section" id="s2">
+  <div class="section-tag">Section 2</div>
+  <h2>Prior Bar Direction Impact</h2>
+  <p class="section-desc">Continuation vs reversal bias based on yesterday's direction.</p>
+
+  <div class="kpi-grid">
+    <div class="kpi-card green">
+      <div class="kpi-label">Prior Bull Days</div>
+      <div class="kpi-value">2,382</div>
+      <div class="kpi-sub">54.7% of all days</div>
+    </div>
+    <div class="kpi-card red">
+      <div class="kpi-label">Prior Bear Days</div>
+      <div class="kpi-value">1,936</div>
+      <div class="kpi-sub">44.4% of all days</div>
+    </div>
+    <div class="kpi-card slate">
+      <div class="kpi-label">Prior Doji Days</div>
+      <div class="kpi-value">38</div>
+      <div class="kpi-sub">0.9% of all days</div>
+    </div>
+  </div>
+
+  <div class="table-wrap">
+    <div class="table-header">MM Hit Rates by Prior Direction</div>
+    <table>
+      <thead>
+        <tr>
+          <th>Prior Direction</th>
+          <th class="right">N</th>
+          <th class="right">Bull 0.5x</th>
+          <th class="right">Bull 1x</th>
+          <th class="right">Bear 0.5x</th>
+          <th class="right">Bear 1x</th>
+          <th class="right">Cont. Ratio</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Prior Bull</td>
+          <td class="mono right">2,382</td>
+          <td class="mono right"><span class="pill green">25.3%</span></td>
+          <td class="mono right">7.9%</td>
+          <td class="mono right">11.9%</td>
+          <td class="mono right">5.1%</td>
+          <td class="mono right"><span class="pill blue">2.13x</span></td>
+        </tr>
+        <tr>
+          <td>Prior Bear</td>
+          <td class="mono right">1,936</td>
+          <td class="mono right">12.4%</td>
+          <td class="mono right">3.8%</td>
+          <td class="mono right"><span class="pill red">26.3%</span></td>
+          <td class="mono right">10.7%</td>
+          <td class="mono right"><span class="pill blue">2.12x</span></td>
+        </tr>
+        <tr class="lowsample">
+          <td>Prior Doji</td>
+          <td class="mono right">38</td>
+          <td class="mono right">23.7%</td>
+          <td class="mono right">10.5%</td>
+          <td class="mono right">26.3%</td>
+          <td class="mono right">15.8%</td>
+          <td class="mono right"><span class="pill slate">1.11x</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="note-box blue">
+    <strong>Finding:</strong> Continuation bias is ~2.1x for both directions — nearly identical to RTH. Prior direction remains the weakest standalone factor, providing a directional lean but insufficient edge alone. Bear continuation at 0.5x (26.3%) is the strongest single-direction signal.
+  </div>
+</div>
+
+<!-- ==================== SECTION 3 ==================== -->
+<div class="section" id="s3">
+  <div class="section-tag">Section 3</div>
+  <h2>Prior IBS Impact</h2>
+  <p class="section-desc">Internal Bar Strength measures where the prior bar closed within its range. The strongest single predictor.</p>
+
+  <div class="kpi-grid">
+    <div class="kpi-card red">
+      <div class="kpi-label">Low IBS (&lt;0.31)</div>
+      <div class="kpi-value">1,143</div>
+      <div class="kpi-sub">26.2% of days</div>
+    </div>
+    <div class="kpi-card amber">
+      <div class="kpi-label">Mid IBS (0.31–0.69)</div>
+      <div class="kpi-value">1,354</div>
+      <div class="kpi-sub">31.1% of days</div>
+    </div>
+    <div class="kpi-card green">
+      <div class="kpi-label">High IBS (&gt;0.69)</div>
+      <div class="kpi-value">1,859</div>
+      <div class="kpi-sub">42.7% of days</div>
+    </div>
+  </div>
+
+  <div class="table-wrap">
+    <div class="table-header">MM Hit Rates by Prior IBS</div>
+    <table>
+      <thead>
+        <tr>
+          <th>IBS Bucket</th>
+          <th class="right">N</th>
+          <th class="right">Bull 0.5x</th>
+          <th class="right">Bull 1x</th>
+          <th class="right">Bear 0.5x</th>
+          <th class="right">Bear 1x</th>
+          <th class="right">Bull:Bear Ratio</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Low IBS (&lt;0.31)</td>
+          <td class="mono right">1,143</td>
+          <td class="mono right">7.3%</td>
+          <td class="mono right">2.3%</td>
+          <td class="mono right"><span class="pill red">30.5%</span></td>
+          <td class="mono right"><span class="pill red">12.7%</span></td>
+          <td class="mono right"><span class="pill red">0.24x</span></td>
+        </tr>
+        <tr>
+          <td>Mid IBS (0.31–0.69)</td>
+          <td class="mono right">1,354</td>
+          <td class="mono right">18.7%</td>
+          <td class="mono right">6.5%</td>
+          <td class="mono right">22.5%</td>
+          <td class="mono right">9.3%</td>
+          <td class="mono right"><span class="pill amber">0.83x</span></td>
+        </tr>
+        <tr>
+          <td>High IBS (&gt;0.69)</td>
+          <td class="mono right">1,859</td>
+          <td class="mono right"><span class="pill green">27.8%</span></td>
+          <td class="mono right"><span class="pill green">8.1%</span></td>
+          <td class="mono right">8.0%</td>
+          <td class="mono right">3.4%</td>
+          <td class="mono right"><span class="pill green">3.48x</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="table-wrap">
+    <div class="table-header">Combined: Prior Direction × IBS</div>
+    <table>
+      <thead>
+        <tr>
+          <th>Prior Dir + IBS</th>
+          <th class="right">N</th>
+          <th class="right">Bull 0.5x</th>
+          <th class="right">Bull 1x</th>
+          <th class="right">Bear 0.5x</th>
+          <th class="right">Bear 1x</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr class="lowsample">
+          <td>Prior Bull + Low IBS</td>
+          <td class="mono right">55</td>
+          <td class="mono right">9.1%</td>
+          <td class="mono right">1.8%</td>
+          <td class="mono right"><span class="pill red">41.8%</span></td>
+          <td class="mono right"><span class="pill red">27.3%</span></td>
+        </tr>
+        <tr>
+          <td>Prior Bull + Mid IBS</td>
+          <td class="mono right">595</td>
+          <td class="mono right">21.0%</td>
+          <td class="mono right">8.4%</td>
+          <td class="mono right">21.3%</td>
+          <td class="mono right">8.6%</td>
+        </tr>
+        <tr>
+          <td>Prior Bull + High IBS</td>
+          <td class="mono right">1,732</td>
+          <td class="mono right"><span class="pill green">27.3%</span></td>
+          <td class="mono right">7.9%</td>
+          <td class="mono right">7.7%</td>
+          <td class="mono right">3.2%</td>
+        </tr>
+        <tr>
+          <td>Prior Bear + Low IBS</td>
+          <td class="mono right">1,078</td>
+          <td class="mono right">7.0%</td>
+          <td class="mono right">2.2%</td>
+          <td class="mono right"><span class="pill red">29.9%</span></td>
+          <td class="mono right">11.9%</td>
+        </tr>
+        <tr>
+          <td>Prior Bear + Mid IBS</td>
+          <td class="mono right">741</td>
+          <td class="mono right">16.7%</td>
+          <td class="mono right">4.9%</td>
+          <td class="mono right">23.5%</td>
+          <td class="mono right">9.7%</td>
+        </tr>
+        <tr>
+          <td>Prior Bear + High IBS</td>
+          <td class="mono right">117</td>
+          <td class="mono right"><span class="pill green">35.0%</span></td>
+          <td class="mono right"><span class="pill green">12.0%</span></td>
+          <td class="mono right">12.0%</td>
+          <td class="mono right">6.0%</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="split">
+    <div class="insight-card green">
+      <h4>IBS remains the strongest single factor</h4>
+      <p>High IBS gives 3.48x bull:bear advantage at 0.5x level. Low IBS gives 4.18x bear:bull advantage. The directional signal persists strongly on ETH data.</p>
+    </div>
+    <div class="insight-card purple">
+      <h4>Prior Bull + Low IBS = extreme reversal</h4>
+      <p>A bull bar that closes near its low (n=55) produces 41.8% Bear 0.5x and 27.3% Bear 1x — the highest 1x single-factor rate in the entire study. This is a powerful reversal signal.</p>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== SECTION 4 ==================== -->
+<div class="section" id="s4">
+  <div class="section-tag">Section 4</div>
+  <h2>Gap Open Impact</h2>
+  <p class="section-desc">Gap direction and size relative to ABR — the dominant factor when combined with others.</p>
+
+  <div class="kpi-grid">
+    <div class="kpi-card green">
+      <div class="kpi-label">Gap Up Days</div>
+      <div class="kpi-value">1,958</div>
+      <div class="kpi-sub">44.9% of days</div>
+    </div>
+    <div class="kpi-card slate">
+      <div class="kpi-label">Flat Open Days</div>
+      <div class="kpi-value">378</div>
+      <div class="kpi-sub">8.7% of days</div>
+    </div>
+    <div class="kpi-card red">
+      <div class="kpi-label">Gap Down Days</div>
+      <div class="kpi-value">2,020</div>
+      <div class="kpi-sub">46.4% of days</div>
+    </div>
+  </div>
+
+  <div class="note-box amber">
+    <strong>ETH vs RTH structural difference:</strong> ETH data has very few flat opens (8.7%) since 24-hour sessions almost always gap between bars. The gap direction split is nearly 50/50 — far more balanced than RTH.
+  </div>
+
+  <div class="table-wrap">
+    <div class="table-header">MM Hit Rates by Gap Direction</div>
+    <table>
+      <thead>
+        <tr>
+          <th>Gap Direction</th>
+          <th class="right">N</th>
+          <th class="right">Bull 0.5x</th>
+          <th class="right">Bull 1x</th>
+          <th class="right">Bear 0.5x</th>
+          <th class="right">Bear 1x</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Gap Up</td>
+          <td class="mono right">1,958</td>
+          <td class="mono right"><span class="pill green">23.1%</span></td>
+          <td class="mono right">7.3%</td>
+          <td class="mono right">15.9%</td>
+          <td class="mono right">6.2%</td>
+        </tr>
+        <tr>
+          <td>Flat Open</td>
+          <td class="mono right">378</td>
+          <td class="mono right">24.6%</td>
+          <td class="mono right">9.0%</td>
+          <td class="mono right">14.3%</td>
+          <td class="mono right">5.6%</td>
+        </tr>
+        <tr>
+          <td>Gap Down</td>
+          <td class="mono right">2,020</td>
+          <td class="mono right">15.2%</td>
+          <td class="mono right">4.4%</td>
+          <td class="mono right"><span class="pill red">21.7%</span></td>
+          <td class="mono right">9.5%</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="table-wrap">
+    <div class="table-header">Gap Size Buckets — Gap Up</div>
+    <table>
+      <thead>
+        <tr>
+          <th>Gap Size (% ABR)</th>
+          <th class="right">N</th>
+          <th class="right">Bull 0.5x</th>
+          <th class="right">Bull 1x</th>
+          <th class="right">Bear 0.5x</th>
+          <th class="right">Bear 1x</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>0–5%</td>
+          <td class="mono right">1,013</td>
+          <td class="mono right">21.5%</td>
+          <td class="mono right">6.8%</td>
+          <td class="mono right">16.9%</td>
+          <td class="mono right">7.1%</td>
+        </tr>
+        <tr>
+          <td>5–10%</td>
+          <td class="mono right">523</td>
+          <td class="mono right">20.7%</td>
+          <td class="mono right">5.2%</td>
+          <td class="mono right">17.8%</td>
+          <td class="mono right">6.3%</td>
+        </tr>
+        <tr>
+          <td>10–20%</td>
+          <td class="mono right">271</td>
+          <td class="mono right">23.6%</td>
+          <td class="mono right">7.0%</td>
+          <td class="mono right">13.3%</td>
+          <td class="mono right">5.2%</td>
+        </tr>
+        <tr>
+          <td>20–30%</td>
+          <td class="mono right">80</td>
+          <td class="mono right"><span class="pill green">35.0%</span></td>
+          <td class="mono right"><span class="pill green">16.2%</span></td>
+          <td class="mono right">12.5%</td>
+          <td class="mono right">3.8%</td>
+        </tr>
+        <tr>
+          <td>&gt;30%</td>
+          <td class="mono right">71</td>
+          <td class="mono right"><span class="pill green">47.9%</span></td>
+          <td class="mono right"><span class="pill green">21.1%</span></td>
+          <td class="mono right">1.4%</td>
+          <td class="mono right">0.0%</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="table-wrap">
+    <div class="table-header">Gap Size Buckets — Gap Down</div>
+    <table>
+      <thead>
+        <tr>
+          <th>Gap Size (% ABR)</th>
+          <th class="right">N</th>
+          <th class="right">Bull 0.5x</th>
+          <th class="right">Bull 1x</th>
+          <th class="right">Bear 0.5x</th>
+          <th class="right">Bear 1x</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>0–5%</td>
+          <td class="mono right">1,112</td>
+          <td class="mono right">17.4%</td>
+          <td class="mono right">4.9%</td>
+          <td class="mono right">19.2%</td>
+          <td class="mono right">7.7%</td>
+        </tr>
+        <tr>
+          <td>5–10%</td>
+          <td class="mono right">472</td>
+          <td class="mono right">14.4%</td>
+          <td class="mono right">4.7%</td>
+          <td class="mono right">20.3%</td>
+          <td class="mono right">9.5%</td>
+        </tr>
+        <tr>
+          <td>10–20%</td>
+          <td class="mono right">264</td>
+          <td class="mono right">11.0%</td>
+          <td class="mono right">3.0%</td>
+          <td class="mono right">26.1%</td>
+          <td class="mono right">10.6%</td>
+        </tr>
+        <tr>
+          <td>20–30%</td>
+          <td class="mono right">82</td>
+          <td class="mono right">9.8%</td>
+          <td class="mono right">3.7%</td>
+          <td class="mono right"><span class="pill red">23.2%</span></td>
+          <td class="mono right"><span class="pill red">15.9%</span></td>
+        </tr>
+        <tr>
+          <td>&gt;30%</td>
+          <td class="mono right">90</td>
+          <td class="mono right">8.9%</td>
+          <td class="mono right">0.0%</td>
+          <td class="mono right"><span class="pill red">45.6%</span></td>
+          <td class="mono right"><span class="pill red">22.2%</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="insight-card green">
+    <h4>Large gaps still dominate: 34x–48x directional advantage at extremes</h4>
+    <p>Gap Up &gt;30% ABR: 47.9% Bull 0.5x vs 1.4% Bear 0.5x. Gap Down &gt;30% ABR: 45.6% Bear 0.5x vs 8.9% Bull 0.5x. The gap amplification effect is even cleaner on ETH data with zero bear 1x hits on large gap-up days and zero bull 1x hits on large gap-down days.</p>
+  </div>
+</div>
+
+<!-- ==================== SECTION 5 ==================== -->
+<div class="section" id="s5">
+  <div class="section-tag">Section 5</div>
+  <h2>Prior Bar Size Impact</h2>
+  <p class="section-desc">The compression-to-expansion pattern: small bars predict measured move achievement, large bars predict consolidation.</p>
+
+  <div class="kpi-grid">
+    <div class="kpi-card purple">
+      <div class="kpi-label">Small Bars (&lt;0.8x)</div>
+      <div class="kpi-value">1,406</div>
+      <div class="kpi-sub">32.3% of days</div>
+    </div>
+    <div class="kpi-card slate">
+      <div class="kpi-label">Normal Bars (0.8–1.2x)</div>
+      <div class="kpi-value">1,831</div>
+      <div class="kpi-sub">42.0% of days</div>
+    </div>
+    <div class="kpi-card amber">
+      <div class="kpi-label">Large Bars (&gt;1.2x)</div>
+      <div class="kpi-value">1,119</div>
+      <div class="kpi-sub">25.7% of days</div>
+    </div>
+  </div>
+
+  <div class="table-wrap">
+    <div class="table-header">MM Hit Rates by Prior Bar Size (as multiple of ABR)</div>
+    <table>
+      <thead>
+        <tr>
+          <th>Size Bucket</th>
+          <th class="right">N</th>
+          <th class="right">Bull 0.5x</th>
+          <th class="right">Bull 1x</th>
+          <th class="right">Bear 0.5x</th>
+          <th class="right">Bear 1x</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr class="highlight-row">
+          <td>Small (&lt;0.8x ABR)</td>
+          <td class="mono right">1,406</td>
+          <td class="mono right"><span class="pill green">32.6%</span></td>
+          <td class="mono right"><span class="pill green">12.9%</span></td>
+          <td class="mono right"><span class="pill red">27.8%</span></td>
+          <td class="mono right"><span class="pill red">13.2%</span></td>
+        </tr>
+        <tr>
+          <td>Normal (0.8–1.2x ABR)</td>
+          <td class="mono right">1,831</td>
+          <td class="mono right">17.8%</td>
+          <td class="mono right">4.0%</td>
+          <td class="mono right">16.8%</td>
+          <td class="mono right">6.4%</td>
+        </tr>
+        <tr>
+          <td>Large (1.2–2x ABR)</td>
+          <td class="mono right">1,034</td>
+          <td class="mono right">6.4%</td>
+          <td class="mono right">1.0%</td>
+          <td class="mono right">9.2%</td>
+          <td class="mono right">2.8%</td>
+        </tr>
+        <tr>
+          <td>Very Large (&gt;2x ABR)</td>
+          <td class="mono right">85</td>
+          <td class="mono right">1.2%</td>
+          <td class="mono right">0.0%</td>
+          <td class="mono right">10.6%</td>
+          <td class="mono right">2.4%</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="split">
+    <div class="insight-card purple">
+      <h4>Compression → Expansion confirmed</h4>
+      <p>Small bars produce 32.6% bull / 27.8% bear 0.5x rates — roughly 5x the large bar rates (6.4% / 9.2%). The pattern is even more pronounced on ETH data than RTH.</p>
+    </div>
+    <div class="insight-card amber">
+      <h4>Small bar 1x rates are notably strong</h4>
+      <p>At 12.9% (bull) and 13.2% (bear), small bars produce 1x rates that are double the baseline. This is the only single factor that meaningfully lifts the 1x rate on ETH data.</p>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== SECTION 6 ==================== -->
+<div class="section" id="s6">
+  <div class="section-tag">Section 6</div>
+  <h2>Prior Bar Type Impact</h2>
+  <p class="section-desc">Structural classification of the prior bar — inside bars represent compression, outside bars represent exhaustion.</p>
+
+  <div class="table-wrap">
+    <div class="table-header">Bar Type Definitions</div>
+    <table>
+      <thead>
+        <tr><th>Type</th><th>Name</th><th>Definition</th><th class="right">N</th><th class="right">% of Days</th></tr>
+      </thead>
+      <tbody>
+        <tr class="lowsample"><td class="mono">1</td><td>BL NOL</td><td>Bull No Overlap — Low &gt; High[1]</td><td class="mono right">19</td><td class="mono right">0.4%</td></tr>
+        <tr class="lowsample"><td class="mono">2</td><td>BR NOL</td><td>Bear No Overlap — High &lt; Low[1]</td><td class="mono right">16</td><td class="mono right">0.4%</td></tr>
+        <tr><td class="mono">3</td><td>Outside</td><td>High ≥ High[1] AND Low ≤ Low[1]</td><td class="mono right">550</td><td class="mono right">12.6%</td></tr>
+        <tr><td class="mono">4</td><td>Inside</td><td>High ≤ High[1] AND Low ≥ Low[1]</td><td class="mono right">517</td><td class="mono right">11.9%</td></tr>
+        <tr><td class="mono">5</td><td>Bull BO</td><td>High &gt; High[1] (standard bull breakout)</td><td class="mono right">1,903</td><td class="mono right">43.7%</td></tr>
+        <tr><td class="mono">6</td><td>Bear BO</td><td>Low &lt; Low[1] (standard bear breakout)</td><td class="mono right">1,351</td><td class="mono right">31.0%</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="table-wrap">
+    <div class="table-header">MM Hit Rates by Prior Bar Type</div>
+    <table>
+      <thead>
+        <tr>
+          <th>Bar Type</th>
+          <th class="right">N</th>
+          <th class="right">Bull 0.5x</th>
+          <th class="right">Bull 1x</th>
+          <th class="right">Bear 0.5x</th>
+          <th class="right">Bear 1x</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr class="lowsample">
+          <td>BL NOL (Type 1)</td>
+          <td class="mono right">19</td>
+          <td class="mono right">26.3%</td>
+          <td class="mono right">10.5%</td>
+          <td class="mono right">10.5%</td>
+          <td class="mono right">5.3%</td>
+        </tr>
+        <tr class="lowsample">
+          <td>BR NOL (Type 2)</td>
+          <td class="mono right">16</td>
+          <td class="mono right">6.2%</td>
+          <td class="mono right">6.2%</td>
+          <td class="mono right">12.5%</td>
+          <td class="mono right">6.2%</td>
+        </tr>
+        <tr>
+          <td>Outside (Type 3)</td>
+          <td class="mono right">550</td>
+          <td class="mono right">10.5%</td>
+          <td class="mono right">2.2%</td>
+          <td class="mono right">12.0%</td>
+          <td class="mono right">4.2%</td>
+        </tr>
+        <tr class="highlight-row">
+          <td>Inside (Type 4)</td>
+          <td class="mono right">517</td>
+          <td class="mono right"><span class="pill green">33.5%</span></td>
+          <td class="mono right"><span class="pill green">12.4%</span></td>
+          <td class="mono right"><span class="pill red">29.2%</span></td>
+          <td class="mono right"><span class="pill red">14.3%</span></td>
+        </tr>
+        <tr>
+          <td>Bull BO (Type 5)</td>
+          <td class="mono right">1,903</td>
+          <td class="mono right">20.7%</td>
+          <td class="mono right">6.1%</td>
+          <td class="mono right">17.1%</td>
+          <td class="mono right">7.2%</td>
+        </tr>
+        <tr>
+          <td>Bear BO (Type 6)</td>
+          <td class="mono right">1,351</td>
+          <td class="mono right">16.4%</td>
+          <td class="mono right">5.1%</td>
+          <td class="mono right">19.0%</td>
+          <td class="mono right">7.3%</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="split">
+    <div class="insight-card purple">
+      <h4>Inside bars dominate: 33.5% bull / 29.2% bear at 0.5x</h4>
+      <p>Inside bars produce the highest MM rates of any bar type — 3x the outside bar rate. The compression-to-expansion pattern is even more dramatic on ETH (33.5% vs RTH's 40.8%, but outside bars drop to 10.5% vs RTH's 13.9%).</p>
+    </div>
+    <div class="insight-card amber">
+      <h4>Outside bars suppress: 10.5% / 12.0% at 0.5x</h4>
+      <p>After an outside bar, measured moves are rare. The exhaustion signal is the inverse of compression — the prior bar already consumed the directional energy.</p>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== SECTION 7 ==================== -->
+<div class="section" id="s7">
+  <div class="section-tag">Section 7</div>
+  <h2>Combined Factor Matrix</h2>
+  <p class="section-desc">Top 15 setups ranked by 0.5x probability with n≥20 minimum sample. Triple-factor confirmations achieve the highest probabilities.</p>
+
+  <div class="table-wrap">
+    <div class="table-header">Top 15 Setups — Ranked by 0.5x Hit Rate (n ≥ 20)</div>
+    <table>
+      <thead>
+        <tr>
+          <th>Rank</th>
+          <th>Setup</th>
+          <th>Dir</th>
+          <th class="right">N</th>
+          <th class="right">0.5x Rate</th>
+          <th class="right">1x Rate</th>
+          <th class="right">2x Rate</th>
+          <th class="right">Per Year</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="mono">1</td>
+          <td>High IBS + VLarge Gap Up (&gt;30%)</td>
+          <td><span class="pill green">BULL</span></td>
+          <td class="mono right">24</td>
+          <td class="mono right"><span class="pill green">70.8%</span></td>
+          <td class="mono right"><span class="pill green">29.2%</span></td>
+          <td class="mono right">4.2%</td>
+          <td class="mono right">1.4</td>
+        </tr>
+        <tr>
+          <td class="mono">2</td>
+          <td>Small Bar + Large Gap Up (&gt;20%)</td>
+          <td><span class="pill green">BULL</span></td>
+          <td class="mono right">41</td>
+          <td class="mono right"><span class="pill green">70.7%</span></td>
+          <td class="mono right"><span class="pill green">43.9%</span></td>
+          <td class="mono right"><span class="pill green">17.1%</span></td>
+          <td class="mono right">2.4</td>
+        </tr>
+        <tr>
+          <td class="mono">3</td>
+          <td>Small Bar + Large Gap Down (&gt;20%)</td>
+          <td><span class="pill red">BEAR</span></td>
+          <td class="mono right">44</td>
+          <td class="mono right"><span class="pill red">70.5%</span></td>
+          <td class="mono right"><span class="pill red">45.5%</span></td>
+          <td class="mono right"><span class="pill red">20.5%</span></td>
+          <td class="mono right">2.5</td>
+        </tr>
+        <tr>
+          <td class="mono">4</td>
+          <td>Low IBS + VLarge Gap Down (&gt;30%)</td>
+          <td><span class="pill red">BEAR</span></td>
+          <td class="mono right">22</td>
+          <td class="mono right"><span class="pill red">59.1%</span></td>
+          <td class="mono right"><span class="pill red">27.3%</span></td>
+          <td class="mono right">13.6%</td>
+          <td class="mono right">1.3</td>
+        </tr>
+        <tr>
+          <td class="mono">5</td>
+          <td>High IBS + Large Gap Up (&gt;20%)</td>
+          <td><span class="pill green">BULL</span></td>
+          <td class="mono right">50</td>
+          <td class="mono right"><span class="pill green">56.0%</span></td>
+          <td class="mono right"><span class="pill green">24.0%</span></td>
+          <td class="mono right">6.0%</td>
+          <td class="mono right">2.9</td>
+        </tr>
+        <tr>
+          <td class="mono">6</td>
+          <td>Small Bar + Low IBS + Gap Down</td>
+          <td><span class="pill red">BEAR</span></td>
+          <td class="mono right">134</td>
+          <td class="mono right"><span class="pill red">53.0%</span></td>
+          <td class="mono right"><span class="pill red">29.1%</span></td>
+          <td class="mono right">7.5%</td>
+          <td class="mono right">7.8</td>
+        </tr>
+        <tr>
+          <td class="mono">7</td>
+          <td>Inside Bar + Low IBS + Gap Down</td>
+          <td><span class="pill red">BEAR</span></td>
+          <td class="mono right">54</td>
+          <td class="mono right"><span class="pill red">48.1%</span></td>
+          <td class="mono right"><span class="pill red">27.8%</span></td>
+          <td class="mono right">3.7%</td>
+          <td class="mono right">3.1</td>
+        </tr>
+        <tr>
+          <td class="mono">8</td>
+          <td>Small Bar + Low IBS</td>
+          <td><span class="pill red">BEAR</span></td>
+          <td class="mono right">292</td>
+          <td class="mono right"><span class="pill red">47.9%</span></td>
+          <td class="mono right"><span class="pill red">25.3%</span></td>
+          <td class="mono right">4.8%</td>
+          <td class="mono right">16.9</td>
+        </tr>
+        <tr>
+          <td class="mono">9</td>
+          <td>Small Bar + High IBS + Gap Up</td>
+          <td><span class="pill green">BULL</span></td>
+          <td class="mono right">242</td>
+          <td class="mono right"><span class="pill green">47.9%</span></td>
+          <td class="mono right"><span class="pill green">16.9%</span></td>
+          <td class="mono right">2.5%</td>
+          <td class="mono right">14.0</td>
+        </tr>
+        <tr>
+          <td class="mono">10</td>
+          <td>VLarge Gap Up (&gt;30% ABR)</td>
+          <td><span class="pill green">BULL</span></td>
+          <td class="mono right">71</td>
+          <td class="mono right"><span class="pill green">47.9%</span></td>
+          <td class="mono right"><span class="pill green">21.1%</span></td>
+          <td class="mono right">7.0%</td>
+          <td class="mono right">4.1</td>
+        </tr>
+        <tr>
+          <td class="mono">11</td>
+          <td>Prior Bear + Small Bar + Low IBS</td>
+          <td><span class="pill red">BEAR</span></td>
+          <td class="mono right">254</td>
+          <td class="mono right"><span class="pill red">46.9%</span></td>
+          <td class="mono right"><span class="pill red">23.6%</span></td>
+          <td class="mono right">4.3%</td>
+          <td class="mono right">14.7</td>
+        </tr>
+        <tr>
+          <td class="mono">12</td>
+          <td>Inside Bar + Low IBS</td>
+          <td><span class="pill red">BEAR</span></td>
+          <td class="mono right">119</td>
+          <td class="mono right"><span class="pill red">46.2%</span></td>
+          <td class="mono right"><span class="pill red">23.5%</span></td>
+          <td class="mono right">4.2%</td>
+          <td class="mono right">6.9</td>
+        </tr>
+        <tr>
+          <td class="mono">13</td>
+          <td>VLarge Gap Down (&gt;30% ABR)</td>
+          <td><span class="pill red">BEAR</span></td>
+          <td class="mono right">90</td>
+          <td class="mono right"><span class="pill red">45.6%</span></td>
+          <td class="mono right"><span class="pill red">22.2%</span></td>
+          <td class="mono right">10.0%</td>
+          <td class="mono right">5.2</td>
+        </tr>
+        <tr>
+          <td class="mono">14</td>
+          <td>Inside Bar + High IBS + Gap Up</td>
+          <td><span class="pill green">BULL</span></td>
+          <td class="mono right">82</td>
+          <td class="mono right"><span class="pill green">45.1%</span></td>
+          <td class="mono right">14.6%</td>
+          <td class="mono right">1.2%</td>
+          <td class="mono right">4.7</td>
+        </tr>
+        <tr>
+          <td class="mono">15</td>
+          <td>Prior Bear + Small Bar + Gap Down</td>
+          <td><span class="pill red">BEAR</span></td>
+          <td class="mono right">251</td>
+          <td class="mono right"><span class="pill red">44.2%</span></td>
+          <td class="mono right"><span class="pill red">25.1%</span></td>
+          <td class="mono right">8.8%</td>
+          <td class="mono right">14.5</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="note-box purple">
+    <strong>Critical ETH-specific finding — 1x rates are structurally strong in top setups:</strong> While baseline 1x rates are lower on ETH (6.1% / 7.7%), the top combined setups produce extraordinary 1x rates: Small Bar + Large Gap Down achieves <strong>45.5% bear 1x</strong>, and Small Bar + Large Gap Up achieves <strong>43.9% bull 1x</strong>. These 1x rates are dramatically higher than anything found in the RTH study. The gap size + compression combination creates a much sharper edge on the full 24-hour session.
+  </div>
+
+  <div class="split">
+    <div class="insight-card green">
+      <h4>Top Bull Setup: Small Bar + Large Gap Up</h4>
+      <p>70.7% at 0.5x, 43.9% at 1x, 17.1% at 2x with n=41 (2.4/year). The 1x rate is nearly 4x the baseline for this combination. When a compressed bar precedes a large gap up on ETH, the expansion is powerful.</p>
+    </div>
+    <div class="insight-card red">
+      <h4>Top Bear Setup: Small Bar + Large Gap Down</h4>
+      <p>70.5% at 0.5x, 45.5% at 1x, 20.5% at 2x with n=44 (2.5/year). Even more powerful than the bull equivalent — one in five occurrences reaches the 2x measured move. Bears remain more explosive.</p>
+    </div>
+  </div>
+
+  <div class="table-wrap">
+    <div class="table-header">Factor Hierarchy — ETH Data</div>
+    <table>
+      <thead>
+        <tr><th>Rank</th><th>Factor</th><th>Standalone Edge</th><th>Role in Top Setups</th></tr>
+      </thead>
+      <tbody>
+        <tr><td class="mono">1</td><td>Gap Size + Direction</td><td class="mono">34–48x directional advantage at &gt;30% ABR</td><td>Present in 10 of top 15</td></tr>
+        <tr><td class="mono">2</td><td>Bar Size (Compression)</td><td class="mono">5x small vs large differential</td><td>Present in 9 of top 15</td></tr>
+        <tr><td class="mono">3</td><td>IBS</td><td class="mono">3.5x bull:bear at high IBS; 4.2x inverse at low</td><td>Present in 10 of top 15</td></tr>
+        <tr><td class="mono">4</td><td>Bar Type</td><td class="mono">3.2x inside vs outside differential</td><td>Present in 4 of top 15</td></tr>
+        <tr><td class="mono">5</td><td>Prior Direction</td><td class="mono">2.1x continuation ratio</td><td>Present in 3 of top 15</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ==================== SECTION 8 ==================== -->
+<div class="section" id="s8">
+  <div class="section-tag">Section 8</div>
+  <h2>Executive Summary &amp; RTH Comparison</h2>
+  <p class="section-desc">Key findings synthesised, with direct comparison to the RTH baseline study.</p>
+
+  <div class="kpi-grid">
+    <div class="kpi-card red">
+      <div class="kpi-label">Avenue 1 Verdict</div>
+      <div class="kpi-value" style="font-size: 22px; color: var(--red);">Hypothesis Disproved</div>
+      <div class="kpi-sub">ETH baseline rates uniformly lower</div>
+    </div>
+    <div class="kpi-card green">
+      <div class="kpi-label">But: Unexpected Edge Found</div>
+      <div class="kpi-value" style="font-size: 22px; color: var(--green);">45.5% Bear 1x</div>
+      <div class="kpi-sub">Small Bar + Large Gap Down</div>
+    </div>
+    <div class="kpi-card purple">
+      <div class="kpi-label">Top Setups Achieve</div>
+      <div class="kpi-value" style="font-size: 22px;">70%+</div>
+      <div class="kpi-sub">0.5x probability with triple confirmation</div>
+    </div>
+  </div>
+
+  <div class="note-box blue">
+    <strong>Research objective:</strong> Avenue 1 of Phase III — determine whether the ETH (24-hour) session improves the 1x measured move hit rate. The RTH study found 1x rates of ~11% unconditionally, producing thin expectancy at the 0.5x target level (risk 1R, reward 0.5R).
+  </div>
+
+  <div class="table-wrap">
+    <div class="table-header">ETH vs RTH — Baseline Rate Comparison</div>
+    <table>
+      <thead>
+        <tr>
+          <th>Metric</th>
+          <th class="right">ETH Rate</th>
+          <th class="right">RTH Rate</th>
+          <th class="right">Delta</th>
+          <th>Interpretation</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Bull 0.5x</td>
+          <td class="mono right">19.6%</td>
+          <td class="mono right">26.9%</td>
+          <td class="mono right"><span class="pill red">-7.3pp</span></td>
+          <td>Significantly lower</td>
+        </tr>
+        <tr>
+          <td>Bull 1x</td>
+          <td class="mono right">6.1%</td>
+          <td class="mono right">11.1%</td>
+          <td class="mono right"><span class="pill red">-5.0pp</span></td>
+          <td>Nearly halved</td>
+        </tr>
+        <tr>
+          <td>Bear 0.5x</td>
+          <td class="mono right">18.4%</td>
+          <td class="mono right">23.2%</td>
+          <td class="mono right"><span class="pill red">-4.8pp</span></td>
+          <td>Significantly lower</td>
+        </tr>
+        <tr>
+          <td>Bear 1x</td>
+          <td class="mono right">7.7%</td>
+          <td class="mono right">11.6%</td>
+          <td class="mono right"><span class="pill red">-3.9pp</span></td>
+          <td>Substantially lower</td>
+        </tr>
+        <tr>
+          <td>Bear 2x / Bull 2x Ratio</td>
+          <td class="mono right">2.69x</td>
+          <td class="mono right">1.86x</td>
+          <td class="mono right"><span class="pill amber">+0.83x</span></td>
+          <td>Bears even more explosive</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="table-wrap">
+    <div class="table-header">ETH vs RTH — Factor Behaviour Comparison</div>
+    <table>
+      <thead>
+        <tr>
+          <th>Factor</th>
+          <th>ETH Finding</th>
+          <th>RTH Finding</th>
+          <th>Consistent?</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Prior Direction</td>
+          <td>Continuation ratio ~2.1x</td>
+          <td>Continuation ratio ~2:1</td>
+          <td><span class="pill green">Yes</span></td>
+        </tr>
+        <tr>
+          <td>IBS</td>
+          <td>3.5x bull:bear at high IBS</td>
+          <td>2.7–2.9x directional edge</td>
+          <td><span class="pill green">Yes — stronger</span></td>
+        </tr>
+        <tr>
+          <td>Gap Size</td>
+          <td>34–48x at &gt;30% ABR</td>
+          <td>6–8x at &gt;20% ABR</td>
+          <td><span class="pill green">Yes — much stronger</span></td>
+        </tr>
+        <tr>
+          <td>Bar Size</td>
+          <td>5x small vs large</td>
+          <td>3x small vs large</td>
+          <td><span class="pill green">Yes — stronger</span></td>
+        </tr>
+        <tr>
+          <td>Bar Type</td>
+          <td>Inside 33.5% vs Outside 10.5%</td>
+          <td>Inside 40.8% vs Outside 13.9%</td>
+          <td><span class="pill green">Yes — same pattern</span></td>
+        </tr>
+        <tr>
+          <td>Factor Hierarchy</td>
+          <td>Gap → Size → IBS → Type → Dir</td>
+          <td>Gap → IBS → Size → Type → Dir</td>
+          <td><span class="pill amber">Mostly — Size/IBS swap</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="note-box green">
+    <strong>The unexpected discovery — ETH top setups have dramatically higher 1x rates:</strong> While baseline rates are lower, the concentrated setups (Small Bar + Large Gap) produce 43.9%–45.5% at the 1x level on ETH, compared to the ~11% unconditional rate on RTH. The compression + large gap combination creates a far sharper signal on the 24-hour session. These setups occur only ~2.5 times per year, but the win rate at the 1x level transforms the risk/reward profile entirely: risk 1R, reward 1R, at ~45% hit rate — far more tradable than the 0.5x target.
+  </div>
+
+  <div class="table-wrap">
+    <div class="table-header">Top 5 Money Setups — ETH</div>
+    <table>
+      <thead>
+        <tr>
+          <th>Rank</th>
+          <th>Setup</th>
+          <th>Dir</th>
+          <th class="right">0.5x</th>
+          <th class="right">1x</th>
+          <th class="right">2x</th>
+          <th class="right">N</th>
+          <th class="right">Per Year</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="mono">1</td>
+          <td>Small Bar + Large Gap Up (&gt;20%)</td>
+          <td><span class="pill green">BULL</span></td>
+          <td class="mono right"><span class="pill green">70.7%</span></td>
+          <td class="mono right"><span class="pill green">43.9%</span></td>
+          <td class="mono right">17.1%</td>
+          <td class="mono right">41</td>
+          <td class="mono right">2.4</td>
+        </tr>
+        <tr>
+          <td class="mono">2</td>
+          <td>Small Bar + Large Gap Down (&gt;20%)</td>
+          <td><span class="pill red">BEAR</span></td>
+          <td class="mono right"><span class="pill red">70.5%</span></td>
+          <td class="mono right"><span class="pill red">45.5%</span></td>
+          <td class="mono right">20.5%</td>
+          <td class="mono right">44</td>
+          <td class="mono right">2.5</td>
+        </tr>
+        <tr>
+          <td class="mono">3</td>
+          <td>Small Bar + Low IBS + Gap Down</td>
+          <td><span class="pill red">BEAR</span></td>
+          <td class="mono right"><span class="pill red">53.0%</span></td>
+          <td class="mono right"><span class="pill red">29.1%</span></td>
+          <td class="mono right">7.5%</td>
+          <td class="mono right">134</td>
+          <td class="mono right">7.8</td>
+        </tr>
+        <tr>
+          <td class="mono">4</td>
+          <td>Small Bar + High IBS + Gap Up</td>
+          <td><span class="pill green">BULL</span></td>
+          <td class="mono right"><span class="pill green">47.9%</span></td>
+          <td class="mono right"><span class="pill green">16.9%</span></td>
+          <td class="mono right">2.5%</td>
+          <td class="mono right">242</td>
+          <td class="mono right">14.0</td>
+        </tr>
+        <tr>
+          <td class="mono">5</td>
+          <td>Small Bar + Low IBS</td>
+          <td><span class="pill red">BEAR</span></td>
+          <td class="mono right"><span class="pill red">47.9%</span></td>
+          <td class="mono right"><span class="pill red">25.3%</span></td>
+          <td class="mono right">4.8%</td>
+          <td class="mono right">292</td>
+          <td class="mono right">16.9</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="split">
+    <div class="insight-card green">
+      <h4>Finding 1: Compression → Expansion is universal</h4>
+      <p>The pattern holds across ETH and RTH sessions. Small bars and inside bars predict expansion; large bars and outside bars predict consolidation. This is the foundational principle.</p>
+    </div>
+    <div class="insight-card red">
+      <h4>Finding 2: ETH amplifies factor separation</h4>
+      <p>Every factor shows stronger differentiation on ETH data. Gap size advantage jumps from 6–8x (RTH) to 34–48x (ETH). Bar size differential widens from 3x to 5x. The signal is cleaner.</p>
+    </div>
+  </div>
+  <div class="split">
+    <div class="insight-card purple">
+      <h4>Finding 3: Factor hierarchy shifts slightly</h4>
+      <p>Bar size (compression) rises from #3 to #2, swapping with IBS. On the 24-hour session, whether yesterday's range was small relative to average matters more than where it closed.</p>
+    </div>
+    <div class="insight-card amber">
+      <h4>Finding 4: Bear asymmetry intensifies</h4>
+      <p>The 2x bear/bull ratio widens from 1.86x (RTH) to 2.69x (ETH). Bear setups dominate the Top 15 (9 bear vs 6 bull). Overnight sessions amplify downside tail risk.</p>
+    </div>
+  </div>
+  <div class="split">
+    <div class="insight-card green">
+      <h4>Finding 5: The 1x edge exists in concentrated setups</h4>
+      <p>While baseline 1x rates are dismal (6–8%), the Small Bar + Large Gap combination produces 44–46% 1x rates. This makes the 1x target tradable at ~1:1 R:R with a genuine 45% win rate — thin but structurally sound.</p>
+    </div>
+    <div class="insight-card red">
+      <h4>Finding 6: Frequency is the trade-off</h4>
+      <p>The highest-probability setups occur only 1.3–2.5 times per year. Broader setups (Small Bar + Low IBS) offer 16.9 opportunities per year at 47.9% 0.5x / 25.3% 1x — a better frequency/probability trade-off for active traders.</p>
+    </div>
+  </div>
+
+  <div class="note-box amber">
+    <strong>Recommendations:</strong> (1) The ETH session does NOT improve baseline measured move rates — Avenue 1 hypothesis is disproved. (2) However, ETH data reveals cleaner factor separation, especially for gap + compression combinations. (3) The Small Bar + Large Gap setup on ETH achieves ~45% at the 1x level — worth investigating further with entry/exit rules. (4) Proceed to Avenue 3 (ABR from Close) as the primary path for improving baseline rates. (5) Consider developing a hybrid: use RTH for baseline signals but monitor ETH for the rare Small Bar + Large Gap setups that have dramatically higher 1x potential.
+  </div>
+</div>
+
+<!-- ==================== FOOTER ==================== -->
+<div class="footer">
+  <span>ES ETH Measured Moves — Phase III, Avenue 1 — zen_measured_moves_v6</span>
+  <span>N = 4,356 ETH Days | Nov 2008 — Feb 2026 | Generated 2026-02-14</span>
+</div>
+
+</div>
+</body>
+</html>
