@@ -1,0 +1,552 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ES Measured Moves — ABR from Prior Close (RTH)</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#FAFAF8;--surface:#FFF;--surface-alt:#F5F4F0;--border:#E8E6E1;--border-strong:#D4D1C9;--text-primary:#1A1A18;--text-secondary:#6B6964;--text-muted:#9C9890;--accent:#2563EB;--accent-light:#EFF6FF;--green:#16A34A;--green-light:#F0FDF4;--green-bg:#DCFCE7;--red:#DC2626;--red-light:#FEF2F2;--red-bg:#FEE2E2;--amber:#D97706;--amber-light:#FFFBEB;--amber-bg:#FEF3C7;--purple:#7C3AED;--purple-light:#F5F3FF;--purple-bg:#EDE9FE;--slate:#64748B;--slate-bg:#F1F5F9}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'DM Sans',-apple-system,sans-serif;background:var(--bg);color:var(--text-primary);line-height:1.6;-webkit-font-smoothing:antialiased}
+.container{max-width:1200px;margin:0 auto;padding:48px 32px}
+.mono{font-family:'JetBrains Mono',monospace}
+.right{text-align:right}
+.header{margin-bottom:48px}
+.header-tag{display:inline-block;font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:var(--accent);background:var(--accent-light);padding:4px 10px;border-radius:4px;margin-bottom:12px}
+.header h1{font-size:32px;font-weight:700;letter-spacing:-.02em;margin-bottom:6px}
+.header .subtitle{font-size:16px;color:var(--text-secondary);margin-bottom:16px}
+.meta-row{display:flex;flex-wrap:wrap;gap:8px;align-items:center;font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--text-muted)}
+.meta-row .dot{color:var(--border-strong)}
+.toc{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:24px;margin-bottom:48px}
+.toc h3{font-size:14px;font-weight:600;text-transform:uppercase;letter-spacing:.04em;color:var(--text-muted);margin-bottom:12px}
+.toc-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:6px 24px}
+.toc a{display:block;font-size:14px;color:var(--text-secondary);text-decoration:none;padding:4px 0;transition:color .15s}
+.toc a:hover{color:var(--accent)}
+.toc a .num{font-family:'JetBrains Mono',monospace;font-weight:600;color:var(--text-muted);margin-right:8px}
+.section{margin-bottom:56px}
+.section-header{display:flex;align-items:baseline;gap:12px;margin-bottom:6px}
+.section-num{font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:600;color:var(--accent);text-transform:uppercase;letter-spacing:.06em}
+.section-title{font-size:20px;font-weight:700;letter-spacing:-.01em}
+.section-desc{font-size:14px;color:var(--text-secondary);margin-bottom:24px}
+.kpi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:16px;margin-bottom:24px}
+.kpi-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:20px;border-left:3px solid var(--border);transition:box-shadow .15s}
+.kpi-card:hover{box-shadow:0 2px 8px rgba(0,0,0,.04)}
+.kpi-card.accent{border-left-color:var(--accent)}.kpi-card.green{border-left-color:var(--green)}.kpi-card.red{border-left-color:var(--red)}.kpi-card.amber{border-left-color:var(--amber)}.kpi-card.purple{border-left-color:var(--purple)}.kpi-card.slate{border-left-color:var(--slate)}
+.kpi-label{font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--text-muted);margin-bottom:4px}
+.kpi-value{font-family:'JetBrains Mono',monospace;font-size:28px;font-weight:700;line-height:1.1;margin-bottom:4px}
+.kpi-sub{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--text-muted)}
+.table-wrap{border:1px solid var(--border);border-radius:10px;overflow:hidden;margin-bottom:24px}
+.table-header{background:var(--surface-alt);padding:12px 16px;font-size:14px;font-weight:600;border-bottom:1px solid var(--border)}
+table{width:100%;border-collapse:collapse}
+th{font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--text-muted);background:var(--surface-alt);padding:10px 14px;text-align:left;border-bottom:1px solid var(--border)}
+td{padding:10px 14px;font-size:14px;border-bottom:1px solid var(--border)}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:rgba(0,0,0,.015)}
+td.mono{font-family:'JetBrains Mono',monospace;font-size:13px}
+.pill{display:inline-block;font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:600;padding:2px 8px;border-radius:4px}
+.pill.green{background:var(--green-bg);color:var(--green)}.pill.red{background:var(--red-bg);color:var(--red)}.pill.amber{background:var(--amber-bg);color:var(--amber)}.pill.blue{background:var(--accent-light);color:var(--accent)}.pill.purple{background:var(--purple-bg);color:var(--purple)}.pill.slate{background:var(--slate-bg);color:var(--slate)}
+.gradient-bar{display:flex;height:48px;border-radius:8px;overflow:hidden;margin-bottom:8px}
+.gradient-bar .seg{display:flex;align-items:center;justify-content:center;font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:600;color:#fff;min-width:2px}
+.gradient-legend{display:flex;flex-wrap:wrap;gap:16px;margin-bottom:24px;font-size:13px;color:var(--text-secondary)}
+.gradient-legend .dot{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:6px;vertical-align:middle}
+.note-box{border-radius:10px;padding:16px 20px;margin-bottom:24px;font-size:14px;line-height:1.6}
+.note-box.amber{background:var(--amber-light);border:1px solid var(--amber-bg)}.note-box.blue{background:var(--accent-light);border:1px solid #BFDBFE}.note-box.green{background:var(--green-light);border:1px solid var(--green-bg)}.note-box.purple{background:var(--purple-light);border:1px solid var(--purple-bg)}.note-box.red{background:var(--red-light);border:1px solid var(--red-bg)}
+.note-box strong{font-weight:600}
+.insight-grid{display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-bottom:24px}
+.insight-card{background:var(--surface);border:1px solid var(--border);border-left:3px solid var(--border);border-radius:10px;padding:20px}
+.insight-card.green{border-left-color:var(--green)}.insight-card.red{border-left-color:var(--red)}.insight-card.purple{border-left-color:var(--purple)}.insight-card.blue{border-left-color:var(--accent)}.insight-card.amber{border-left-color:var(--amber)}
+.insight-card h4{font-size:14px;font-weight:700;margin-bottom:6px}
+.insight-card p{font-size:14px;color:var(--text-secondary)}
+.delta-positive{color:var(--green);font-weight:600}.delta-negative{color:var(--red);font-weight:600}
+.footer{border-top:1px solid var(--border);padding-top:24px;display:flex;justify-content:space-between;font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--text-muted)}
+@media(max-width:768px){.container{padding:24px 16px}.kpi-grid{grid-template-columns:1fr 1fr}.insight-grid{grid-template-columns:1fr}.header h1{font-size:24px}.kpi-value{font-size:22px}}
+@media print{.section{page-break-inside:avoid}}
+</style>
+</head>
+<body>
+<div class="container">
+
+<!-- ===== HEADER ===== -->
+<div class="header">
+  <div class="header-tag">&#9670; Quantitative Research</div>
+  <h1>ES Measured Moves &mdash; ABR from Prior Close</h1>
+  <div class="subtitle">Phase III, Avenue 3: Does smoothed volatility anchored to the close produce higher 1x hit rates?</div>
+  <div class="meta-row">
+    <span>CME E-Mini S&amp;P 500 (ES)</span><span class="dot">&#183;</span>
+    <span>RTH Daily</span><span class="dot">&#183;</span>
+    <span>N = 4,218 days</span><span class="dot">&#183;</span>
+    <span>May 2009 &mdash; Feb 2026</span><span class="dot">&#183;</span>
+    <span>Targets: Close[1] &plusmn; (mult &times; ABR)</span>
+  </div>
+</div>
+
+<!-- ===== TABLE OF CONTENTS ===== -->
+<div class="toc">
+  <h3>Contents</h3>
+  <div class="toc-grid">
+    <a href="#s1"><span class="num">01</span> Data Universe &amp; Baseline Rates</a>
+    <a href="#s2"><span class="num">02</span> Prior Bar Direction</a>
+    <a href="#s3"><span class="num">03</span> Prior IBS</a>
+    <a href="#s4"><span class="num">04</span> Gap Open</a>
+    <a href="#s5"><span class="num">05</span> Prior Bar Size</a>
+    <a href="#s6"><span class="num">06</span> Prior Bar Type</a>
+    <a href="#s7"><span class="num">07</span> Combined Factor Matrix</a>
+    <a href="#s8"><span class="num">08</span> Executive Summary</a>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- SECTION 1: DATA UNIVERSE                                      -->
+<!-- ============================================================ -->
+<div class="section" id="s1">
+  <div class="section-header"><span class="section-num">Section 01</span><span class="section-title">Data Universe &amp; Baseline Rates</span></div>
+  <p class="section-desc">Unconditional measured move frequencies using ABR from prior close, with head-to-head comparison against the original range-from-extreme study.</p>
+
+  <div class="kpi-grid">
+    <div class="kpi-card accent"><div class="kpi-label">Trading Days</div><div class="kpi-value">4,218</div><div class="kpi-sub">May 2009 &mdash; Feb 2026</div></div>
+    <div class="kpi-card accent"><div class="kpi-label">Anchor</div><div class="kpi-value" style="font-size:20px;">Prior Close</div><div class="kpi-sub">vs. Prior Extreme (original)</div></div>
+    <div class="kpi-card accent"><div class="kpi-label">Yardstick</div><div class="kpi-value" style="font-size:20px;">ABR (8-bar)</div><div class="kpi-sub">vs. Prior Range (original)</div></div>
+    <div class="kpi-card amber"><div class="kpi-label">Avg ABR</div><div class="kpi-value" style="font-size:22px;">32.4 pts</div><div class="kpi-sub">Median: 21.7 pts</div></div>
+  </div>
+
+  <div class="note-box amber"><strong>Methodology change:</strong> Targets are now Close[1] &plusmn; (mult &times; ABR) instead of High[1]/Low[1] &plusmn; (mult &times; Range[1]). The anchor moves from the prior extreme to the prior close; the yardstick changes from a single bar&rsquo;s range to the smoothed 8-bar average range.</div>
+
+  <div class="table-wrap">
+    <div class="table-header">ABR-from-Close Baseline Rates vs Original RTH</div>
+    <table>
+      <thead><tr><th>Measured Move</th><th class="right">Hits</th><th class="right">Rate</th><th class="right">Per Year</th><th class="right">Original RTH</th><th class="right">Delta</th></tr></thead>
+      <tbody>
+        <tr><td>Bull 0.5x</td><td class="mono right">2,014</td><td class="mono right"><span class="pill green">47.7%</span></td><td class="mono right">119.9</td><td class="mono right" style="color:var(--text-muted);">26.9%</td><td class="mono right delta-positive">+20.8pp</td></tr>
+        <tr><td>Bull 1x</td><td class="mono right">787</td><td class="mono right"><span class="pill green">18.7%</span></td><td class="mono right">46.8</td><td class="mono right" style="color:var(--text-muted);">11.1%</td><td class="mono right delta-positive">+7.6pp</td></tr>
+        <tr><td>Bull 1.5x</td><td class="mono right">222</td><td class="mono right"><span class="pill amber">5.3%</span></td><td class="mono right">13.2</td><td class="mono right" style="color:var(--text-muted);">&mdash;</td><td class="mono right" style="color:var(--text-muted);">new</td></tr>
+        <tr><td>Bull 2x</td><td class="mono right">44</td><td class="mono right"><span class="pill slate">1.0%</span></td><td class="mono right">2.6</td><td class="mono right" style="color:var(--text-muted);">1.7%</td><td class="mono right delta-negative">-0.7pp</td></tr>
+        <tr style="border-top:2px solid var(--border-strong);"><td>Bear 0.5x</td><td class="mono right">1,893</td><td class="mono right"><span class="pill red">44.9%</span></td><td class="mono right">112.7</td><td class="mono right" style="color:var(--text-muted);">23.2%</td><td class="mono right delta-positive">+21.7pp</td></tr>
+        <tr><td>Bear 1x</td><td class="mono right">858</td><td class="mono right"><span class="pill red">20.3%</span></td><td class="mono right">51.1</td><td class="mono right" style="color:var(--text-muted);">11.6%</td><td class="mono right delta-positive">+8.7pp</td></tr>
+        <tr><td>Bear 1.5x</td><td class="mono right">331</td><td class="mono right"><span class="pill amber">7.8%</span></td><td class="mono right">19.7</td><td class="mono right" style="color:var(--text-muted);">&mdash;</td><td class="mono right" style="color:var(--text-muted);">new</td></tr>
+        <tr><td>Bear 2x</td><td class="mono right">118</td><td class="mono right"><span class="pill slate">2.8%</span></td><td class="mono right">7.0</td><td class="mono right" style="color:var(--text-muted);">3.1%</td><td class="mono right delta-negative">-0.3pp</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div style="margin-bottom:4px;font-size:13px;font-weight:600;">0.5x Outcome Distribution</div>
+  <div class="gradient-bar">
+    <div class="seg" style="width:40.6%;background:var(--green);">40.6%</div>
+    <div class="seg" style="width:7.2%;background:var(--purple);">7.2%</div>
+    <div class="seg" style="width:37.7%;background:var(--red);">37.7%</div>
+    <div class="seg" style="width:14.6%;background:var(--slate);">14.6%</div>
+  </div>
+  <div class="gradient-legend">
+    <span><span class="dot" style="background:var(--green);"></span>Bull Only (1,711)</span>
+    <span><span class="dot" style="background:var(--purple);"></span>Both Directions (303)</span>
+    <span><span class="dot" style="background:var(--red);"></span>Bear Only (1,590)</span>
+    <span><span class="dot" style="background:var(--slate);"></span>Neither (614)</span>
+  </div>
+
+  <div style="margin-bottom:4px;font-size:13px;font-weight:600;">1x Outcome Distribution</div>
+  <div class="gradient-bar">
+    <div class="seg" style="width:18.4%;background:var(--green);">18.4%</div>
+    <div class="seg" style="width:0.5%;background:var(--purple);font-size:0;"></div>
+    <div class="seg" style="width:20.1%;background:var(--red);">20.1%</div>
+    <div class="seg" style="width:61.2%;background:var(--slate);">61.2%</div>
+  </div>
+  <div class="gradient-legend">
+    <span><span class="dot" style="background:var(--green);"></span>Bull Only (778)</span>
+    <span><span class="dot" style="background:var(--purple);"></span>Both (9)</span>
+    <span><span class="dot" style="background:var(--red);"></span>Bear Only (849)</span>
+    <span><span class="dot" style="background:var(--slate);"></span>Neither (2,582)</span>
+  </div>
+
+  <div class="kpi-grid" style="grid-template-columns:repeat(auto-fit,minmax(220px,1fr));">
+    <div class="kpi-card green"><div class="kpi-label">Bull 1x Improvement</div><div class="kpi-value" style="color:var(--green);">+68%</div><div class="kpi-sub">18.7% vs 11.1% original</div></div>
+    <div class="kpi-card red"><div class="kpi-label">Bear 1x Improvement</div><div class="kpi-value" style="color:var(--red);">+75%</div><div class="kpi-sub">20.3% vs 11.6% original</div></div>
+    <div class="kpi-card purple"><div class="kpi-label">Bear/Bull 2x Ratio</div><div class="kpi-value" style="color:var(--purple);">2.68x</div><div class="kpi-sub">vs 1.86x original</div></div>
+    <div class="kpi-card amber"><div class="kpi-label">Both-Direction 0.5x</div><div class="kpi-value" style="color:var(--amber);">7.2%</div><div class="kpi-sub">303 days hit both ways</div></div>
+  </div>
+
+  <div class="note-box green"><strong>Primary finding &mdash; hypothesis confirmed:</strong> ABR from prior close produces dramatically higher baseline hit rates. Bull 1x rises from 11.1% to 18.7% (+68%), Bear 1x from 11.6% to 20.3% (+75%). At ~1 per week each direction, these are structurally tradable frequencies. The 0.5x rates nearly doubled (47.7%/44.9% vs 26.9%/23.2%). The 2x rates are slightly lower &mdash; expected, as 2&times; ABR from the close is a larger absolute move on most days.</div>
+
+  <div class="note-box blue"><strong>Why the rates are higher:</strong> Two structural changes drive the improvement. First, the anchor shifts from the prior extreme to the prior close, which is typically interior to the bar &mdash; this shortens the distance to target. Second, ABR smooths away outlier bars &mdash; a single large day no longer inflates tomorrow&rsquo;s targets.</div>
+</div>
+
+<!-- ============================================================ -->
+<!-- SECTION 2: PRIOR DIRECTION                                    -->
+<!-- ============================================================ -->
+<div class="section" id="s2">
+  <div class="section-header"><span class="section-num">Section 02</span><span class="section-title">Prior Bar Direction</span></div>
+  <p class="section-desc">Does yesterday&rsquo;s direction predict today&rsquo;s measured move? The original study showed ~2:1 continuation bias. The close anchor changes this fundamentally.</p>
+
+  <div class="kpi-grid">
+    <div class="kpi-card green"><div class="kpi-label">Prior Bull Bars</div><div class="kpi-value">2,300</div><div class="kpi-sub">54.5% of days</div></div>
+    <div class="kpi-card red"><div class="kpi-label">Prior Bear Bars</div><div class="kpi-value">1,886</div><div class="kpi-sub">44.7% of days</div></div>
+    <div class="kpi-card slate"><div class="kpi-label">Prior Doji</div><div class="kpi-value">32</div><div class="kpi-sub">0.8% of days</div></div>
+  </div>
+
+  <div class="table-wrap">
+    <div class="table-header">Measured Move Rates by Prior Direction</div>
+    <table>
+      <thead><tr><th>Prior Direction</th><th class="right">N</th><th class="right">Bull 0.5x</th><th class="right">Bull 1x</th><th class="right">Bear 0.5x</th><th class="right">Bear 1x</th><th class="right">Bull 1.5x</th><th class="right">Bear 1.5x</th></tr></thead>
+      <tbody>
+        <tr><td><span class="pill green">Prior Bull</span></td><td class="mono right">2,300</td><td class="mono right">44.7%</td><td class="mono right">16.3%</td><td class="mono right">42.3%</td><td class="mono right">18.4%</td><td class="mono right">4.3%</td><td class="mono right">6.9%</td></tr>
+        <tr><td><span class="pill red">Prior Bear</span></td><td class="mono right">1,886</td><td class="mono right">51.4%</td><td class="mono right">21.4%</td><td class="mono right">47.9%</td><td class="mono right">22.9%</td><td class="mono right">6.3%</td><td class="mono right">9.1%</td></tr>
+        <tr style="opacity:.65;"><td><span class="pill slate">Prior Doji</span></td><td class="mono right">32</td><td class="mono right">56.2%</td><td class="mono right">25.0%</td><td class="mono right">50.0%</td><td class="mono right">12.5%</td><td class="mono right">12.5%</td><td class="mono right">3.1%</td></tr>
+        <tr style="background:var(--surface-alt);"><td style="color:var(--text-muted);font-style:italic;">Baseline</td><td class="mono right" style="color:var(--text-muted);">4,218</td><td class="mono right" style="color:var(--text-muted);">47.7%</td><td class="mono right" style="color:var(--text-muted);">18.7%</td><td class="mono right" style="color:var(--text-muted);">44.9%</td><td class="mono right" style="color:var(--text-muted);">20.3%</td><td class="mono right" style="color:var(--text-muted);">5.3%</td><td class="mono right" style="color:var(--text-muted);">7.8%</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="table-wrap">
+    <div class="table-header">Continuation Ratios &mdash; ABR-from-Close vs Original</div>
+    <table>
+      <thead><tr><th>Scenario</th><th class="right">Continuation</th><th class="right">Reversal</th><th class="right">Ratio</th><th class="right">Original</th><th class="right">Change</th></tr></thead>
+      <tbody>
+        <tr><td>After Bull &rarr; 0.5x</td><td class="mono right"><span class="pill green">44.7%</span></td><td class="mono right"><span class="pill red">42.3%</span></td><td class="mono right"><span class="pill amber">1.06:1</span></td><td class="mono right" style="color:var(--text-muted);">~2:1</td><td class="mono right delta-negative">Collapsed</td></tr>
+        <tr><td>After Bear &rarr; 0.5x</td><td class="mono right"><span class="pill red">47.9%</span></td><td class="mono right"><span class="pill green">51.4%</span></td><td class="mono right"><span class="pill amber">0.93:1</span></td><td class="mono right" style="color:var(--text-muted);">~2:1</td><td class="mono right delta-negative">Collapsed</td></tr>
+        <tr><td>After Bull &rarr; 1x</td><td class="mono right"><span class="pill green">16.3%</span></td><td class="mono right"><span class="pill red">18.4%</span></td><td class="mono right"><span class="pill amber">0.89:1</span></td><td class="mono right" style="color:var(--text-muted);">~2:1</td><td class="mono right delta-negative">Reversed</td></tr>
+        <tr><td>After Bear &rarr; 1x</td><td class="mono right"><span class="pill red">22.9%</span></td><td class="mono right"><span class="pill green">21.4%</span></td><td class="mono right"><span class="pill amber">1.07:1</span></td><td class="mono right" style="color:var(--text-muted);">~2:1</td><td class="mono right delta-negative">Collapsed</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="note-box purple"><strong>Critical finding &mdash; continuation bias disappears:</strong> The original ~2:1 continuation ratio was a geometric artifact of anchoring targets to the prior extreme. By anchoring both directions to the same point (the close), this structural asymmetry vanishes. Continuation ratios collapse to ~1:1 across all levels. Prior direction is essentially non-predictive.</div>
+
+  <div class="insight-grid">
+    <div class="insight-card red"><h4>After Bear Bars: Everything Hits More</h4><p>After a bear bar, both bull and bear rates are elevated (51.4%/47.9% vs 44.7%/42.3%). This is volatility clustering &mdash; bear bars precede more volatile next days, lifting hit rates in both directions.</p></div>
+    <div class="insight-card amber"><h4>Direction Factor Demoted to Irrelevant</h4><p>In the original study, prior direction was the weakest standalone factor but still produced ~2:1 edges. Here it produces no directional edge at all &mdash; only a volatility proxy.</p></div>
+  </div>
+
+  <div class="table-wrap">
+    <div class="table-header">Prior Direction &times; Prior IBS Combined</div>
+    <table>
+      <thead><tr><th>Combination</th><th class="right">N</th><th class="right">Bull 0.5x</th><th class="right">Bull 1x</th><th class="right">Bear 0.5x</th><th class="right">Bear 1x</th></tr></thead>
+      <tbody>
+        <tr style="opacity:.65;"><td>Prior Bull + Low IBS</td><td class="mono right">51</td><td class="mono right">39.2%</td><td class="mono right">9.8%</td><td class="mono right"><span class="pill red">52.9%</span></td><td class="mono right">23.5%</td></tr>
+        <tr><td>Prior Bull + Mid IBS</td><td class="mono right">596</td><td class="mono right">47.1%</td><td class="mono right">17.6%</td><td class="mono right">39.8%</td><td class="mono right">17.3%</td></tr>
+        <tr><td>Prior Bull + High IBS</td><td class="mono right">1,653</td><td class="mono right">43.9%</td><td class="mono right">16.1%</td><td class="mono right">42.9%</td><td class="mono right">18.6%</td></tr>
+        <tr><td>Prior Bear + Low IBS</td><td class="mono right">1,014</td><td class="mono right"><span class="pill green">54.6%</span></td><td class="mono right"><span class="pill green">24.1%</span></td><td class="mono right">47.7%</td><td class="mono right">21.2%</td></tr>
+        <tr><td>Prior Bear + Mid IBS</td><td class="mono right">761</td><td class="mono right">46.9%</td><td class="mono right">18.1%</td><td class="mono right"><span class="pill red">48.9%</span></td><td class="mono right"><span class="pill red">26.3%</span></td></tr>
+        <tr style="opacity:.65;"><td>Prior Bear + High IBS</td><td class="mono right">111</td><td class="mono right">52.3%</td><td class="mono right">18.9%</td><td class="mono right">43.2%</td><td class="mono right">14.4%</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="note-box blue"><strong>Direction &times; IBS interaction:</strong> After a Bear bar with Low IBS (closed near the low), the strongest rate is Bull 0.5x at 54.6% &mdash; mean reversion, not continuation. After a Bear bar with Mid IBS, the strongest is Bear 1x at 26.3%. Direction only adds value as a volatility proxy (bear bars &rarr; more volatile next day), not as a directional signal.</div>
+</div>
+
+<!-- ============================================================ -->
+<!-- SECTION 3: PRIOR IBS                                          -->
+<!-- ============================================================ -->
+<div class="section" id="s3">
+  <div class="section-header"><span class="section-num">Section 03</span><span class="section-title">Prior IBS (Internal Bar Strength)</span></div>
+  <p class="section-desc">In the original study, IBS was the strongest single predictor with 2.7&ndash;2.9&times; directional advantage. Does this power survive the close anchor?</p>
+
+  <div class="kpi-grid">
+    <div class="kpi-card red"><div class="kpi-label">Low IBS (&lt;0.31)</div><div class="kpi-value">1,072</div><div class="kpi-sub">25.4% of days</div></div>
+    <div class="kpi-card amber"><div class="kpi-label">Mid IBS (0.31&ndash;0.69)</div><div class="kpi-value">1,375</div><div class="kpi-sub">32.6% of days</div></div>
+    <div class="kpi-card green"><div class="kpi-label">High IBS (&gt;0.69)</div><div class="kpi-value">1,771</div><div class="kpi-sub">42.0% of days</div></div>
+  </div>
+
+  <div class="table-wrap">
+    <div class="table-header">Measured Move Rates by Prior IBS</div>
+    <table>
+      <thead><tr><th>IBS Bucket</th><th class="right">N</th><th class="right">Bull 0.5x</th><th class="right">Bull 1x</th><th class="right">Bear 0.5x</th><th class="right">Bear 1x</th><th class="right">Bull 1.5x</th><th class="right">Bear 1.5x</th></tr></thead>
+      <tbody>
+        <tr><td><span class="pill red">Low IBS (&lt;0.31)</span></td><td class="mono right">1,072</td><td class="mono right"><span class="pill green">53.9%</span></td><td class="mono right"><span class="pill green">23.4%</span></td><td class="mono right">47.9%</td><td class="mono right">21.3%</td><td class="mono right">6.1%</td><td class="mono right">8.3%</td></tr>
+        <tr><td><span class="pill amber">Mid IBS</span></td><td class="mono right">1,375</td><td class="mono right">47.2%</td><td class="mono right">18.0%</td><td class="mono right">44.9%</td><td class="mono right">22.2%</td><td class="mono right">6.1%</td><td class="mono right">8.2%</td></tr>
+        <tr><td><span class="pill green">High IBS (&gt;0.69)</span></td><td class="mono right">1,771</td><td class="mono right">44.4%</td><td class="mono right">16.3%</td><td class="mono right">43.0%</td><td class="mono right">18.4%</td><td class="mono right">4.1%</td><td class="mono right">7.3%</td></tr>
+        <tr style="background:var(--surface-alt);"><td style="color:var(--text-muted);font-style:italic;">Baseline</td><td class="mono right" style="color:var(--text-muted);">4,218</td><td class="mono right" style="color:var(--text-muted);">47.7%</td><td class="mono right" style="color:var(--text-muted);">18.7%</td><td class="mono right" style="color:var(--text-muted);">44.9%</td><td class="mono right" style="color:var(--text-muted);">20.3%</td><td class="mono right" style="color:var(--text-muted);">5.3%</td><td class="mono right" style="color:var(--text-muted);">7.8%</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="note-box purple"><strong>Critical finding &mdash; IBS directional edge disappears:</strong> In the original study, Low IBS produced 2.7&times; more bear MMs and High IBS produced 2.9&times; more bull MMs. Here, Low IBS raises hit rates in BOTH directions (53.9% bull, 47.9% bear) &mdash; it is a volatility signal, not a directional signal. The IBS directional advantage was another artifact of extreme-anchored targets: low IBS placed the bear target closer (from the low) and the bull target farther (from the high).</div>
+
+  <div class="table-wrap">
+    <div class="table-header">Fine-Grained IBS Buckets (10% increments)</div>
+    <table>
+      <thead><tr><th>IBS Range</th><th class="right">N</th><th class="right">Bull 0.5x</th><th class="right">Bull 1x</th><th class="right">Bear 0.5x</th><th class="right">Bear 1x</th></tr></thead>
+      <tbody>
+        <tr><td>0&ndash;10%</td><td class="mono right">336</td><td class="mono right">52.4%</td><td class="mono right">20.8%</td><td class="mono right">49.7%</td><td class="mono right"><span class="pill red">25.0%</span></td></tr>
+        <tr><td>10&ndash;20%</td><td class="mono right">342</td><td class="mono right"><span class="pill green">56.4%</span></td><td class="mono right"><span class="pill green">26.3%</span></td><td class="mono right">44.2%</td><td class="mono right">19.0%</td></tr>
+        <tr><td>20&ndash;31%</td><td class="mono right">394</td><td class="mono right">53.0%</td><td class="mono right">23.1%</td><td class="mono right">49.7%</td><td class="mono right">20.1%</td></tr>
+        <tr><td>31&ndash;50%</td><td class="mono right">615</td><td class="mono right">49.8%</td><td class="mono right">18.9%</td><td class="mono right">45.5%</td><td class="mono right">21.6%</td></tr>
+        <tr><td>50&ndash;69%</td><td class="mono right">760</td><td class="mono right">45.1%</td><td class="mono right">17.2%</td><td class="mono right">44.5%</td><td class="mono right">22.6%</td></tr>
+        <tr><td>70&ndash;80%</td><td class="mono right">485</td><td class="mono right">44.9%</td><td class="mono right">17.9%</td><td class="mono right">41.9%</td><td class="mono right">17.1%</td></tr>
+        <tr><td>80&ndash;90%</td><td class="mono right">579</td><td class="mono right">44.6%</td><td class="mono right">16.2%</td><td class="mono right">41.6%</td><td class="mono right">19.2%</td></tr>
+        <tr><td>90&ndash;100%</td><td class="mono right">707</td><td class="mono right">44.0%</td><td class="mono right">15.3%</td><td class="mono right">44.8%</td><td class="mono right">18.5%</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="insight-grid">
+    <div class="insight-card purple"><h4>IBS = Volatility Proxy, Not Directional</h4><p>Low IBS (closed near bar low) lifts all hit rates &mdash; bull and bear alike. The highest Bull 1x rate (26.3%) is at IBS 10&ndash;20%. This was the &ldquo;strongest single predictor&rdquo; in the original study; under close-anchored targets it loses all directional power.</p></div>
+    <div class="insight-card blue"><h4>Monotonic Decline from Low to High IBS</h4><p>Bull hit rates decline almost monotonically from low to high IBS: 56.4% &rarr; 44.0% (0.5x) and 26.3% &rarr; 15.3% (1x). Low IBS = more volatile next day = more targets hit in both directions.</p></div>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- SECTION 4: GAP OPEN                                           -->
+<!-- ============================================================ -->
+<div class="section" id="s4">
+  <div class="section-header"><span class="section-num">Section 04</span><span class="section-title">Gap Open</span></div>
+  <p class="section-desc">The gap factor was powerful in the original study. Under ABR-from-close, it becomes the dominant &mdash; and arguably only &mdash; factor that matters.</p>
+
+  <div class="kpi-grid">
+    <div class="kpi-card green"><div class="kpi-label">Gap Up Days</div><div class="kpi-value">2,303</div><div class="kpi-sub">54.6% of days</div></div>
+    <div class="kpi-card red"><div class="kpi-label">Gap Down Days</div><div class="kpi-value">1,871</div><div class="kpi-sub">44.4% of days</div></div>
+    <div class="kpi-card slate"><div class="kpi-label">Flat Open</div><div class="kpi-value">44</div><div class="kpi-sub">1.0% of days</div></div>
+  </div>
+
+  <div class="table-wrap">
+    <div class="table-header">Measured Move Rates by Gap Direction</div>
+    <table>
+      <thead><tr><th>Gap Dir</th><th class="right">N</th><th class="right">Bull 0.5x</th><th class="right">Bull 1x</th><th class="right">Bull 1.5x</th><th class="right">Bear 0.5x</th><th class="right">Bear 1x</th><th class="right">Bear 1.5x</th></tr></thead>
+      <tbody>
+        <tr><td><span class="pill green">Gap Up</span></td><td class="mono right">2,303</td><td class="mono right"><span class="pill green">71.3%</span></td><td class="mono right"><span class="pill green">31.4%</span></td><td class="mono right">9.0%</td><td class="mono right">22.5%</td><td class="mono right">7.4%</td><td class="mono right">1.9%</td></tr>
+        <tr><td><span class="pill red">Gap Down</span></td><td class="mono right">1,871</td><td class="mono right">19.1%</td><td class="mono right">3.3%</td><td class="mono right">0.7%</td><td class="mono right"><span class="pill red">72.7%</span></td><td class="mono right"><span class="pill red">36.6%</span></td><td class="mono right">15.2%</td></tr>
+        <tr style="opacity:.65;"><td><span class="pill slate">Flat</span></td><td class="mono right">44</td><td class="mono right">31.8%</td><td class="mono right">2.3%</td><td class="mono right">0.0%</td><td class="mono right">34.1%</td><td class="mono right">9.1%</td><td class="mono right">4.5%</td></tr>
+        <tr style="background:var(--surface-alt);"><td style="color:var(--text-muted);font-style:italic;">Baseline</td><td class="mono right" style="color:var(--text-muted);">4,218</td><td class="mono right" style="color:var(--text-muted);">47.7%</td><td class="mono right" style="color:var(--text-muted);">18.7%</td><td class="mono right" style="color:var(--text-muted);">5.3%</td><td class="mono right" style="color:var(--text-muted);">44.9%</td><td class="mono right" style="color:var(--text-muted);">20.3%</td><td class="mono right" style="color:var(--text-muted);">7.8%</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="note-box green"><strong>The gap IS the signal:</strong> Gap direction alone produces 71&ndash;73% hit rates at 0.5x and 31&ndash;37% at 1x. Contra-gap rates collapse to 3&ndash;7% at 1x. This is a 4&ndash;10&times; directional advantage &mdash; far stronger than any factor in the original study. Under ABR-from-close, where targets are measured from the close, the gap puts you partway toward the target before the first trade prints.</div>
+
+  <div class="table-wrap">
+    <div class="table-header">Gap Up by Size &mdash; Bull Continuation Rates</div>
+    <table>
+      <thead><tr><th>Gap Size (% ABR)</th><th class="right">N</th><th class="right">Bull 0.5x</th><th class="right">Bull 1x</th><th class="right">Bull 1.5x</th><th class="right">Bear 0.5x</th><th class="right">Bear 1x</th></tr></thead>
+      <tbody>
+        <tr><td>0&ndash;5%</td><td class="mono right">168</td><td class="mono right">37.5%</td><td class="mono right">8.9%</td><td class="mono right">1.2%</td><td class="mono right">39.3%</td><td class="mono right">13.1%</td></tr>
+        <tr><td>5&ndash;10%</td><td class="mono right">197</td><td class="mono right">47.2%</td><td class="mono right">13.7%</td><td class="mono right">2.5%</td><td class="mono right">34.0%</td><td class="mono right">14.2%</td></tr>
+        <tr><td>10&ndash;20%</td><td class="mono right">426</td><td class="mono right">53.5%</td><td class="mono right">14.1%</td><td class="mono right">1.4%</td><td class="mono right">29.6%</td><td class="mono right">10.3%</td></tr>
+        <tr><td>20&ndash;30%</td><td class="mono right">345</td><td class="mono right">58.0%</td><td class="mono right">15.7%</td><td class="mono right">3.2%</td><td class="mono right">27.0%</td><td class="mono right">8.4%</td></tr>
+        <tr style="background:var(--green-light);"><td><strong>30%+</strong></td><td class="mono right"><strong>1,167</strong></td><td class="mono right"><span class="pill green">90.7%</span></td><td class="mono right"><span class="pill green">48.7%</span></td><td class="mono right"><span class="pill green">15.8%</span></td><td class="mono right">14.2%</td><td class="mono right">4.0%</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="table-wrap">
+    <div class="table-header">Gap Down by Size &mdash; Bear Continuation Rates</div>
+    <table>
+      <thead><tr><th>Gap Size (% ABR)</th><th class="right">N</th><th class="right">Bear 0.5x</th><th class="right">Bear 1x</th><th class="right">Bear 1.5x</th><th class="right">Bull 0.5x</th><th class="right">Bull 1x</th></tr></thead>
+      <tbody>
+        <tr><td>0&ndash;5%</td><td class="mono right">172</td><td class="mono right">41.3%</td><td class="mono right">14.0%</td><td class="mono right">4.1%</td><td class="mono right">33.7%</td><td class="mono right">5.2%</td></tr>
+        <tr><td>5&ndash;10%</td><td class="mono right">186</td><td class="mono right">46.8%</td><td class="mono right">15.1%</td><td class="mono right">2.2%</td><td class="mono right">34.4%</td><td class="mono right">4.8%</td></tr>
+        <tr><td>10&ndash;20%</td><td class="mono right">335</td><td class="mono right">52.8%</td><td class="mono right">16.4%</td><td class="mono right">3.6%</td><td class="mono right">25.7%</td><td class="mono right">5.1%</td></tr>
+        <tr><td>20&ndash;30%</td><td class="mono right">280</td><td class="mono right">66.8%</td><td class="mono right">27.1%</td><td class="mono right">6.4%</td><td class="mono right">19.3%</td><td class="mono right">3.6%</td></tr>
+        <tr style="background:var(--red-light);"><td><strong>30%+</strong></td><td class="mono right"><strong>898</strong></td><td class="mono right"><span class="pill red">93.3%</span></td><td class="mono right"><span class="pill red">55.8%</span></td><td class="mono right"><span class="pill red">27.2%</span></td><td class="mono right">10.7%</td><td class="mono right">1.9%</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="kpi-grid" style="grid-template-columns:repeat(auto-fit,minmax(220px,1fr));">
+    <div class="kpi-card green"><div class="kpi-label">Gap Up &gt;30% &rarr; Bull 1x</div><div class="kpi-value" style="color:var(--green);">48.7%</div><div class="kpi-sub">n=1,167 (69.5/yr)</div></div>
+    <div class="kpi-card red"><div class="kpi-label">Gap Down &gt;30% &rarr; Bear 1x</div><div class="kpi-value" style="color:var(--red);">55.8%</div><div class="kpi-sub">n=898 (53.5/yr)</div></div>
+    <div class="kpi-card green"><div class="kpi-label">Gap Up Coverage (Bull 1x)</div><div class="kpi-value" style="color:var(--green);">92.0%</div><div class="kpi-sub">724 of 787 bull 1x hits</div></div>
+    <div class="kpi-card red"><div class="kpi-label">Gap Dn Coverage (Bear 1x)</div><div class="kpi-value" style="color:var(--red);">79.7%</div><div class="kpi-sub">684 of 858 bear 1x hits</div></div>
+  </div>
+
+  <div class="note-box red"><strong>Why the gap dominates:</strong> Under ABR-from-close, targets are measured from yesterday&rsquo;s close. The gap IS a head start toward the target. A gap up of 30% ABR means the market opens already 30% of the way to the 1x target. At &gt;30% ABR, the gap distribution has a long right tail &mdash; many days open past the 0.5x target, hence the 91&ndash;93% hit rates.</div>
+
+  <div class="note-box blue"><strong>Bear asymmetry intensifies:</strong> Bear 1x at 55.8% vs Bull 1x at 48.7% for &gt;30% gaps. Bear 1.5x at 27.2% vs Bull 1.5x at 15.8%. Downside moves are more explosive &mdash; this is a real market property, not an artifact.</div>
+</div>
+
+<!-- ============================================================ -->
+<!-- SECTION 5: PRIOR BAR SIZE                                     -->
+<!-- ============================================================ -->
+<div class="section" id="s5">
+  <div class="section-header"><span class="section-num">Section 05</span><span class="section-title">Prior Bar Size</span></div>
+  <p class="section-desc">The original study found a strong compression &rarr; expansion pattern. Does this survive the close anchor?</p>
+
+  <div class="table-wrap">
+    <div class="table-header">Measured Move Rates by Prior Bar Size (as multiple of ABR)</div>
+    <table>
+      <thead><tr><th>Bar Size</th><th class="right">N</th><th class="right">Bull 0.5x</th><th class="right">Bull 1x</th><th class="right">Bear 0.5x</th><th class="right">Bear 1x</th><th class="right">Bull 1.5x</th><th class="right">Bear 1.5x</th></tr></thead>
+      <tbody>
+        <tr><td><span class="pill purple">Small (&lt;0.8x)</span></td><td class="mono right">1,405</td><td class="mono right">44.2%</td><td class="mono right">15.3%</td><td class="mono right">40.1%</td><td class="mono right">17.3%</td><td class="mono right">3.8%</td><td class="mono right">6.6%</td></tr>
+        <tr><td><span class="pill amber">Normal (0.8&ndash;1.2x)</span></td><td class="mono right">1,712</td><td class="mono right">47.6%</td><td class="mono right">19.6%</td><td class="mono right">46.6%</td><td class="mono right">21.3%</td><td class="mono right">5.2%</td><td class="mono right">7.6%</td></tr>
+        <tr><td><span class="pill blue">Large (1.2&ndash;2x)</span></td><td class="mono right">1,000</td><td class="mono right"><span class="pill green">52.1%</span></td><td class="mono right">20.3%</td><td class="mono right"><span class="pill red">47.8%</span></td><td class="mono right">22.5%</td><td class="mono right">7.0%</td><td class="mono right">9.7%</td></tr>
+        <tr style="opacity:.75;"><td><span class="pill slate">V.Large (&gt;2x)</span></td><td class="mono right">101</td><td class="mono right"><span class="pill green">56.4%</span></td><td class="mono right"><span class="pill green">32.7%</span></td><td class="mono right"><span class="pill red">53.5%</span></td><td class="mono right"><span class="pill red">24.8%</span></td><td class="mono right">9.9%</td><td class="mono right">10.9%</td></tr>
+        <tr style="background:var(--surface-alt);"><td style="color:var(--text-muted);font-style:italic;">Baseline</td><td class="mono right" style="color:var(--text-muted);">4,218</td><td class="mono right" style="color:var(--text-muted);">47.7%</td><td class="mono right" style="color:var(--text-muted);">18.7%</td><td class="mono right" style="color:var(--text-muted);">44.9%</td><td class="mono right" style="color:var(--text-muted);">20.3%</td><td class="mono right" style="color:var(--text-muted);">5.3%</td><td class="mono right" style="color:var(--text-muted);">7.8%</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="note-box purple"><strong>Pattern inverted &mdash; expansion predicts expansion:</strong> The compression &rarr; expansion pattern is REVERSED. Small bars produce the lowest rates (44.2%/40.1%), while large and very large bars produce the highest (52.1&ndash;56.4% / 47.8&ndash;53.5%). ABR smooths volatility, so when a prior bar is large relative to ABR, it signals expanding volatility &mdash; and volatility clusters. The next day also tends to be volatile, lifting hit rates in both directions.</div>
+
+  <div class="insight-grid">
+    <div class="insight-card purple"><h4>Small Bars: Below Baseline</h4><p>Small prior bars (&lt;0.8x ABR) produce rates below baseline in every metric. In the original study these were the &ldquo;coiled energy&rdquo; setups at 38%+. Under close-anchored targets, small bars mean low volatility, which depresses next-day range expectations.</p></div>
+    <div class="insight-card blue"><h4>Very Large Bars: Both Sides Elevated</h4><p>After very large bars (&gt;2x ABR), both bull (56.4%) and bear (53.5%) 0.5x rates are well above baseline. Bull 1x reaches 32.7%. This is pure volatility clustering &mdash; extreme days beget extreme days.</p></div>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- SECTION 6: PRIOR BAR TYPE                                     -->
+<!-- ============================================================ -->
+<div class="section" id="s6">
+  <div class="section-header"><span class="section-num">Section 06</span><span class="section-title">Prior Bar Type</span></div>
+  <p class="section-desc">How does bar structure (inside/outside/breakout/measuring gap) influence ABR-from-close measured moves?</p>
+
+  <div class="table-wrap">
+    <div class="table-header">Bar Type Definitions &amp; Frequencies</div>
+    <table>
+      <thead><tr><th>Type</th><th>Description</th><th class="right">N</th><th class="right">%</th></tr></thead>
+      <tbody>
+        <tr><td><span class="pill green">1 &mdash; BL NOL</span></td><td>Bull No Overlap (Low &gt; High[1])</td><td class="mono right">371</td><td class="mono right">8.8%</td></tr>
+        <tr><td><span class="pill red">2 &mdash; BR NOL</span></td><td>Bear No Overlap (High &lt; Low[1])</td><td class="mono right">207</td><td class="mono right">4.9%</td></tr>
+        <tr><td><span class="pill amber">3 &mdash; Outside</span></td><td>High &ge; High[1] AND Low &le; Low[1]</td><td class="mono right">427</td><td class="mono right">10.1%</td></tr>
+        <tr><td><span class="pill purple">4 &mdash; Inside</span></td><td>High &le; High[1] AND Low &ge; Low[1]</td><td class="mono right">434</td><td class="mono right">10.3%</td></tr>
+        <tr><td><span class="pill green">5 &mdash; Bull BO</span></td><td>High &gt; High[1] (other criteria not met)</td><td class="mono right">1,569</td><td class="mono right">37.2%</td></tr>
+        <tr><td><span class="pill red">6 &mdash; Bear BO</span></td><td>Low &lt; Low[1] (other criteria not met)</td><td class="mono right">1,210</td><td class="mono right">28.7%</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="table-wrap">
+    <div class="table-header">Measured Move Rates by Prior Bar Type</div>
+    <table>
+      <thead><tr><th>Prior Bar Type</th><th class="right">N</th><th class="right">Bull 0.5x</th><th class="right">Bull 1x</th><th class="right">Bear 0.5x</th><th class="right">Bear 1x</th><th class="right">Bear 1.5x</th></tr></thead>
+      <tbody>
+        <tr><td><span class="pill green">BL NOL</span></td><td class="mono right">371</td><td class="mono right">36.1%</td><td class="mono right">8.6%</td><td class="mono right">36.1%</td><td class="mono right">11.6%</td><td class="mono right">4.9%</td></tr>
+        <tr><td><span class="pill red">BR NOL</span></td><td class="mono right">207</td><td class="mono right"><span class="pill green">55.6%</span></td><td class="mono right"><span class="pill green">24.6%</span></td><td class="mono right">48.3%</td><td class="mono right">21.7%</td><td class="mono right">9.2%</td></tr>
+        <tr><td><span class="pill amber">Outside</span></td><td class="mono right">427</td><td class="mono right">49.2%</td><td class="mono right">20.1%</td><td class="mono right">47.5%</td><td class="mono right">21.8%</td><td class="mono right">8.4%</td></tr>
+        <tr><td><span class="pill purple">Inside</span></td><td class="mono right">434</td><td class="mono right">47.7%</td><td class="mono right">20.7%</td><td class="mono right">47.0%</td><td class="mono right">22.4%</td><td class="mono right">8.8%</td></tr>
+        <tr><td><span class="pill green">Bull BO</span></td><td class="mono right">1,569</td><td class="mono right">45.6%</td><td class="mono right">15.7%</td><td class="mono right">42.3%</td><td class="mono right">17.9%</td><td class="mono right">6.4%</td></tr>
+        <tr><td><span class="pill red">Bear BO</span></td><td class="mono right">1,210</td><td class="mono right"><span class="pill green">52.2%</span></td><td class="mono right"><span class="pill green">23.3%</span></td><td class="mono right"><span class="pill red">48.7%</span></td><td class="mono right"><span class="pill red">24.7%</span></td><td class="mono right"><span class="pill red">9.9%</span></td></tr>
+        <tr style="background:var(--surface-alt);"><td style="color:var(--text-muted);font-style:italic;">Baseline</td><td class="mono right" style="color:var(--text-muted);">4,218</td><td class="mono right" style="color:var(--text-muted);">47.7%</td><td class="mono right" style="color:var(--text-muted);">18.7%</td><td class="mono right" style="color:var(--text-muted);">44.9%</td><td class="mono right" style="color:var(--text-muted);">20.3%</td><td class="mono right" style="color:var(--text-muted);">7.8%</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="note-box blue"><strong>BL NOL is the outlier:</strong> Bull No Overlap bars (measuring gaps up) produce the lowest rates by far &mdash; 36.1% in both directions, 8.6% Bull 1x. A bull measuring gap means the prior bar opened and stayed entirely above the previous bar. The close is near the top of a recent move, and mean reversion pressure suppresses further upside from that elevated close.</div>
+
+  <div class="insight-grid">
+    <div class="insight-card red"><h4>Bear Breakout: Highest Rates</h4><p>Bear breakout bars produce the highest rates: 52.2%/48.7% at 0.5x, 23.3%/24.7% at 1x. Like bear direction and low IBS, this is a volatility signal &mdash; a down breakout signals expanding volatility in both directions.</p></div>
+    <div class="insight-card purple"><h4>Inside Bar Edge Neutralised</h4><p>Inside bars were the top bar type in the original study at 40%+. Here they are at baseline (47.7%/47.0%). The compression &rarr; expansion edge required extreme-anchored targets to manifest.</p></div>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- SECTION 7: COMBINED FACTOR MATRIX                             -->
+<!-- ============================================================ -->
+<div class="section" id="s7">
+  <div class="section-header"><span class="section-num">Section 07</span><span class="section-title">Combined Factor Matrix</span></div>
+  <p class="section-desc">Top setups combining gap direction + secondary factors. Every top setup requires a gap &mdash; no non-gap combination breaks 60% at 0.5x or 27% at 1x.</p>
+
+  <div class="kpi-grid" style="grid-template-columns:repeat(auto-fit,minmax(200px,1fr));">
+    <div class="kpi-card green"><div class="kpi-label">Best Bull 1x Setup</div><div class="kpi-value" style="color:var(--green);">53.9%</div><div class="kpi-sub">Gap Up &gt;30% + Low IBS (n=321)</div></div>
+    <div class="kpi-card red"><div class="kpi-label">Best Bear 1x Setup</div><div class="kpi-value" style="color:var(--red);">64.5%</div><div class="kpi-sub">Gap Dn &gt;30% + Bear BO (n=273)</div></div>
+    <div class="kpi-card accent"><div class="kpi-label">Gap-Only 1x Coverage</div><div class="kpi-value" style="color:var(--accent);">85.5%</div><div class="kpi-sub">1,408 of 1,645 total 1x hits</div></div>
+    <div class="kpi-card purple"><div class="kpi-label">&gt;30% Gap 1x Coverage</div><div class="kpi-value" style="color:var(--purple);">65.0%</div><div class="kpi-sub">1,069 of 1,645 total 1x hits</div></div>
+  </div>
+
+  <div class="table-wrap">
+    <div class="table-header">Top 12 Bull 1x Setups (n &ge; 20)</div>
+    <table>
+      <thead><tr><th>#</th><th>Setup</th><th class="right">N</th><th class="right">Per Yr</th><th class="right">Bull 1x</th></tr></thead>
+      <tbody>
+        <tr style="background:var(--green-light);"><td class="mono">1</td><td>Gap Up &gt;30% ABR + Low IBS</td><td class="mono right">321</td><td class="mono right">19.1</td><td class="mono right"><span class="pill green">53.9%</span></td></tr>
+        <tr style="background:var(--green-light);"><td class="mono">2</td><td>Gap Up &gt;30% ABR + Prior Bear BO</td><td class="mono right">374</td><td class="mono right">22.3</td><td class="mono right"><span class="pill green">52.9%</span></td></tr>
+        <tr style="background:var(--green-light);"><td class="mono">3</td><td>Gap Up &gt;30% ABR + Prior Inside Bar</td><td class="mono right">141</td><td class="mono right">8.4</td><td class="mono right"><span class="pill green">51.8%</span></td></tr>
+        <tr><td class="mono">4</td><td>Gap Up &gt;30% ABR (standalone)</td><td class="mono right">1,167</td><td class="mono right">69.5</td><td class="mono right"><span class="pill green">48.7%</span></td></tr>
+        <tr><td class="mono">5</td><td>Gap Up &gt;30% ABR + High IBS</td><td class="mono right">445</td><td class="mono right">26.5</td><td class="mono right"><span class="pill green">47.9%</span></td></tr>
+        <tr><td class="mono">6</td><td>Gap Up &gt;30% ABR + Prior Bull BO</td><td class="mono right">400</td><td class="mono right">23.8</td><td class="mono right"><span class="pill amber">44.0%</span></td></tr>
+        <tr><td class="mono">7</td><td>Gap Up &gt;20% ABR + Large Bar</td><td class="mono right">404</td><td class="mono right">24.0</td><td class="mono right"><span class="pill amber">43.8%</span></td></tr>
+        <tr><td class="mono">8</td><td>Gap Up + Prior Bear BO</td><td class="mono right">697</td><td class="mono right">41.5</td><td class="mono right"><span class="pill amber">38.0%</span></td></tr>
+        <tr><td class="mono">9</td><td>Gap Up + Low IBS</td><td class="mono right">604</td><td class="mono right">36.0</td><td class="mono right"><span class="pill amber">37.7%</span></td></tr>
+        <tr><td class="mono">10</td><td>Gap Up + Prior Outside Bar</td><td class="mono right">224</td><td class="mono right">13.3</td><td class="mono right">36.2%</td></tr>
+        <tr><td class="mono">11</td><td>Gap Up &gt;20% ABR + Small Bar</td><td class="mono right">483</td><td class="mono right">28.8</td><td class="mono right">35.8%</td></tr>
+        <tr><td class="mono">12</td><td>Gap Up + Large Bar</td><td class="mono right">595</td><td class="mono right">35.4</td><td class="mono right">35.5%</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="table-wrap">
+    <div class="table-header">Top 12 Bear 1x Setups (n &ge; 20)</div>
+    <table>
+      <thead><tr><th>#</th><th>Setup</th><th class="right">N</th><th class="right">Per Yr</th><th class="right">Bear 1x</th></tr></thead>
+      <tbody>
+        <tr style="background:var(--red-light);"><td class="mono">1</td><td>Gap Down &gt;30% ABR + Prior Bear BO</td><td class="mono right">273</td><td class="mono right">16.2</td><td class="mono right"><span class="pill red">64.5%</span></td></tr>
+        <tr style="background:var(--red-light);"><td class="mono">2</td><td>Gap Down &gt;30% ABR + Low IBS</td><td class="mono right">228</td><td class="mono right">13.6</td><td class="mono right"><span class="pill red">63.6%</span></td></tr>
+        <tr style="background:var(--red-light);"><td class="mono">3</td><td>Gap Down &gt;30% ABR + Prior Inside Bar</td><td class="mono right">116</td><td class="mono right">6.9</td><td class="mono right"><span class="pill red">57.8%</span></td></tr>
+        <tr><td class="mono">4</td><td>Gap Down &gt;30% ABR (standalone)</td><td class="mono right">898</td><td class="mono right">53.5</td><td class="mono right"><span class="pill red">55.8%</span></td></tr>
+        <tr><td class="mono">5</td><td>Gap Down &gt;20% ABR + Large Bar</td><td class="mono right">298</td><td class="mono right">17.7</td><td class="mono right"><span class="pill red">52.3%</span></td></tr>
+        <tr><td class="mono">6</td><td>Gap Down &gt;30% ABR + High IBS</td><td class="mono right">371</td><td class="mono right">22.1</td><td class="mono right"><span class="pill amber">50.1%</span></td></tr>
+        <tr><td class="mono">7</td><td>Gap Down &gt;30% ABR + Prior Bull BO</td><td class="mono right">312</td><td class="mono right">18.6</td><td class="mono right"><span class="pill amber">50.0%</span></td></tr>
+        <tr><td class="mono">8</td><td>Gap Down + Prior Bear BO</td><td class="mono right">506</td><td class="mono right">30.1</td><td class="mono right"><span class="pill amber">45.8%</span></td></tr>
+        <tr><td class="mono">9</td><td>Gap Down &gt;20% ABR + Small Bar</td><td class="mono right">395</td><td class="mono right">23.5</td><td class="mono right"><span class="pill amber">44.8%</span></td></tr>
+        <tr><td class="mono">10</td><td>Gap Down + Prior Inside Bar</td><td class="mono right">194</td><td class="mono right">11.5</td><td class="mono right">41.8%</td></tr>
+        <tr><td class="mono">11</td><td>Gap Down + Low IBS</td><td class="mono right">455</td><td class="mono right">27.1</td><td class="mono right">41.1%</td></tr>
+        <tr><td class="mono">12</td><td>Gap Down + Large Bar</td><td class="mono right">498</td><td class="mono right">29.6</td><td class="mono right">39.4%</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="note-box green"><strong>The money setups:</strong> The top bear 1x setup hits 64.5% &mdash; a coin-flip-plus at 1:1 R:R with n=273 and 16 occurrences per year. The top bull 1x hits 53.9% at similar frequency. These are dramatically better than the original study&rsquo;s best 1x setups (which barely cleared 20%). The ABR-from-close framework has solved the 1x problem &mdash; at least for gap days.</div>
+
+  <div class="note-box amber"><strong>Secondary factors add ~5&ndash;10pp over gap alone:</strong> Gap direction &gt;30% ABR alone gives 48.7% (bull) and 55.8% (bear) at 1x. Adding the best secondary factor lifts this to 53.9% and 64.5%. The incremental gain is real but modest &mdash; the gap does 85&ndash;90% of the work.</div>
+
+  <div class="note-box purple"><strong>No non-gap setup exceeds baseline significantly:</strong> Without gap direction, no combination of IBS + bar size + bar type produces a 1x rate above ~26%. The gap is a necessary condition for any actionable 1x setup in the ABR-from-close framework.</div>
+</div>
+
+<!-- ============================================================ -->
+<!-- SECTION 8: EXECUTIVE SUMMARY                                  -->
+<!-- ============================================================ -->
+<div class="section" id="s8">
+  <div class="section-header"><span class="section-num">Section 08</span><span class="section-title">Executive Summary</span></div>
+  <p class="section-desc">Synthesis of findings and comparison with the original range-from-extreme study.</p>
+
+  <div class="note-box green" style="font-size:15px;padding:24px;"><strong>Headline: ABR from prior close nearly doubles 1x hit rates (11% &rarr; 19&ndash;20%) and reveals that gap direction is the only factor that matters.</strong> The original study&rsquo;s factor hierarchy (Gap &gt; IBS &gt; Bar Size &gt; Bar Type &gt; Direction) collapses to a single dominant factor: gap direction + size. All other factors lose their directional power and become volatility proxies under the close anchor.</div>
+
+  <div class="insight-grid">
+    <div class="insight-card green"><h4>1. Hypothesis Confirmed</h4><p>Bull 1x: 11.1% &rarr; 18.7% (+68%). Bear 1x: 11.6% &rarr; 20.3% (+75%). The close anchor + ABR smoothing produces structurally better baseline rates at every level except 2x.</p></div>
+    <div class="insight-card red"><h4>2. Gap Dominance</h4><p>Gap direction alone produces 71&ndash;73% at 0.5x and 31&ndash;37% at 1x. Gap direction captures 92% of bull 1x hits and 80% of bear 1x hits. No other factor comes close.</p></div>
+    <div class="insight-card purple"><h4>3. All Other Factors Neutralised</h4><p>Direction (~2:1 &rarr; ~1:1), IBS (2.7x edge &rarr; ~1x), compression &rarr; expansion (inverted), inside bar edge (gone). These were artifacts of extreme-anchored targets, not genuine market signals.</p></div>
+    <div class="insight-card blue"><h4>4. Bear Asymmetry Persists</h4><p>Bear 2x/Bull 2x = 2.68x (vs 1.86x original). Bear 1x rates consistently exceed bull 1x rates at every gap size. Downside momentum is more explosive &mdash; a real market property, not an artifact.</p></div>
+    <div class="insight-card amber"><h4>5. Factor Hierarchy Simplifies</h4><p>Original: Gap &gt; IBS &gt; Bar Size &gt; Bar Type &gt; Direction. New: Gap &gt;&gt;&gt; (everything else &asymp; volatility noise). Secondary factors add 5&ndash;10pp but carry no standalone directional power.</p></div>
+    <div class="insight-card green"><h4>6. Tradable 1x Setups Exist</h4><p>Gap Down &gt;30% + Bear BO: 64.5% at 1x, 16/yr. Gap Up &gt;30% + Low IBS: 53.9% at 1x, 19/yr. These are ~50%+ win rates at ~1:1 R:R with sufficient frequency.</p></div>
+  </div>
+
+  <div class="table-wrap">
+    <div class="table-header">Factor Hierarchy &mdash; Original vs ABR-from-Close</div>
+    <table>
+      <thead><tr><th>Rank</th><th>Original Study</th><th>ABR-from-Close</th><th>What Changed</th></tr></thead>
+      <tbody>
+        <tr><td class="mono">1</td><td><span class="pill blue">Gap Size + Direction</span></td><td><span class="pill blue">Gap Size + Direction</span></td><td>Was strongest, now the ONLY factor. 71&ndash;93% at 0.5x.</td></tr>
+        <tr><td class="mono">2</td><td><span class="pill green">IBS</span></td><td><span class="pill slate">Volatility proxy only</span></td><td>Directional edge was artifact of extreme anchor.</td></tr>
+        <tr><td class="mono">3</td><td><span class="pill purple">Bar Size</span></td><td><span class="pill slate">Volatility proxy only</span></td><td>Compression &rarr; expansion INVERTED. Large bars now predict higher rates.</td></tr>
+        <tr><td class="mono">4</td><td><span class="pill amber">Bar Type</span></td><td><span class="pill slate">Volatility proxy only</span></td><td>Inside bar edge gone. Bear breakout highest but both directions.</td></tr>
+        <tr><td class="mono">5</td><td style="color:var(--text-muted);">Direction</td><td><span class="pill slate">Irrelevant</span></td><td>~2:1 continuation was geometric artifact. Now ~1:1.</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="table-wrap">
+    <div class="table-header">Top 5 Money Setups &mdash; 1x Measured Moves</div>
+    <table>
+      <thead><tr><th>#</th><th>Setup</th><th class="right">Dir</th><th class="right">1x Rate</th><th class="right">N</th><th class="right">Per Yr</th></tr></thead>
+      <tbody>
+        <tr style="background:var(--red-light);"><td class="mono">1</td><td>Gap Down &gt;30% ABR + Prior Bear BO</td><td><span class="pill red">Bear</span></td><td class="mono right"><span class="pill red">64.5%</span></td><td class="mono right">273</td><td class="mono right">16.2</td></tr>
+        <tr style="background:var(--red-light);"><td class="mono">2</td><td>Gap Down &gt;30% ABR + Low IBS</td><td><span class="pill red">Bear</span></td><td class="mono right"><span class="pill red">63.6%</span></td><td class="mono right">228</td><td class="mono right">13.6</td></tr>
+        <tr style="background:var(--red-light);"><td class="mono">3</td><td>Gap Down &gt;30% ABR (standalone)</td><td><span class="pill red">Bear</span></td><td class="mono right"><span class="pill red">55.8%</span></td><td class="mono right">898</td><td class="mono right">53.5</td></tr>
+        <tr style="background:var(--green-light);"><td class="mono">4</td><td>Gap Up &gt;30% ABR + Low IBS</td><td><span class="pill green">Bull</span></td><td class="mono right"><span class="pill green">53.9%</span></td><td class="mono right">321</td><td class="mono right">19.1</td></tr>
+        <tr style="background:var(--green-light);"><td class="mono">5</td><td>Gap Up &gt;30% ABR + Prior Bear BO</td><td><span class="pill green">Bull</span></td><td class="mono right"><span class="pill green">52.9%</span></td><td class="mono right">374</td><td class="mono right">22.3</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="note-box amber"><strong>What this means for trading:</strong> The ABR-from-close framework converts the measured move study into what is essentially a gap continuation study. The tradable insight is simple: when the market gaps &gt;30% of ABR, expect price to travel at least 1&times; ABR from the prior close in the gap direction roughly half the time (49&ndash;56%), and at least 0.5&times; ABR over 90% of the time. The open itself does most of the work &mdash; the gap IS the measured move in many cases.</div>
+
+  <div class="note-box blue"><strong>Next steps:</strong> (1) Investigate whether the gap continuation edge has a time component &mdash; does most of the 1x move happen in the first 30&ndash;60 minutes? (2) Test Avenue 2 (pullback entry) on gap days to improve R:R further. (3) Develop concrete entry/exit rules: entry at open on gap days &gt;30% ABR, target at 1x ABR from close, stop TBD. (4) Backtest with realistic slippage assumptions.</div>
+</div>
+
+<!-- ===== FOOTER ===== -->
+<div class="footer">
+  <span>ES Measured Moves &mdash; ABR from Prior Close (RTH) | Phase III, Avenue 3</span>
+  <span>Source: TradingView zen_abr_from_close_v1 | N=4,218 days | Feb 2026</span>
+</div>
+
+</div><!-- /container -->
+</body>
+</html>
