@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ES Pullback-to-Close Entry Analysis</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #FAFAF8; --surface: #FFFFFF; --surface-alt: #F5F4F0;
+  --border: #E8E6E1; --border-strong: #D4D1C9;
+  --text-primary: #1A1A18; --text-secondary: #6B6964; --text-muted: #9C9890;
+  --accent: #2563EB; --accent-light: #EFF6FF;
+  --green: #16A34A; --green-light: #F0FDF4; --green-bg: #DCFCE7;
+  --red: #DC2626; --red-light: #FEF2F2; --red-bg: #FEE2E2;
+  --amber: #D97706; --amber-light: #FFFBEB; --amber-bg: #FEF3C7;
+  --purple: #7C3AED; --purple-light: #F5F3FF; --purple-bg: #EDE9FE;
+  --slate: #64748B; --slate-bg: #F1F5F9;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'DM Sans',-apple-system,sans-serif;background:var(--bg);color:var(--text-primary);line-height:1.6;-webkit-font-smoothing:antialiased}
+.wrap{max-width:1200px;margin:0 auto;padding:48px 32px}
+.mono{font-family:'JetBrains Mono',monospace}
+.right{text-align:right}
+
+.header{margin-bottom:48px}
+.header-tag{display:inline-block;font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:var(--accent);background:var(--accent-light);padding:4px 12px;border-radius:4px;margin-bottom:12px}
+.header h1{font-size:32px;font-weight:700;letter-spacing:-0.02em;margin-bottom:8px}
+.header .subtitle{font-size:16px;color:var(--text-secondary);margin-bottom:16px}
+.header .meta{display:flex;flex-wrap:wrap;gap:8px;font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--text-muted)}
+.header .meta span{display:flex;align-items:center;gap:8px}
+.dot::before{content:'·';margin:0 4px}
+
+.section{margin-bottom:56px}
+.section-header{display:flex;align-items:baseline;gap:12px;margin-bottom:16px;padding-bottom:12px;border-bottom:2px solid var(--border-strong)}
+.section-num{font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:var(--accent);background:var(--accent-light);padding:3px 10px;border-radius:4px}
+.section-title{font-size:20px;font-weight:700;letter-spacing:-0.01em}
+.section-desc{font-size:14px;color:var(--text-secondary);margin-bottom:20px;max-width:900px}
+.section-question{font-size:15px;font-weight:600;color:var(--purple);margin-bottom:16px;padding:12px 16px;background:var(--purple-light);border-left:3px solid var(--purple);border-radius:0 6px 6px 0}
+
+.kpi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;margin-bottom:24px}
+.kpi-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:20px;border-left:3px solid var(--border)}
+.kpi-card.green{border-left-color:var(--green)} .kpi-card.red{border-left-color:var(--red)}
+.kpi-card.amber{border-left-color:var(--amber)} .kpi-card.purple{border-left-color:var(--purple)}
+.kpi-card.accent{border-left-color:var(--accent)} .kpi-card.slate{border-left-color:var(--slate)}
+.kpi-label{font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:0.06em;color:var(--text-muted);margin-bottom:4px}
+.kpi-value{font-family:'JetBrains Mono',monospace;font-size:28px;font-weight:700;line-height:1.1;margin-bottom:4px}
+.kpi-sub{font-size:13px;color:var(--text-secondary)}
+
+.table-wrap{border:1px solid var(--border);border-radius:10px;overflow:hidden;margin-bottom:24px}
+.table-header{background:var(--surface-alt);padding:12px 16px;font-weight:600;font-size:14px;border-bottom:1px solid var(--border)}
+table{width:100%;border-collapse:collapse}
+thead th{font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;color:var(--text-muted);background:var(--surface-alt);padding:10px 12px;text-align:left;border-bottom:1px solid var(--border)}
+tbody td{padding:10px 12px;border-bottom:1px solid var(--border);font-size:14px}
+tbody tr:last-child td{border-bottom:none}
+tbody tr:hover{background:rgba(0,0,0,0.015)}
+td.mono{font-family:'JetBrains Mono',monospace;font-size:13px}
+
+.pill{display:inline-block;font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:600;padding:2px 8px;border-radius:4px}
+.pill.green{background:var(--green-bg);color:var(--green)}
+.pill.red{background:var(--red-bg);color:var(--red)}
+.pill.amber{background:var(--amber-bg);color:var(--amber)}
+.pill.purple{background:var(--purple-bg);color:var(--purple)}
+.pill.blue{background:var(--accent-light);color:var(--accent)}
+.pill.slate{background:var(--slate-bg);color:var(--slate)}
+
+.note-box{border-radius:8px;padding:16px 20px;margin-bottom:20px;font-size:14px;line-height:1.6}
+.note-box{background:var(--amber-light);border:1px solid var(--amber)}
+.note-box.blue{background:var(--accent-light);border-color:var(--accent)}
+.note-box.green{background:var(--green-light);border-color:var(--green)}
+.note-box.red{background:var(--red-light);border-color:var(--red)}
+.note-box.purple{background:var(--purple-light);border-color:var(--purple)}
+
+.insight-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:24px}
+.insight-card{background:var(--surface);border:1px solid var(--border);border-left:3px solid var(--border);border-radius:8px;padding:20px}
+.insight-card.green{border-left-color:var(--green)} .insight-card.red{border-left-color:var(--red)}
+.insight-card.amber{border-left-color:var(--amber)} .insight-card.purple{border-left-color:var(--purple)}
+.insight-card.blue{border-left-color:var(--accent)}
+.insight-card h4{font-size:15px;font-weight:700;margin-bottom:8px}
+.insight-card p{font-size:13px;color:var(--text-secondary);line-height:1.5}
+
+.practical-box{border-radius:8px;padding:20px 24px;margin-bottom:20px;font-size:14px;line-height:1.7;background:var(--surface);border:2px solid var(--accent);position:relative}
+.practical-box::before{content:'HOW TO TRADE THIS';position:absolute;top:-10px;left:16px;font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:600;letter-spacing:0.08em;color:var(--accent);background:var(--bg);padding:0 8px}
+.practical-box ul{margin:0;padding-left:20px}
+.practical-box li{margin-bottom:6px}
+
+.delta-positive{color:var(--green)} .delta-negative{color:var(--red)}
+
+.toc{margin-bottom:48px;padding:24px;background:var(--surface);border:1px solid var(--border);border-radius:10px}
+.toc h3{font-size:16px;margin-bottom:12px}
+.toc-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.toc a{text-decoration:none;color:var(--text-secondary);font-size:13px;padding:6px 8px;border-radius:4px;transition:background 0.2s}
+.toc a:hover{background:var(--surface-alt);color:var(--text-primary)}
+.toc a .num{font-family:'JetBrains Mono',monospace;font-weight:600;color:var(--accent);margin-right:8px}
+
+.footer{margin-top:48px;padding-top:24px;border-top:1px solid var(--border);display:flex;justify-content:space-between;font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--text-muted)}
+@media(max-width:768px){.wrap{padding:24px 16px}.kpi-grid{grid-template-columns:1fr 1fr}.insight-grid,.toc-grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<div class="header">
+  <div class="header-tag">&#9670; Quantitative Research — Avenue 2+4</div>
+  <h1>The Pullback-to-Close Entry Study</h1>
+  <div class="subtitle">Flipping the R:R by waiting for price to return to yesterday's close before entering gap continuation trades.</div>
+  <div class="meta">
+    <span>E-Mini S&amp;P 500</span><span class="dot"></span>
+    <span>RTH Daily Bars</span><span class="dot"></span>
+    <span>N = 4,218 days</span><span class="dot"></span>
+    <span>May 2009 — Feb 2026</span><span class="dot"></span>
+    <span>ABR-from-Close Framework</span>
+  </div>
+</div>
+
+<div class="toc">
+  <h3>Contents</h3>
+  <div class="toc-grid">
+    <a href="#s1"><span class="num">01</span> The Pullback Paradox</a>
+    <a href="#s2"><span class="num">02</span> True Risk — MAE Past the Close</a>
+    <a href="#s3"><span class="num">03</span> Trend Context — 20 EMA Filter</a>
+    <a href="#s4"><span class="num">04</span> The Trader's Trade — 0.5× Target</a>
+    <a href="#s5"><span class="num">05</span> Counter-Trend Gap Behavior</a>
+    <a href="#s6"><span class="num">06</span> Key Insights &amp; Practical Takeaways</a>
+  </div>
+</div>
+
+<div class="note-box">
+  <strong>What this study does:</strong> Avenue 3 established that under ABR-from-close, gap direction is the only factor that matters — prior bar direction, IBS, bar type, and bar size all collapsed to irrelevant. This study asks the next question: on a gap day, what if price pulls back to yesterday's close before continuing? Does that change the probability of hitting the measured move target, and does it change the risk? We ignore whether yesterday was a bull or bear bar. The only inputs are: gap direction, gap size, and whether the low (gap up) or high (gap down) touches yesterday's close during today's session.
+</div>
+
+<!-- SECTION 1 -->
+<div class="section" id="s1">
+  <div class="section-header"><span class="section-num">Section 01</span><span class="section-title">The Pullback Paradox</span></div>
+  <div class="section-question">Question: On gap days, how often does price come back to yesterday's close? And when it does, does that help or hurt the chance of reaching the 1× ABR target?</div>
+  <p class="section-desc">We split every gap day into two groups: days where price returned to the prior close during the session ("pullback"), and days where it never looked back ("no pullback"). This reveals something counterintuitive.</p>
+
+  <div class="kpi-grid">
+    <div class="kpi-card accent"><div class="kpi-label">Gap Up Days</div><div class="kpi-value">2,303</div><div class="kpi-sub">54.6% of all days</div></div>
+    <div class="kpi-card accent"><div class="kpi-label">Gap Down Days</div><div class="kpi-value">1,871</div><div class="kpi-sub">44.3% of all days</div></div>
+    <div class="kpi-card green"><div class="kpi-label">Gap Up + Pullback</div><div class="kpi-value">59.9%</div><div class="kpi-sub">1,380 days — low touches prior close</div></div>
+    <div class="kpi-card red"><div class="kpi-label">Gap Down + Pullback</div><div class="kpi-value">64.1%</div><div class="kpi-sub">1,199 days — high touches prior close</div></div>
+  </div>
+
+  <div class="table-wrap">
+    <div class="table-header">Bull Setup: Gap Up — Pullback vs No Pullback</div>
+    <table>
+      <thead><tr><th>Scenario</th><th class="right">N</th><th class="right">Bull 0.5×</th><th class="right">Bull 1×</th><th class="right">What it tells us</th></tr></thead>
+      <tbody>
+        <tr><td>Gap Up + <strong>Pullback</strong> to close</td><td class="mono right">1,380</td><td class="mono right"><span class="pill amber">53.5%</span></td><td class="mono right"><span class="pill red">10.0%</span></td><td style="color:var(--text-secondary)">Price looked back — momentum is fading</td></tr>
+        <tr><td>Gap Up + <strong>NO pullback</strong></td><td class="mono right">923</td><td class="mono right">—</td><td class="mono right"><span class="pill green">63.5%</span></td><td style="color:var(--text-secondary)">Never looked back — pure continuation</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="table-wrap">
+    <div class="table-header">Bear Setup: Gap Down — Pullback vs No Pullback</div>
+    <table>
+      <thead><tr><th>Scenario</th><th class="right">N</th><th class="right">Bear 0.5×</th><th class="right">Bear 1×</th><th class="right">What it tells us</th></tr></thead>
+      <tbody>
+        <tr><td>Gap Down + <strong>Pullback</strong> to close</td><td class="mono right">1,199</td><td class="mono right"><span class="pill amber">58.4%</span></td><td class="mono right"><span class="pill red">14.8%</span></td><td style="color:var(--text-secondary)">Bears couldn't hold it down</td></tr>
+        <tr><td>Gap Down + <strong>NO pullback</strong></td><td class="mono right">672</td><td class="mono right">—</td><td class="mono right"><span class="pill green">75.4%</span></td><td style="color:var(--text-secondary)">Never bounced — sellers in full control</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="note-box purple"><strong>The paradox:</strong> Pullback days have dramatically LOWER 1× hit rates than non-pullback days. 10–15% vs 64–75%. The pullback itself is the clearest signal we've found that 1× probably won't happen today. If the day was going to travel a full ABR from yesterday's close, it wouldn't waste time pulling back first — it would just go.</div>
+
+  <div class="table-wrap">
+    <div class="table-header">Gap Up by Size — Pullback Frequency &amp; Conditional Rates</div>
+    <table>
+      <thead><tr><th>Gap Size</th><th class="right">N</th><th class="right">Pullback %</th><th class="right">PB → 0.5×</th><th class="right">PB → 1×</th><th class="right">No PB → 1×</th></tr></thead>
+      <tbody>
+        <tr><td>5–20% ABR</td><td class="mono right">623</td><td class="mono right">84.1%</td><td class="mono right">42.9%</td><td class="mono right"><span class="pill slate">8.4%</span></td><td class="mono right"><span class="pill amber">43.4%</span></td></tr>
+        <tr><td>20–30% ABR</td><td class="mono right">345</td><td class="mono right">69.3%</td><td class="mono right">42.3%</td><td class="mono right"><span class="pill slate">6.7%</span></td><td class="mono right"><span class="pill amber">35.8%</span></td></tr>
+        <tr><td>&gt;30% ABR</td><td class="mono right">1,167</td><td class="mono right">38.8%</td><td class="mono right"><span class="pill green">77.3%</span></td><td class="mono right"><span class="pill amber">13.9%</span></td><td class="mono right"><span class="pill green">70.7%</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="table-wrap">
+    <div class="table-header">Gap Down by Size — Pullback Frequency &amp; Conditional Rates</div>
+    <table>
+      <thead><tr><th>Gap Size</th><th class="right">N</th><th class="right">Pullback %</th><th class="right">PB → 0.5×</th><th class="right">PB → 1×</th><th class="right">No PB → 1×</th></tr></thead>
+      <tbody>
+        <tr><td>5–20% ABR</td><td class="mono right">521</td><td class="mono right">87.3%</td><td class="mono right">44.4%</td><td class="mono right"><span class="pill slate">9.9%</span></td><td class="mono right"><span class="pill green">57.6%</span></td></tr>
+        <tr><td>20–30% ABR</td><td class="mono right">280</td><td class="mono right">73.2%</td><td class="mono right">55.6%</td><td class="mono right"><span class="pill amber">13.7%</span></td><td class="mono right"><span class="pill green">64.0%</span></td></tr>
+        <tr><td>&gt;30% ABR</td><td class="mono right">898</td><td class="mono right">41.4%</td><td class="mono right"><span class="pill green">84.9%</span></td><td class="mono right"><span class="pill amber">22.0%</span></td><td class="mono right"><span class="pill green">79.7%</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="note-box blue"><strong>Gap size matters:</strong> Small gaps (&lt;20% ABR) pull back to the close 84–87% of the time — they barely gapped in the first place. Large gaps (&gt;30% ABR) only pull back 39–41%, meaning 60% of the time a large gap just keeps going. When a large gap DOES pull back, 0.5× hit rates stay high (77–85%), so there's still residual momentum — just not enough for 1×.</div>
+
+  <div class="practical-box">
+    <ul>
+      <li><strong>If you see a large gap (&gt;30% ABR) that never returns to the close:</strong> that's a trend day. Don't fight it. These hit 1× ABR 71–80% of the time. If you didn't enter near the open, the train has left.</li>
+      <li><strong>If a large gap pulls back to the close:</strong> there's still momentum (0.5× hits 77–85%), but the 1× dream is mostly dead (10–22%). Trade the 0.5× bounce, not the full measured move.</li>
+      <li><strong>Small gaps (&lt;20% ABR) that pull back:</strong> they barely moved. The 0.5× hit rate is only 43–44%. Not worth trading as a gap setup.</li>
+    </ul>
+  </div>
+</div>
+
+<!-- SECTION 2 -->
+<div class="section" id="s2">
+  <div class="section-header"><span class="section-num">Section 02</span><span class="section-title">True Risk — MAE Past the Close</span></div>
+  <div class="section-question">Question: If you place a limit order at yesterday's close and get filled on the pullback, how far does the market move against you before it either works or fails?</div>
+  <p class="section-desc">MAE (Maximum Adverse Excursion) measures the worst the trade gets before it either works or fails. On a gap-up day where the low touches yesterday's close, the MAE is how far below the close the low actually went. This is the real risk of the pullback entry — not the stop you set, but what the market actually does to you.</p>
+
+  <div class="kpi-grid">
+    <div class="kpi-card green"><div class="kpi-label">Bull Entry MAE (Median)</div><div class="kpi-value" style="font-size:22px">0.38× ABR</div><div class="kpi-sub">Gap &gt;30% pullback days</div></div>
+    <div class="kpi-card red"><div class="kpi-label">Bear Entry MAE (Median)</div><div class="kpi-value" style="font-size:22px">0.29× ABR</div><div class="kpi-sub">Gap &gt;30% pullback days</div></div>
+    <div class="kpi-card green"><div class="kpi-label">Bull R:R (vs 1× tgt)</div><div class="kpi-value" style="font-size:22px">2.6 : 1</div><div class="kpi-sub">Risk 0.38× / Reward 1× ABR</div></div>
+    <div class="kpi-card red"><div class="kpi-label">Bear R:R (vs 1× tgt)</div><div class="kpi-value" style="font-size:22px">3.5 : 1</div><div class="kpi-sub">Risk 0.29× / Reward 1× ABR</div></div>
+  </div>
+
+  <div class="table-wrap">
+    <div class="table-header">MAE Distribution — Gap &gt;30% ABR, Pullback Days Only</div>
+    <table>
+      <thead><tr><th>Direction</th><th class="right">Median MAE</th><th class="right">P75 MAE</th><th class="right">P90 MAE</th><th class="right">R:R (Med)</th><th class="right">R:R (P75)</th></tr></thead>
+      <tbody>
+        <tr><td><span class="pill green">Bull (Gap Up)</span></td><td class="mono right">0.38×</td><td class="mono right">0.69×</td><td class="mono right">1.05×</td><td class="mono right"><span class="pill green">2.6 : 1</span></td><td class="mono right">1.4 : 1</td></tr>
+        <tr><td><span class="pill red">Bear (Gap Down)</span></td><td class="mono right">0.29×</td><td class="mono right">0.51×</td><td class="mono right">0.80×</td><td class="mono right"><span class="pill green">3.5 : 1</span></td><td class="mono right"><span class="pill green">2.0 : 1</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="note-box green"><strong>The R:R flip is real.</strong> Phase I's problem was 1:0.5 R:R (risking a full prior range to make half a range). By waiting for the pullback to the close, median risk drops to 0.29–0.38× ABR while the reward to the 1× target stays at 1× ABR. That's a 2.6:1 to 3.5:1 R:R. The entry location — not the target — was always the missing piece.</div>
+
+  <div class="note-box"><strong>Bear asymmetry again:</strong> Bear pullback days overshoot the close by less (0.29× median vs 0.38×). Sellers are tighter. This is consistent with every previous study — bearish setups have consistently better risk characteristics on ES.</div>
+
+  <div class="practical-box">
+    <ul>
+      <li><strong>Entry:</strong> Limit order at yesterday's close. On gap-up days, this means a buy limit below the open. On gap-down days, a sell limit above the open.</li>
+      <li><strong>Stop zone:</strong> P75 MAE is 0.51–0.69× ABR past the close. A stop at 0.75× ABR past the close would survive 75–80% of pullbacks. With current ABR around 55–60 points, that's roughly 40–45 points of risk.</li>
+      <li><strong>But remember:</strong> The R:R looks great, but the 1× win rate on pullback days is only 14–22%. You need the right target to make the maths work. See Section 4.</li>
+    </ul>
+  </div>
+</div>
+
+<!-- SECTION 3 -->
+<div class="section" id="s3">
+  <div class="section-header"><span class="section-num">Section 03</span><span class="section-title">Trend Context — 20 EMA Filter</span></div>
+  <div class="section-question">Question: Does it matter whether the market is in a short-term uptrend or downtrend when a gap occurs? Does trend context change whether gaps continue or fade?</div>
+  <p class="section-desc">The dataset contains a 20-period EMA (approximately one month of trading days). "Bull trend" here simply means yesterday's close was above the 20 EMA; "bear trend" means below it. This is a short-term trend definition — not a macro call. We are NOT looking at whether the prior bar was bull or bear. This is purely close vs the 20 EMA on the daily chart.</p>
+
+  <div class="kpi-grid">
+    <div class="kpi-card green"><div class="kpi-label">Bull Trend Days</div><div class="kpi-value">2,925</div><div class="kpi-sub">69.3% of dataset — above 20 EMA</div></div>
+    <div class="kpi-card red"><div class="kpi-label">Bear Trend Days</div><div class="kpi-value">1,293</div><div class="kpi-sub">30.7% of dataset — below 20 EMA</div></div>
+  </div>
+
+  <div class="table-wrap">
+    <div class="table-header">1× ABR Hit Rates by Trend + Gap Direction (All Days, Not Just Pullbacks)</div>
+    <table>
+      <thead><tr><th>Scenario</th><th class="right">N</th><th class="right">1× Rate</th><th class="right">Character</th></tr></thead>
+      <tbody>
+        <tr style="background:var(--red-light)"><td><span class="pill red">Bear Trend</span> + Gap Down <span class="pill slate" style="font-size:10px">WITH TREND</span></td><td class="mono right">527</td><td class="mono right"><span class="pill green">42.9%</span></td><td style="color:var(--text-secondary)">Strongest — trend + gap aligned, sellers pile on</td></tr>
+        <tr><td><span class="pill red">Bear Trend</span> + Gap Up <span class="pill amber" style="font-size:10px">COUNTER</span></td><td class="mono right">755</td><td class="mono right"><span class="pill green">40.3%</span></td><td style="color:var(--text-secondary)">Surprisingly strong — counter-trend bulls still work</td></tr>
+        <tr><td><span class="pill green">Bull Trend</span> + Gap Down <span class="pill amber" style="font-size:10px">COUNTER</span></td><td class="mono right">1,344</td><td class="mono right"><span class="pill amber">34.1%</span></td><td style="color:var(--text-secondary)">Bears still follow through, even in bull trends</td></tr>
+        <tr style="background:var(--green-light)"><td><span class="pill green">Bull Trend</span> + Gap Up <span class="pill slate" style="font-size:10px">WITH TREND</span></td><td class="mono right">1,548</td><td class="mono right"><span class="pill amber">27.1%</span></td><td style="color:var(--text-secondary)">Weakest — bull trend bull gap is "expected," less energy</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="note-box purple"><strong>A surprise:</strong> The with-trend bull setup (bull trend + gap up) is actually the WEAKEST at 27.1%. The with-trend bear (bear trend + gap down) is the strongest at 42.9%. Bear trends produce more powerful gap continuation on ES. Counter-trend gaps don't fade as cleanly as theory predicts — a gap down in a bull trend still hits bear 1× 34.1% of the time.</div>
+
+  <div class="table-wrap">
+    <div class="table-header">Pullback Entry + Trend Filter — Gap &gt;30% ABR Only</div>
+    <table>
+      <thead><tr><th>Setup</th><th class="right">N</th><th class="right">/Year</th><th class="right">1× Win %</th><th class="right">Med MAE</th><th class="right">R:R</th></tr></thead>
+      <tbody>
+        <tr style="background:var(--red-light)"><td><span class="pill red">Bear Trend</span> + Gap Down + Pullback</td><td class="mono right">121</td><td class="mono right">7.2</td><td class="mono right"><span class="pill green">33.1%</span></td><td class="mono right">0.32×</td><td class="mono right"><span class="pill green">3.1 : 1</span></td></tr>
+        <tr><td><span class="pill red">Bear Trend</span> + Gap Up + Pullback</td><td class="mono right">134</td><td class="mono right">8.0</td><td class="mono right"><span class="pill amber">17.9%</span></td><td class="mono right">0.36×</td><td class="mono right">2.8 : 1</td></tr>
+        <tr><td><span class="pill green">Bull Trend</span> + Gap Down + Pullback</td><td class="mono right">251</td><td class="mono right">14.9</td><td class="mono right"><span class="pill amber">16.7%</span></td><td class="mono right">0.27×</td><td class="mono right">3.7 : 1</td></tr>
+        <tr><td><span class="pill green">Bull Trend</span> + Gap Up + Pullback</td><td class="mono right">319</td><td class="mono right">19.0</td><td class="mono right"><span class="pill slate">12.2%</span></td><td class="mono right">0.40×</td><td class="mono right">2.5 : 1</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="note-box green"><strong>One standout setup:</strong> Bear Trend + Gap Down &gt;30% + Pullback to close delivers 33.1% win rate at 3.1:1 R:R. That's the only pullback-to-1× setup with positive expectancy (+0.12R per trade). It occurs 7.2 times/year — once every 7 weeks. All other pullback-to-1× setups have negative or breakeven expectancy.</div>
+
+  <div class="practical-box">
+    <ul>
+      <li><strong>The 20 EMA adds value in one specific case:</strong> when below the 20 EMA and a large gap down pulls back to the close, 1× continuation is worth taking (33.1% at 3.1:1). In all other trend+gap combinations, the pullback kills the 1× probability too much.</li>
+      <li><strong>Bull trend + gap up pullback is the worst:</strong> only 12.2% at 1×. When the market is already trending up and gaps up, a pullback to the close means the gap failed. Don't buy it hoping for 1×.</li>
+      <li><strong>For the 0.5× target (Section 4), the EMA adds less value.</strong> The 0.5× trade works regardless of trend context because you're just capturing residual gap momentum, not betting on a full measured move.</li>
+    </ul>
+  </div>
+</div>
+
+<!-- SECTION 4 -->
+<div class="section" id="s4">
+  <div class="section-header"><span class="section-num">Section 04</span><span class="section-title">The Trader's Trade — 0.5× ABR Target</span></div>
+  <div class="section-question">Question: The 1× target has beautiful R:R but terrible win rate on pullback days. What if we cut the target in half? Does 0.5× ABR from the close produce a positive-expectancy trade?</div>
+  <p class="section-desc">Professional scalpers target 0.5× ABR on counter-trend and range-bound moves, reserving the full 1× ABR target for strong with-trend entries. This section tests whether applying the 0.5× target to the pullback entry creates a structurally sound trade. The entry remains the same: limit order at yesterday's close, filled on the pullback. Only the profit target changes.</p>
+
+  <div class="table-wrap">
+    <div class="table-header">R:R Summary — All Gap &gt;30% ABR + Pullback Setups</div>
+    <table>
+      <thead><tr><th>Setup</th><th class="right">N</th><th class="right">/Yr</th><th class="right">Win %</th><th class="right">Risk</th><th class="right">Reward</th><th class="right">R:R</th><th class="right">Exp/Trade</th></tr></thead>
+      <tbody>
+        <tr style="background:var(--red-light)"><td><span class="pill red">Gap Down</span> + PB → <strong>0.5× target</strong></td><td class="mono right">372</td><td class="mono right">22.1</td><td class="mono right"><span class="pill green">84.9%</span></td><td class="mono right">0.29×</td><td class="mono right">0.5×</td><td class="mono right"><span class="pill green">1.75:1</span></td><td class="mono right delta-positive"><strong>+0.38R</strong></td></tr>
+        <tr style="background:var(--green-light)"><td><span class="pill green">Gap Up</span> + PB → <strong>0.5× target</strong></td><td class="mono right">453</td><td class="mono right">27.0</td><td class="mono right"><span class="pill green">77.3%</span></td><td class="mono right">0.38×</td><td class="mono right">0.5×</td><td class="mono right"><span class="pill green">1.31:1</span></td><td class="mono right delta-positive"><strong>+0.30R</strong></td></tr>
+        <tr><td><span class="pill red">Gap Down</span> + PB → 1× target</td><td class="mono right">372</td><td class="mono right">22.1</td><td class="mono right"><span class="pill amber">22.0%</span></td><td class="mono right">0.29×</td><td class="mono right">1.0×</td><td class="mono right">3.50:1</td><td class="mono right" style="color:var(--text-muted)">≈0R</td></tr>
+        <tr><td><span class="pill green">Gap Up</span> + PB → 1× target</td><td class="mono right">453</td><td class="mono right">27.0</td><td class="mono right"><span class="pill slate">13.9%</span></td><td class="mono right">0.38×</td><td class="mono right">1.0×</td><td class="mono right">2.61:1</td><td class="mono right delta-negative">−0.19R</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="insight-grid">
+    <div class="insight-card green"><h4>Why 0.5× Works</h4><p>The pullback resets the R:R. Your risk is only 0.29–0.38× ABR (the MAE past the close), and the 0.5× target is 0.5× ABR away. You're not asking the market to do something extraordinary — you're just capturing the remaining momentum from a gap that hasn't fully died yet.</p></div>
+    <div class="insight-card purple"><h4>Why 1× Doesn't Work</h4><p>If the day was powerful enough to travel a full ABR from the close, it almost certainly wouldn't have pulled back to the close first. Non-pullback days hit 1× at 64–75%. Pullback days hit 1× at only 10–22%. The pullback IS the information telling you 1× isn't coming.</p></div>
+  </div>
+
+  <div class="note-box green" style="font-size:15px;padding:24px"><strong>Combined annual edge:</strong> Gap Down 0.5× contributes +0.38R × 22.1/yr = <strong>+8.4R</strong>. Gap Up 0.5× contributes +0.30R × 27.0/yr = <strong>+8.1R</strong>. Total: approximately <strong>+16.5R/year</strong> from 49 trades, with 77–85% win rate and 1.3–1.75:1 R:R. This is before execution refinement (intraday entry timing, tighter stops).</div>
+
+  <div class="practical-box">
+    <ul>
+      <li><strong>The trade:</strong> Gap &gt;30% ABR. Place a limit order at yesterday's RTH close. When filled on the pullback, target 0.5× ABR in the gap's direction. Stop at 0.75× ABR past the close (covers P75 MAE).</li>
+      <li><strong>In points (current vol):</strong> ABR ~55–60pts. Gap must be &gt;17pts. Target ~28–30pts from close. Stop ~42–45pts from close.</li>
+      <li><strong>Frequency:</strong> ~49 times per year (about once per week). Bear setups are higher quality (84.9% vs 77.3%), bull setups are more frequent (27/yr vs 22/yr).</li>
+      <li><strong>Not all fills become trades:</strong> You need the gap &gt;30% ABR AND the pullback to the close. Only 39–41% of large gap days pull back. Some days your limit just doesn't get hit — and that's fine, because those are the trend days that hit 1× without you.</li>
+    </ul>
+  </div>
+</div>
+
+<!-- SECTION 5 -->
+<div class="section" id="s5">
+  <div class="section-header"><span class="section-num">Section 05</span><span class="section-title">Counter-Trend Gap Behavior</span></div>
+  <div class="section-question">Question: In a bull trend (above 20 EMA), when the market gaps down, does the gap continue or does the trend reassert itself? And vice versa — in a bear trend, do gap-up days fade?</div>
+  <p class="section-desc">This is the "gap vs trend" question. When a gap goes against the short-term trend (20 EMA), which force wins? We break it down by gap size because the answer changes dramatically at the 30% ABR threshold.</p>
+
+  <div class="table-wrap">
+    <div class="table-header">Bull Trend + Gap Down — Outcome Breakdown</div>
+    <table>
+      <thead><tr><th>Gap Size</th><th class="right">N</th><th class="right">/Yr</th><th class="right">Fades to Close</th><th class="right">Bear 0.5× Stall</th><th class="right">Bear 1× Continue</th></tr></thead>
+      <tbody>
+        <tr><td>20–30% ABR</td><td class="mono right">210</td><td class="mono right">12.5</td><td class="mono right"><span class="pill green">75.7%</span></td><td class="mono right"><span class="pill amber">40.0%</span></td><td class="mono right"><span class="pill slate">25.7%</span></td></tr>
+        <tr><td>&gt;30% ABR</td><td class="mono right">631</td><td class="mono right">37.6</td><td class="mono right"><span class="pill amber">39.8%</span></td><td class="mono right"><span class="pill amber">40.6%</span></td><td class="mono right"><span class="pill red">52.6%</span></td></tr>
+        <tr><td>&gt;20% ABR (combined)</td><td class="mono right">841</td><td class="mono right">50.1</td><td class="mono right"><span class="pill amber">48.8%</span></td><td class="mono right"><span class="pill amber">40.4%</span></td><td class="mono right"><span class="pill red">45.9%</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="table-wrap">
+    <div class="table-header">Bear Trend + Gap Up — Outcome Breakdown</div>
+    <table>
+      <thead><tr><th>Gap Size</th><th class="right">N</th><th class="right">/Yr</th><th class="right">Fades to Close</th><th class="right">Bull 0.5× Stall</th><th class="right">Bull 1× Continue</th></tr></thead>
+      <tbody>
+        <tr><td>20–30% ABR</td><td class="mono right">123</td><td class="mono right">7.3</td><td class="mono right"><span class="pill green">69.1%</span></td><td class="mono right"><span class="pill amber">44.7%</span></td><td class="mono right"><span class="pill slate">22.0%</span></td></tr>
+        <tr><td>&gt;30% ABR</td><td class="mono right">407</td><td class="mono right">24.2</td><td class="mono right"><span class="pill amber">32.9%</span></td><td class="mono right"><span class="pill amber">36.6%</span></td><td class="mono right"><span class="pill red">57.5%</span></td></tr>
+        <tr><td>&gt;20% ABR (combined)</td><td class="mono right">530</td><td class="mono right">31.5</td><td class="mono right"><span class="pill amber">41.3%</span></td><td class="mono right"><span class="pill amber">38.5%</span></td><td class="mono right"><span class="pill red">49.2%</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="note-box red"><strong>The 30% threshold is critical.</strong> Below 30% ABR, the trend wins: counter-trend gaps fade to the close 70–76% of the time and only continue to 1× in 22–26% of cases. Above 30% ABR, the gap wins: continuation to 1× hits 53–58%. A large gap against the trend is NOT a buying (or selling) opportunity — it's a signal that something has changed.</div>
+
+  <div class="note-box blue"><strong>The stall zone is real.</strong> Regardless of gap size, 37–45% of counter-trend gap days hit 0.5× in the gap direction but stall before reaching 1×. This "half-move" zone is where the trend reasserts itself. It's consistent in both directions and across gap sizes. This confirms the visual observation that counter-trend gaps travel about half an ABR before running out of energy.</div>
+
+  <div class="practical-box">
+    <ul>
+      <li><strong>Small counter-trend gap (20–30% ABR):</strong> Trend wins ~75% of the time. Price fades back to the close. This is a gap-fade trade: enter with the trend, target the close. Risk is small because the gap was small.</li>
+      <li><strong>Large counter-trend gap (&gt;30% ABR):</strong> Gap wins ~53–58% of the time. Do NOT automatically fade. The gap is telling you something the trend hasn't priced in yet. Wait and observe.</li>
+      <li><strong>The stall zone (0.5× hit, 1× not):</strong> If you're in a with-trend position and the market gaps against you overnight, the likely worst case is 0.5× ABR against you. The gap will travel about half a day's range against the trend, then stall. That's where you reassess — not at the open.</li>
+    </ul>
+  </div>
+</div>
+
+<!-- SECTION 6 -->
+<div class="section" id="s6">
+  <div class="section-header"><span class="section-num">Section 06</span><span class="section-title">Key Insights &amp; Practical Takeaways</span></div>
+
+  <div class="insight-grid">
+    <div class="insight-card red"><h4>1. The Pullback IS the Information</h4><p>A pullback to the close on a gap day is not a "second chance to enter." It's a signal that the gap's momentum is fading. Days that never pull back hit 1× at 64–75%. Days that do pull back hit 1× at only 10–22%. Treat the pullback as a different trade entirely, not a discounted version of the continuation trade.</p></div>
+    <div class="insight-card green"><h4>2. The 0.5× Target Solves the R:R</h4><p>Phase I found a 1:0.5 R:R problem. The pullback entry with a 0.5× ABR target flips this to 1.3–1.75:1 R:R at 77–85% win rate. The secret was always about entry location, not target distance. Enter during the pullback (compression), target a modest expansion (0.5×), and the maths work.</p></div>
+    <div class="insight-card purple"><h4>3. Trend Context Has One Big Use Case</h4><p>Bear trend + gap down + pullback is the only setup where 1× has positive expectancy (33.1% at 3.1:1 = +0.12R). For the 0.5× trade, trend context adds little — the trade works in both trend states because you're just capturing residual gap momentum, not betting on a full measured move.</p></div>
+    <div class="insight-card amber"><h4>4. The 30% ABR Threshold Separates Two Worlds</h4><p>Below 30% ABR: small gaps that almost always pull back and have mediocre continuation. Above 30% ABR: real gaps where the pullback/no-pullback split becomes meaningful. Counter-trend gaps below 30% fade; above 30% they continue. This threshold appears consistently across every analysis.</p></div>
+    <div class="insight-card blue"><h4>5. Non-Pullback Days Are Trend Days</h4><p>When a large gap (&gt;30% ABR) doesn't pull back to the close, that's a trend day hitting 1× at 71–80%. You cannot trade these from the close. They require an entry near the open or not at all. Accepting that you will miss these days is part of the strategy — you're trading the OTHER 39–41% of days where the gap pauses.</p></div>
+    <div class="insight-card green"><h4>6. Bear Setups Are Structurally Superior</h4><p>Bear gap pullbacks have tighter MAE (0.29× vs 0.38×), higher 0.5× hit rates (84.9% vs 77.3%), and better R:R (1.75:1 vs 1.31:1). This bear advantage has appeared in every study we've run. Fear moves markets more efficiently than greed on ES.</p></div>
+  </div>
+
+  <div class="table-wrap">
+    <div class="table-header">Tradeable Setups Ranked by Annual Expectancy</div>
+    <table>
+      <thead><tr><th>#</th><th>Setup Description</th><th class="right">Win %</th><th class="right">R:R</th><th class="right">Per Trade</th><th class="right">/Year</th><th class="right">Annual R</th></tr></thead>
+      <tbody>
+        <tr style="background:var(--red-light)"><td class="mono">1</td><td>Gap Down &gt;30% + PB to Close → <strong>0.5× ABR target</strong></td><td class="mono right"><span class="pill green">84.9%</span></td><td class="mono right">1.75:1</td><td class="mono right delta-positive"><strong>+0.38R</strong></td><td class="mono right">22.1</td><td class="mono right delta-positive"><strong>+8.4R</strong></td></tr>
+        <tr style="background:var(--green-light)"><td class="mono">2</td><td>Gap Up &gt;30% + PB to Close → <strong>0.5× ABR target</strong></td><td class="mono right"><span class="pill green">77.3%</span></td><td class="mono right">1.31:1</td><td class="mono right delta-positive"><strong>+0.30R</strong></td><td class="mono right">27.0</td><td class="mono right delta-positive"><strong>+8.1R</strong></td></tr>
+        <tr style="background:var(--red-light)"><td class="mono">3</td><td>Bear Trend + Gap Down &gt;30% + PB → <strong>1× ABR target</strong></td><td class="mono right"><span class="pill amber">33.1%</span></td><td class="mono right">3.1:1</td><td class="mono right delta-positive"><strong>+0.12R</strong></td><td class="mono right">7.2</td><td class="mono right delta-positive"><strong>+0.9R</strong></td></tr>
+        <tr><td class="mono">4</td><td>Gap Down &gt;30% + PB to Close → 1× ABR target</td><td class="mono right"><span class="pill amber">22.0%</span></td><td class="mono right">3.50:1</td><td class="mono right" style="color:var(--text-muted)">≈0R</td><td class="mono right">22.1</td><td class="mono right" style="color:var(--text-muted)">≈0R</td></tr>
+        <tr><td class="mono">5</td><td>Gap Up &gt;30% + PB to Close → 1× ABR target</td><td class="mono right"><span class="pill slate">13.9%</span></td><td class="mono right">2.61:1</td><td class="mono right delta-negative">−0.19R</td><td class="mono right">27.0</td><td class="mono right delta-negative">−5.1R</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="note-box green" style="font-size:15px;padding:24px"><strong>The bottom line:</strong> Two high-frequency setups produce approximately +16.5R/year from ~49 trades. The entry is yesterday's close (limit order), the target is 0.5× ABR in the gap direction, and the stop is around 0.75× ABR past the close. These are daily-bar setups — intraday entry timing and execution refinement should improve the edge further. The next research step is to study intraday behavior: when during the day does the pullback occur, and does the 0.5× target typically get hit before or after the pullback completes?</div>
+</div>
+
+<div class="footer">
+  <span>ES Pullback-to-Close Entry Study — Avenue 2+4 Combined</span>
+  <span>RTH ABR-from-Close · N=4,218 · 20 EMA Trend Filter · 20260214</span>
+</div>
+
+</div>
+</body>
+</html>
